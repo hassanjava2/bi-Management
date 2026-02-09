@@ -1,36 +1,12 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import {
-  LayoutDashboard,
-  Users,
-  CheckSquare,
-  Clock,
-  Bell,
-  Settings,
-  Building2,
-  Trophy,
-  GraduationCap,
-  Shield,
-  Activity,
-  Package,
-  Receipt,
-  RefreshCw,
-  DollarSign,
-  Truck,
-  Wrench,
-  UserCircle,
-  ChevronDown,
-  ShoppingCart,
-  FileCheck,
-  CreditCard,
-  BarChart3,
-  Calculator,
-  Bot,
-  Boxes,
-  X,
-  LogOut,
-  Search,
+  LayoutDashboard, Users, CheckSquare, Clock, Bell, Settings,
+  Building2, Trophy, GraduationCap, Shield, Activity, Package,
+  Receipt, RefreshCw, DollarSign, Truck, Wrench, UserCircle,
+  ChevronDown, ShoppingCart, FileCheck, CreditCard, BarChart3,
+  Calculator, Bot, Boxes, X, LogOut, Search,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useQuery } from '@tanstack/react-query'
@@ -38,16 +14,14 @@ import { notificationsAPI } from '../../services/api'
 
 const navSections = [
   {
-    id: 'main',
-    label: 'الرئيسية',
+    id: 'main', label: 'الرئيسية',
     items: [
       { name: 'لوحة التحكم', href: '/dashboard', icon: LayoutDashboard },
       { name: 'لوحة المدير', href: '/executive-dashboard', icon: BarChart3, roles: ['owner', 'admin', 'manager'] },
     ],
   },
   {
-    id: 'commerce',
-    label: 'التجارة',
+    id: 'commerce', label: 'التجارة',
     items: [
       { name: 'المبيعات', href: '/sales', icon: Receipt, roles: ['owner', 'admin', 'manager', 'sales'] },
       { name: 'المشتريات', href: '/purchases', icon: ShoppingCart, roles: ['owner', 'admin', 'manager', 'inventory'] },
@@ -56,8 +30,7 @@ const navSections = [
     ],
   },
   {
-    id: 'people',
-    label: 'العلاقات',
+    id: 'people', label: 'العلاقات',
     items: [
       { name: 'العملاء', href: '/customers', icon: UserCircle, roles: ['owner', 'admin', 'manager', 'sales'] },
       { name: 'الموردين', href: '/suppliers', icon: Building2, roles: ['owner', 'admin', 'manager'] },
@@ -66,8 +39,7 @@ const navSections = [
     ],
   },
   {
-    id: 'finance',
-    label: 'المالية',
+    id: 'finance', label: 'المالية',
     items: [
       { name: 'المحاسبة', href: '/accounting', icon: DollarSign, roles: ['owner', 'admin'], secure: true },
       { name: 'التقارير', href: '/reports', icon: BarChart3 },
@@ -75,8 +47,7 @@ const navSections = [
     ],
   },
   {
-    id: 'hr',
-    label: 'الموارد البشرية',
+    id: 'hr', label: 'الموارد البشرية',
     items: [
       { name: 'الموظفين', href: '/employees', icon: Users, roles: ['owner', 'admin', 'hr', 'manager'] },
       { name: 'الحضور', href: '/attendance', icon: Clock, roles: ['owner', 'admin', 'hr', 'manager'] },
@@ -86,9 +57,7 @@ const navSections = [
     ],
   },
   {
-    id: 'admin',
-    label: 'الإدارة',
-    roles: ['owner', 'admin'],
+    id: 'admin', label: 'الإدارة', roles: ['owner', 'admin'],
     items: [
       { name: 'الموافقات', href: '/approvals', icon: FileCheck },
       { name: 'المواد الثابتة', href: '/fixed-assets', icon: Boxes },
@@ -104,8 +73,7 @@ const navSections = [
 function NavItem({ item, onClose }) {
   const location = useLocation()
   const baseHref = item.href?.split('?')[0]
-  const isActive =
-    location.pathname === baseHref ||
+  const isActive = location.pathname === baseHref ||
     (baseHref && baseHref !== '/' && location.pathname.startsWith(baseHref + '/'))
 
   return (
@@ -113,20 +81,19 @@ function NavItem({ item, onClose }) {
       to={item.href}
       onClick={onClose}
       className={clsx(
-        'group flex items-center gap-3 px-3 py-2.5 rounded-button text-[13px] font-medium transition-all duration-smooth',
+        'group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200',
         isActive
-          ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/25'
-          : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+          ? 'bg-white/10 text-white'
+          : 'text-neutral-400 hover:text-white hover:bg-white/5'
       )}
     >
-      <item.icon
-        className={clsx(
-          'w-[18px] h-[18px] flex-shrink-0',
-          isActive ? 'text-white' : 'text-neutral-400 dark:text-neutral-500 group-hover:text-primary-500'
-        )}
-      />
+      <item.icon className={clsx(
+        'w-[18px] h-[18px] flex-shrink-0 transition-colors',
+        isActive ? 'text-primary-400' : 'text-neutral-500 group-hover:text-neutral-300'
+      )} />
       <span className="flex-1 truncate">{item.name}</span>
-      {item.secure && !isActive && <Shield className="w-3 h-3 text-amber-500 shrink-0" />}
+      {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary-400" />}
+      {item.secure && !isActive && <Shield className="w-3 h-3 text-amber-400/60 shrink-0" />}
     </NavLink>
   )
 }
@@ -145,11 +112,7 @@ function NavSection({ section, onClose, user, isAdmin, isHR, isManager, filterQu
   }
 
   const visibleItems = section.items.filter((item) => {
-    if (!item.roles) {
-      if (!filterQuery) return true
-      return item.name.toLowerCase().includes(filterQuery.toLowerCase())
-    }
-    const hasRole = item.roles.some((role) => {
+    const hasRole = !item.roles || item.roles.some((role) => {
       if (role === 'admin' || role === 'owner') return isAdmin || user?.role === 'owner'
       if (role === 'hr') return isHR
       if (role === 'manager') return isManager
@@ -163,26 +126,19 @@ function NavSection({ section, onClose, user, isAdmin, isHR, isManager, filterQu
   if (visibleItems.length === 0) return null
 
   return (
-    <div className="mb-1">
+    <div className="mb-2">
       <button
         type="button"
         onClick={() => setCollapsed(!collapsed)}
-        className={clsx(
-          'w-full flex items-center gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider transition-colors duration-smooth',
-          'text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-400'
-        )}
+        className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-500 hover:text-neutral-400 transition-colors"
       >
         <span className="flex-1 text-end">{section.label}</span>
-        <ChevronDown
-          className={clsx('w-3 h-3 transition-transform duration-smooth', collapsed && '-rotate-90')}
-        />
+        <ChevronDown className={clsx('w-3 h-3 transition-transform duration-200', collapsed && '-rotate-90')} />
       </button>
-      <div
-        className={clsx(
-          'overflow-hidden transition-all duration-smooth ease-smooth',
-          collapsed ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'
-        )}
-      >
+      <div className={clsx(
+        'overflow-hidden transition-all duration-200',
+        collapsed ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'
+      )}>
         <div className="space-y-0.5 mt-0.5">
           {visibleItems.map((item) => (
             <NavItem key={item.href} item={item} onClose={onClose} />
@@ -208,57 +164,56 @@ export default function Sidebar({ isOpen, onClose }) {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
           onClick={onClose}
           aria-hidden
         />
       )}
 
-      <aside
-        className={clsx(
-          'fixed inset-y-0 end-0 z-50 w-[260px] flex flex-col',
-          'bg-white dark:bg-neutral-900 border-s border-neutral-200/80 dark:border-neutral-800',
-          'shadow-sidebar transition-transform duration-300 ease-out-expo',
-          'lg:static lg:z-auto lg:translate-x-0',
-          isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
-        )}
-      >
-        <div className="h-16 flex items-center justify-between px-4 border-b border-neutral-100 dark:border-neutral-800 flex-shrink-0">
+      <aside className={clsx(
+        'fixed inset-y-0 end-0 z-50 w-[260px] flex flex-col',
+        'bg-neutral-900 dark:bg-neutral-950',
+        'transition-transform duration-300 ease-out',
+        'lg:static lg:z-auto lg:translate-x-0',
+        isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+      )}>
+        {/* Logo */}
+        <div className="h-16 flex items-center justify-between px-4 flex-shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shrink-0">
               <Building2 className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <span className="text-base font-bold text-neutral-900 dark:text-white">BI</span>
-              <span className="text-base font-light text-neutral-500 dark:text-neutral-400 ms-1">
-                Management
-              </span>
+              <span className="text-base font-bold text-white">BI</span>
+              <span className="text-base font-light text-neutral-400 ms-1">Management</span>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 lg:hidden transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/10 lg:hidden transition-colors"
             aria-label="إغلاق القائمة"
           >
             <X className="w-5 h-5 text-neutral-400" />
           </button>
         </div>
 
-        <div className="px-3 py-2 border-b border-neutral-100 dark:border-neutral-800">
+        {/* Search */}
+        <div className="px-3 pb-3">
           <div className="relative">
-            <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+            <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 pointer-events-none" />
             <input
               type="search"
               value={filterQuery}
               onChange={(e) => setFilterQuery(e.target.value)}
-              placeholder="بحث في القائمة..."
-              className="w-full rounded-input border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 py-2 pe-9 ps-3 text-sm placeholder:text-neutral-400 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20"
+              placeholder="بحث..."
+              className="w-full rounded-lg border-0 bg-white/5 py-2 pe-9 ps-3 text-sm text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:ring-1 focus:ring-primary-500/40"
             />
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto overflow-x-visible px-3 py-4 space-y-1 sidebar-nav">
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto overflow-x-visible px-3 pb-4 space-y-0.5 sidebar-nav scrollbar-hide">
           {navSections.map((section) => (
             <NavSection
               key={section.id}
@@ -273,49 +228,44 @@ export default function Sidebar({ isOpen, onClose }) {
           ))}
         </nav>
 
-        <div className="px-3 pb-2">
+        {/* Notifications */}
+        <div className="px-3 pb-1">
           <NavLink
             to="/notifications"
             onClick={onClose}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-button text-[13px] font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
           >
-            <Bell className="w-[18px] h-[18px] text-neutral-400" />
+            <Bell className="w-[18px] h-[18px] text-neutral-500" />
             <span className="flex-1">الإشعارات</span>
             {unreadCount > 0 && (
-              <span className="min-w-[20px] h-5 flex items-center justify-center px-1.5 text-[10px] font-bold rounded-full bg-error-500 text-white">
+              <span className="min-w-[20px] h-5 flex items-center justify-center px-1.5 text-[10px] font-bold rounded-full bg-primary-500 text-white">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
           </NavLink>
         </div>
 
-        <div className="flex-shrink-0 px-3 py-3 border-t border-neutral-100 dark:border-neutral-800">
-          <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shrink-0">
+        {/* User */}
+        <div className="flex-shrink-0 px-3 py-3 border-t border-white/5">
+          <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shrink-0">
               <span className="text-white font-semibold text-sm">
                 {user?.full_name?.charAt(0) || 'U'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
-                {user?.full_name}
-              </p>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 truncate">
-                {user?.role === 'owner'
-                  ? 'المالك'
-                  : user?.role === 'admin'
-                    ? 'مدير النظام'
-                    : user?.role === 'manager'
-                      ? 'مشرف'
-                      : user?.role === 'hr'
-                        ? 'موارد بشرية'
-                        : 'موظف'}
+              <p className="text-sm font-medium text-white truncate">{user?.full_name}</p>
+              <p className="text-[11px] text-neutral-500 truncate">
+                {user?.role === 'owner' ? 'المالك' :
+                 user?.role === 'admin' ? 'مدير النظام' :
+                 user?.role === 'manager' ? 'مشرف' :
+                 user?.role === 'hr' ? 'موارد بشرية' : 'موظف'}
               </p>
             </div>
             <button
               type="button"
               onClick={logout}
-              className="p-1.5 rounded-lg hover:bg-error-50 dark:hover:bg-error-500/10 text-neutral-400 hover:text-error-500 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-error-500/20 text-neutral-500 hover:text-error-400 transition-colors"
               title="تسجيل الخروج"
             >
               <LogOut className="w-4 h-4" />
