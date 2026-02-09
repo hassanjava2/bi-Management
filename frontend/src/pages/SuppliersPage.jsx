@@ -168,16 +168,16 @@ export default function SuppliersPage() {
             إدارة الموردين ومراكز الصيانة
           </p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="w-4 h-4 ml-2" />
-        <Button variant="outline" onClick={() => exportToCSV(suppliers, 'suppliers.csv')}>
-          <Download className="w-4 h-4 ml-2" />
-          تصدير CSV
-        </Button>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="w-4 h-4 ml-2" />
-          إضافة مورد
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => exportToCSV(suppliers, 'suppliers.csv')}>
+            <Download className="w-4 h-4 ml-2" />
+            تصدير CSV
+          </Button>
+          <Button onClick={() => setShowAddModal(true)}>
+            <Plus className="w-4 h-4 ml-2" />
+            إضافة مورد
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
