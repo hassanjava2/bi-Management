@@ -30,8 +30,8 @@ export default function BadgesGrid() {
         ) : badges.length === 0 ? (
           <div className="text-center py-8">
             <div className="text-4xl mb-3 opacity-50">🏅</div>
-            <p className="text-surface-500">لم تحصل على شارات بعد</p>
-            <p className="text-sm text-surface-400">أكمل المهام واحضر بانتظام للحصول على شارات</p>
+            <p className="text-neutral-500">لم تحصل على شارات بعد</p>
+            <p className="text-sm text-neutral-400">أكمل المهام واحضر بانتظام للحصول على شارات</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -47,10 +47,10 @@ export default function BadgesGrid() {
                 )}
               >
                 <div className="text-4xl mb-2">{badge.icon}</div>
-                <h4 className="font-semibold text-surface-900 dark:text-white text-sm">
+                <h4 className="font-semibold text-neutral-900 dark:text-white text-sm">
                   {badge.name}
                 </h4>
-                <p className="text-xs text-surface-500 mt-1">{badge.description}</p>
+                <p className="text-xs text-neutral-500 mt-1">{badge.description}</p>
                 {badge.earned_at && (
                   <p className="text-xs text-purple-600 mt-2">
                     {formatDate(badge.earned_at)}

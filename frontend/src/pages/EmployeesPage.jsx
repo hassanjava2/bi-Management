@@ -73,8 +73,8 @@ export default function EmployeesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white">الموظفين</h1>
-          <p className="text-surface-500 dark:text-surface-400 mt-1">إدارة موظفي الشركة</p>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">الموظفين</h1>
+          <p className="text-neutral-500 dark:text-neutral-400 mt-1">إدارة موظفي الشركة</p>
         </div>
         <Button onClick={() => setShowAddModal(true)}>
           <Plus className="w-4 h-4" />
@@ -99,7 +99,7 @@ export default function EmployeesPage() {
         </div>
       ) : users.length === 0 ? (
         <Card className="text-center py-12">
-          <p className="text-surface-500">لا يوجد موظفين</p>
+          <p className="text-neutral-500">لا يوجد موظفين</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -113,35 +113,35 @@ export default function EmployeesPage() {
                     </span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-surface-900 dark:text-white">
+                    <h3 className="font-semibold text-neutral-900 dark:text-white">
                       {user.full_name}
                     </h3>
-                    <p className="text-sm text-surface-500 dark:text-surface-400">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
                       {user.employee_code}
                     </p>
                   </div>
                 </div>
-                <button className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded">
-                  <MoreVertical className="w-5 h-5 text-surface-400" />
+                <button className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded">
+                  <MoreVertical className="w-5 h-5 text-neutral-400" />
                 </button>
               </div>
 
               <div className="mt-4 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-surface-500">البريد</span>
-                  <span className="text-surface-900 dark:text-white">{user.email}</span>
+                  <span className="text-neutral-500">البريد</span>
+                  <span className="text-neutral-900 dark:text-white">{user.email}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-surface-500">القسم</span>
-                  <span className="text-surface-900 dark:text-white">{user.department_name || '-'}</span>
+                  <span className="text-neutral-500">القسم</span>
+                  <span className="text-neutral-900 dark:text-white">{user.department_name || '-'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-surface-500">المنصب</span>
-                  <span className="text-surface-900 dark:text-white">{user.position_title || '-'}</span>
+                  <span className="text-neutral-500">المنصب</span>
+                  <span className="text-neutral-900 dark:text-white">{user.position_title || '-'}</span>
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700 flex items-center justify-between">
+              <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
                 <Badge variant={user.is_active ? 'success' : 'danger'} dot>
                   {user.is_active ? 'نشط' : 'غير نشط'}
                 </Badge>
@@ -153,12 +153,12 @@ export default function EmployeesPage() {
                   <Eye className="w-4 h-4 ml-1" /> عرض
                 </Button>
                 <div className="relative" ref={menuOpenId === user.id ? menuRef : null}>
-                  <button type="button" className="p-2 hover:bg-surface-100 dark:hover:bg-surface-700 rounded" onClick={(e) => { e.stopPropagation(); setMenuOpenId(menuOpenId === user.id ? null : user.id) }}>
-                    <MoreVertical className="w-5 h-5 text-surface-400" />
+                  <button type="button" className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded" onClick={(e) => { e.stopPropagation(); setMenuOpenId(menuOpenId === user.id ? null : user.id) }}>
+                    <MoreVertical className="w-5 h-5 text-neutral-400" />
                   </button>
                   {menuOpenId === user.id && (
-                    <div className="absolute left-0 top-full mt-1 w-40 bg-white dark:bg-surface-800 rounded-lg shadow-lg border border-surface-200 dark:border-surface-700 py-1 z-10">
-                      <button type="button" className="w-full px-3 py-2 text-right text-sm hover:bg-surface-50 dark:hover:bg-surface-700 flex items-center gap-2" onClick={() => { setSelectedUser(user); setShowEditModal(true); setMenuOpenId(null) }}>
+                    <div className="absolute left-0 top-full mt-1 w-40 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-10">
+                      <button type="button" className="w-full px-3 py-2 text-right text-sm hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2" onClick={() => { setSelectedUser(user); setShowEditModal(true); setMenuOpenId(null) }}>
                         <Edit className="w-4 h-4" /> تعديل
                       </button>
                       <button type="button" className="w-full px-3 py-2 text-right text-sm hover:bg-error-50 dark:hover:bg-error-900/20 text-error-600 flex items-center gap-2" onClick={() => { setSelectedUser(user); setShowDeleteConfirm(true); setMenuOpenId(null) }}>
@@ -184,7 +184,7 @@ export default function EmployeesPage() {
       <Modal isOpen={showDeleteConfirm} onClose={() => { setShowDeleteConfirm(false); setSelectedUser(null) }} title="تأكيد الحذف" size="sm">
         {selectedUser && (
           <div className="space-y-4">
-            <p className="text-surface-600 dark:text-surface-400">هل أنت متأكد من حذف الموظف <strong>{selectedUser.full_name}</strong>؟</p>
+            <p className="text-neutral-600 dark:text-neutral-400">هل أنت متأكد من حذف الموظف <strong>{selectedUser.full_name}</strong>؟</p>
             {deleteMutation.isError && <div className="p-3 rounded-lg bg-error-50 text-error-700 text-sm">{deleteMutation.error?.response?.data?.error || deleteMutation.error?.message}</div>}
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => { setShowDeleteConfirm(false); setSelectedUser(null) }}>إلغاء</Button>
@@ -198,24 +198,24 @@ export default function EmployeesPage() {
         {selectedUser && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <div><p className="text-surface-500">البريد</p><p className="font-medium">{selectedUser.email}</p></div>
-              <div><p className="text-surface-500">الهاتف</p><p className="font-medium">{selectedUser.phone || '-'}</p></div>
-              <div><p className="text-surface-500">القسم</p><p className="font-medium">{selectedUser.department_name || '-'}</p></div>
-              <div><p className="text-surface-500">الدور</p><p className="font-medium">{translateRole(selectedUser.role)}</p></div>
+              <div><p className="text-neutral-500">البريد</p><p className="font-medium">{selectedUser.email}</p></div>
+              <div><p className="text-neutral-500">الهاتف</p><p className="font-medium">{selectedUser.phone || '-'}</p></div>
+              <div><p className="text-neutral-500">القسم</p><p className="font-medium">{selectedUser.department_name || '-'}</p></div>
+              <div><p className="text-neutral-500">الدور</p><p className="font-medium">{translateRole(selectedUser.role)}</p></div>
             </div>
             <div>
               <h4 className="font-semibold mb-2">المهام المسندة</h4>
-              {userTasks.length === 0 ? <p className="text-surface-500 text-sm">لا توجد مهام</p> : (
+              {userTasks.length === 0 ? <p className="text-neutral-500 text-sm">لا توجد مهام</p> : (
                 <ul className="space-y-1 text-sm">
                   {userTasks.slice(0, 10).map(t => <li key={t.id} className="flex justify-between"><span>{t.title}</span><Badge variant={t.status === 'completed' ? 'success' : 'default'} size="sm">{t.status}</Badge></li>)}
-                  {userTasks.length > 10 && <li className="text-surface-500">+{userTasks.length - 10} أخرى</li>}
+                  {userTasks.length > 10 && <li className="text-neutral-500">+{userTasks.length - 10} أخرى</li>}
                 </ul>
               )}
             </div>
             {analyzeResult && (
               <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg text-sm">
                 {analyzeResult.error ? <p className="text-red-600">{analyzeResult.error}</p> : (
-                  <p className="text-surface-700 dark:text-surface-300 whitespace-pre-wrap">{typeof analyzeResult === 'string' ? analyzeResult : (analyzeResult.summary || analyzeResult.analysis || JSON.stringify(analyzeResult))}</p>
+                  <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">{typeof analyzeResult === 'string' ? analyzeResult : (analyzeResult.summary || analyzeResult.analysis || JSON.stringify(analyzeResult))}</p>
                 )}
               </div>
             )}
@@ -258,24 +258,24 @@ function AddEmployeeForm({ onClose, onSuccess }) {
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">الاسم الكامل</label>
-        <input className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg dark:bg-surface-800" value={form.full_name} onChange={(e) => setForm(f => ({ ...f, full_name: e.target.value }))} required />
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">الاسم الكامل</label>
+        <input className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800" value={form.full_name} onChange={(e) => setForm(f => ({ ...f, full_name: e.target.value }))} required />
       </div>
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">البريد الإلكتروني</label>
-        <input type="email" className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg dark:bg-surface-800" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} required />
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">البريد الإلكتروني</label>
+        <input type="email" className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} required />
       </div>
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">كلمة المرور</label>
-        <input type="password" className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg dark:bg-surface-800" value={form.password} onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))} required minLength={6} />
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">كلمة المرور</label>
+        <input type="password" className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800" value={form.password} onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))} required minLength={6} />
       </div>
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">الهاتف</label>
-        <input type="tel" className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg dark:bg-surface-800" value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} />
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">الهاتف</label>
+        <input type="tel" className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800" value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} />
       </div>
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">الدور</label>
-        <select className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg dark:bg-surface-800" value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))}>
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">الدور</label>
+        <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800" value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))}>
           {ROLES.filter(r => r.value !== 'owner').map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
         </select>
       </div>
@@ -314,23 +314,23 @@ function EditEmployeeForm({ user, onClose, onSuccess, updateMutation }) {
       )}
       <div>
         <label className="block text-sm font-medium mb-1">الاسم الكامل</label>
-        <input className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={form.full_name} onChange={(e) => setForm(f => ({ ...f, full_name: e.target.value }))} required />
+        <input className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.full_name} onChange={(e) => setForm(f => ({ ...f, full_name: e.target.value }))} required />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">البريد الإلكتروني</label>
-        <input type="email" className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} required />
+        <input type="email" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} required />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">كلمة مرور جديدة (اختياري)</label>
-        <input type="password" className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={form.password} onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))} minLength={6} />
+        <input type="password" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.password} onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))} minLength={6} />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">الهاتف</label>
-        <input type="tel" className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} />
+        <input type="tel" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">الدور</label>
-        <select className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))}>
+        <select className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))}>
           {ROLES.filter(r => r.value !== 'owner').map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
         </select>
       </div>

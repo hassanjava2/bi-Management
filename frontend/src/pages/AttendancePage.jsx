@@ -15,18 +15,18 @@ export default function AttendancePage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white">الحضور والانصراف</h1>
-          <p className="text-surface-500 dark:text-surface-400 mt-1">سجل حضورك وتابع حالتك</p>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">الحضور والانصراف</h1>
+          <p className="text-neutral-500 dark:text-neutral-400 mt-1">سجل حضورك وتابع حالتك</p>
         </div>
 
         {canViewReport && (
-          <div className="flex bg-surface-100 dark:bg-surface-700 rounded-lg p-1">
+          <div className="flex bg-neutral-100 dark:bg-neutral-700 rounded-lg p-1">
             <button
               onClick={() => setActiveTab('my')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === 'my'
-                  ? 'bg-white dark:bg-surface-600 text-surface-900 dark:text-white shadow-sm'
-                  : 'text-surface-600 dark:text-surface-400 hover:text-surface-900'
+                  ? 'bg-white dark:bg-neutral-600 text-neutral-900 dark:text-white shadow-sm'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               }`}
             >
               حضوري
@@ -35,8 +35,8 @@ export default function AttendancePage() {
               onClick={() => setActiveTab('report')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === 'report'
-                  ? 'bg-white dark:bg-surface-600 text-surface-900 dark:text-white shadow-sm'
-                  : 'text-surface-600 dark:text-surface-400 hover:text-surface-900'
+                  ? 'bg-white dark:bg-neutral-600 text-neutral-900 dark:text-white shadow-sm'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               }`}
             >
               تقرير الحضور

@@ -14,8 +14,8 @@ export default function AISuggestions({ suggestions = DEFAULT_SUGGESTIONS, onSel
   }
 
   return (
-    <div className="px-3 py-2 border-t border-surface-100 dark:border-surface-700">
-      <div className="flex items-center gap-1 text-xs text-surface-500 mb-2">
+    <div className="px-3 py-2 border-t border-neutral-100 dark:border-neutral-700">
+      <div className="flex items-center gap-1 text-xs text-neutral-500 mb-2">
         <Sparkles className="w-3 h-3" />
         <span>اقتراحات سريعة</span>
       </div>
@@ -27,7 +27,7 @@ export default function AISuggestions({ suggestions = DEFAULT_SUGGESTIONS, onSel
             disabled={disabled}
             className={clsx(
               'px-3 py-1 text-xs rounded-full',
-              'bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-300',
+              'bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300',
               'hover:bg-primary-100 hover:text-primary-700',
               'dark:hover:bg-primary-900 dark:hover:text-primary-300',
               'transition-colors',

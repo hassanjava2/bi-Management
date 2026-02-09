@@ -76,30 +76,30 @@ export default function ReportsPage() {
       <div className="space-y-6">
         <div className="flex flex-wrap gap-4 items-end">
           <div>
-            <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">الشهر</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">الشهر</label>
             <input
               type="month"
               value={month}
               onChange={(e) => setMonth(e.target.value)}
-              className="px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-input bg-white dark:bg-surface-800"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-input bg-white dark:bg-neutral-800"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">من تاريخ</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">من تاريخ</label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-input bg-white dark:bg-surface-800"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-input bg-white dark:bg-neutral-800"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">إلى تاريخ</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">إلى تاريخ</label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-input bg-white dark:bg-surface-800"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-input bg-white dark:bg-neutral-800"
             />
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function ReportsPage() {
               className={`px-4 py-3 rounded-card border text-sm font-medium text-right transition-colors ${
                 selectedReport === r.id
                   ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                  : 'border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800'
+                  : 'border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800'
               }`}
             >
               {r.label}
@@ -138,20 +138,20 @@ export default function ReportsPage() {
           )}
           {!isLoading && selectedReport === 'profitability' && profitabilityData?.data?.data && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-surface-50 dark:bg-surface-700 rounded-card">
-                <p className="text-sm text-surface-500">الإيرادات</p>
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-700 rounded-card">
+                <p className="text-sm text-neutral-500">الإيرادات</p>
                 <p className="text-xl font-bold">{(profitabilityData.data.data.revenue || 0).toLocaleString()}</p>
               </div>
-              <div className="p-4 bg-surface-50 dark:bg-surface-700 rounded-card">
-                <p className="text-sm text-surface-500">التكلفة</p>
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-700 rounded-card">
+                <p className="text-sm text-neutral-500">التكلفة</p>
                 <p className="text-xl font-bold">{(profitabilityData.data.data.cost || 0).toLocaleString()}</p>
               </div>
-              <div className="p-4 bg-surface-50 dark:bg-surface-700 rounded-card">
-                <p className="text-sm text-surface-500">الربح</p>
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-700 rounded-card">
+                <p className="text-sm text-neutral-500">الربح</p>
                 <p className="text-xl font-bold text-green-600">{(profitabilityData.data.data.margin || 0).toLocaleString()}</p>
               </div>
-              <div className="p-4 bg-surface-50 dark:bg-surface-700 rounded-card">
-                <p className="text-sm text-surface-500">نسبة الربح %</p>
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-700 rounded-card">
+                <p className="text-sm text-neutral-500">نسبة الربح %</p>
                 <p className="text-xl font-bold">{(profitabilityData.data.data.margin_percent || 0).toFixed(1)}%</p>
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function ReportsPage() {
           {!isLoading && selectedReport === 'cash-flow' && cashFlowData?.data?.data && (
             <div className="space-y-2">
               {(cashFlowData.data.data.cash_flow || cashFlowData.data.data || []).map((row, i) => (
-                <div key={i} className="flex justify-between py-2 border-b border-surface-100 dark:border-surface-700">
+                <div key={i} className="flex justify-between py-2 border-b border-neutral-100 dark:border-neutral-700">
                   <span>{row.method || row.payment_method || '—'}</span>
                   <span className="font-medium">{(row.total || row.received || 0).toLocaleString()} د.ع</span>
                 </div>
@@ -168,26 +168,26 @@ export default function ReportsPage() {
           )}
           {!isLoading && selectedReport === 'hr-summary' && hrData?.data?.data && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-surface-50 dark:bg-surface-700 rounded-card">
-                <p className="text-sm text-surface-500">غائب</p>
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-700 rounded-card">
+                <p className="text-sm text-neutral-500">غائب</p>
                 <p className="text-xl font-bold">{(hrData.data.data.attendance?.absent || 0)}</p>
               </div>
-              <div className="p-4 bg-surface-50 dark:bg-surface-700 rounded-card">
-                <p className="text-sm text-surface-500">متأخر</p>
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-700 rounded-card">
+                <p className="text-sm text-neutral-500">متأخر</p>
                 <p className="text-xl font-bold">{(hrData.data.data.attendance?.late || 0)}</p>
               </div>
-              <div className="p-4 bg-surface-50 dark:bg-surface-700 rounded-card">
-                <p className="text-sm text-surface-500">مهام مكتملة</p>
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-700 rounded-card">
+                <p className="text-sm text-neutral-500">مهام مكتملة</p>
                 <p className="text-xl font-bold">{(hrData.data.data.tasks?.completed || 0)}</p>
               </div>
-              <div className="p-4 bg-surface-50 dark:bg-surface-700 rounded-card">
-                <p className="text-sm text-surface-500">نسبة الإنجاز %</p>
+              <div className="p-4 bg-neutral-50 dark:bg-neutral-700 rounded-card">
+                <p className="text-sm text-neutral-500">نسبة الإنجاز %</p>
                 <p className="text-xl font-bold">{(hrData.data.data.tasks?.completion_rate_percent || 0).toFixed(0)}%</p>
               </div>
             </div>
           )}
           {!isLoading && !['profitability', 'cash-flow', 'hr-summary'].includes(selectedReport) && (
-            <p className="text-surface-500 dark:text-surface-400 py-4">اختر التقرير والفترة ثم استخدم «تصدير CSV» لتحميل البيانات.</p>
+            <p className="text-neutral-500 dark:text-neutral-400 py-4">اختر التقرير والفترة ثم استخدم «تصدير CSV» لتحميل البيانات.</p>
           )}
         </Card>
       </div>

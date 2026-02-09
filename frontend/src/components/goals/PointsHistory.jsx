@@ -25,11 +25,11 @@ export default function PointsHistory({ limit = 10 }) {
             <Spinner />
           </div>
         ) : history.length === 0 ? (
-          <div className="text-center py-8 text-surface-500">
+          <div className="text-center py-8 text-neutral-500">
             لا توجد سجلات
           </div>
         ) : (
-          <div className="divide-y divide-surface-100 dark:divide-surface-700">
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-700">
             {history.map((item) => (
               <div key={item.id} className="flex items-center gap-3 p-4">
                 {/* Icon */}
@@ -48,10 +48,10 @@ export default function PointsHistory({ limit = 10 }) {
 
                 {/* Description */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-surface-900 dark:text-white truncate">
+                  <p className="font-medium text-neutral-900 dark:text-white truncate">
                     {item.description}
                   </p>
-                  <p className="text-xs text-surface-500 flex items-center gap-1">
+                  <p className="text-xs text-neutral-500 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {formatDate(item.created_at)} {formatTime(item.created_at)}
                   </p>

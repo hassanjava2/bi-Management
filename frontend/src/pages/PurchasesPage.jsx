@@ -59,19 +59,19 @@ export default function PurchasesPage() {
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="بحث برقم الفاتورة أو المورد..."
-              className="w-full pr-10 pl-4 py-2 border border-surface-300 dark:border-surface-600 rounded-input bg-white dark:bg-surface-800"
+              className="w-full pr-10 pl-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-input bg-white dark:bg-neutral-800"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-input bg-white dark:bg-surface-800"
+            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-input bg-white dark:bg-neutral-800"
           >
             <option value="all">كل الحالات</option>
             {Object.entries(statusLabels).map(([k, v]) => (

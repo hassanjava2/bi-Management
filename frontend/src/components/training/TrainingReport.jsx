@@ -80,14 +80,14 @@ export default function TrainingReport() {
         </Card.Header>
         <Card.Body className="p-0">
           {!report?.trainees?.length ? (
-            <div className="text-center py-12 text-surface-500">
-              <Users className="w-12 h-12 mx-auto mb-3 text-surface-400" />
+            <div className="text-center py-12 text-neutral-500">
+              <Users className="w-12 h-12 mx-auto mb-3 text-neutral-400" />
               <p>لا يوجد متدربون حالياً</p>
             </div>
           ) : (
-            <div className="divide-y divide-surface-100 dark:divide-surface-700">
+            <div className="divide-y divide-neutral-100 dark:divide-neutral-700">
               {report.trainees.map((trainee) => (
-                <div key={trainee.id} className="p-4 hover:bg-surface-50 dark:hover:bg-surface-700/50">
+                <div key={trainee.id} className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
                   <div className="flex items-center gap-4">
                     {/* Avatar */}
                     <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/50 rounded-full 
@@ -98,7 +98,7 @@ export default function TrainingReport() {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-surface-900 dark:text-white">
+                        <h4 className="font-semibold text-neutral-900 dark:text-white">
                           {trainee.full_name}
                         </h4>
                         {trainee.is_delayed && (
@@ -107,7 +107,7 @@ export default function TrainingReport() {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-surface-500">
+                      <p className="text-sm text-neutral-500">
                         {trainee.position_name || 'غير محدد'} • {trainee.plan_name}
                       </p>
                     </div>
@@ -115,7 +115,7 @@ export default function TrainingReport() {
                     {/* Progress */}
                     <div className="text-left w-32">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-surface-500">التقدم</span>
+                        <span className="text-sm text-neutral-500">التقدم</span>
                         <span className={clsx(
                           'text-sm font-bold',
                           trainee.progress >= 80 ? 'text-green-600' :
@@ -124,7 +124,7 @@ export default function TrainingReport() {
                           {trainee.progress}%
                         </span>
                       </div>
-                      <div className="h-2 bg-surface-200 dark:bg-surface-600 rounded-full overflow-hidden">
+                      <div className="h-2 bg-neutral-200 dark:bg-neutral-600 rounded-full overflow-hidden">
                         <div 
                           className={clsx(
                             'h-full rounded-full transition-all',
@@ -138,10 +138,10 @@ export default function TrainingReport() {
 
                     {/* Days */}
                     <div className="text-center">
-                      <p className="text-lg font-bold text-surface-900 dark:text-white">
+                      <p className="text-lg font-bold text-neutral-900 dark:text-white">
                         {trainee.current_day || 1}
                       </p>
-                      <p className="text-xs text-surface-500">
+                      <p className="text-xs text-neutral-500">
                         من {trainee.duration_days} يوم
                       </p>
                     </div>

@@ -67,8 +67,8 @@ export default function RewardsShop() {
           </div>
         ) : rewards.length === 0 ? (
           <div className="text-center py-8">
-            <ShoppingBag className="w-12 h-12 mx-auto mb-3 text-surface-400" />
-            <p className="text-surface-500">لا توجد مكافآت متاحة حالياً</p>
+            <ShoppingBag className="w-12 h-12 mx-auto mb-3 text-neutral-400" />
+            <p className="text-neutral-500">لا توجد مكافآت متاحة حالياً</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -82,7 +82,7 @@ export default function RewardsShop() {
                     'p-4 rounded-xl border-2 transition-all',
                     canAfford 
                       ? 'border-green-200 dark:border-green-800 hover:border-green-400 cursor-pointer' 
-                      : 'border-surface-200 dark:border-surface-700 opacity-60'
+                      : 'border-neutral-200 dark:border-neutral-700 opacity-60'
                   )}
                   onClick={() => canAfford && setSelectedReward(reward)}
                 >
@@ -92,14 +92,14 @@ export default function RewardsShop() {
                   </div>
 
                   {/* Info */}
-                  <h4 className="font-semibold text-surface-900 dark:text-white">{reward.name}</h4>
-                  <p className="text-sm text-surface-500 mt-1 line-clamp-2">{reward.description}</p>
+                  <h4 className="font-semibold text-neutral-900 dark:text-white">{reward.name}</h4>
+                  <p className="text-sm text-neutral-500 mt-1 line-clamp-2">{reward.description}</p>
 
                   {/* Points & Action */}
                   <div className="flex items-center justify-between mt-4">
                     <span className={clsx(
                       'font-bold',
-                      canAfford ? 'text-green-600' : 'text-surface-400'
+                      canAfford ? 'text-green-600' : 'text-neutral-400'
                     )}>
                       {reward.points_required.toLocaleString()} نقطة
                     </span>
@@ -110,7 +110,7 @@ export default function RewardsShop() {
                         متاح
                       </span>
                     ) : (
-                      <span className="text-xs text-surface-400">
+                      <span className="text-xs text-neutral-400">
                         ينقصك {(reward.points_required - myPoints).toLocaleString()}
                       </span>
                     )}
@@ -139,17 +139,17 @@ export default function RewardsShop() {
         {selectedReward && (
           <div className="text-center">
             <div className="text-6xl mb-4">{selectedReward.icon || '🎁'}</div>
-            <h3 className="text-xl font-bold text-surface-900 dark:text-white mb-2">
+            <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
               {selectedReward.name}
             </h3>
-            <p className="text-surface-500 mb-4">{selectedReward.description}</p>
+            <p className="text-neutral-500 mb-4">{selectedReward.description}</p>
             
             <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl mb-6">
-              <p className="text-sm text-surface-600 dark:text-surface-400">ستستبدل</p>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">ستستبدل</p>
               <p className="text-2xl font-bold text-amber-600">
                 {selectedReward.points_required.toLocaleString()} نقطة
               </p>
-              <p className="text-xs text-surface-500 mt-1">
+              <p className="text-xs text-neutral-500 mt-1">
                 رصيدك المتبقي: {(myPoints - selectedReward.points_required).toLocaleString()} نقطة
               </p>
             </div>

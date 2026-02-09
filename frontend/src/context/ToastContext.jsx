@@ -33,7 +33,7 @@ function ToastItem({ id, type = 'info', message, duration = 5000, onDismiss }) {
   return (
     <div
       className={clsx(
-        'flex items-start gap-3 p-4 rounded-card border shadow-card min-w-[280px] max-w-md animate-slideIn',
+        'flex items-start gap-3 p-4 rounded-card border shadow-modal min-w-[280px] max-w-md animate-slide-up',
         config.bg
       )}
       role="alert"
@@ -43,7 +43,7 @@ function ToastItem({ id, type = 'info', message, duration = 5000, onDismiss }) {
       <button
         type="button"
         onClick={handleDismiss}
-        className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+        className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
         aria-label="إغلاق"
       >
         <X className="w-4 h-4" />
@@ -76,7 +76,7 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={value}>
       {children}
       {createPortal(
-        <div className="fixed bottom-4 left-4 z-[9999] flex flex-col gap-2" dir="rtl">
+        <div className="fixed bottom-4 end-4 z-[9999] flex flex-col gap-2" dir="rtl">
           {toasts.map((t) => (
             <ToastItem key={t.id} {...t} onDismiss={dismiss} />
           ))}

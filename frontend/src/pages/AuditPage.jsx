@@ -42,18 +42,18 @@ export default function AuditPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-surface-900 dark:text-white flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                         <Shield className="w-7 h-7 text-blue-500" />
                         Audit Dashboard
                     </h1>
-                    <p className="text-surface-600 dark:text-surface-400 mt-1">
+                    <p className="text-neutral-600 dark:text-neutral-400 mt-1">
                         مراقبة العمليات وأحداث الأمان
                     </p>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-surface-200 dark:border-surface-700">
+            <div className="border-b border-neutral-200 dark:border-neutral-700">
                 <nav className="flex gap-4">
                     {tabs.map(tab => (
                         <button
@@ -62,7 +62,7 @@ export default function AuditPage() {
                             className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
                                 activeTab === tab.id
                                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-surface-500 hover:text-surface-700'
+                                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
                             }`}
                         >
                             <tab.icon className="w-5 h-5" />
@@ -133,26 +133,26 @@ function DashboardTab() {
             {stats?.data && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Events by Type */}
-                    <div className="bg-white dark:bg-surface-800 rounded-xl p-6 shadow-sm">
-                        <h3 className="font-semibold text-surface-900 dark:text-white mb-4">
+                    <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm">
+                        <h3 className="font-semibold text-neutral-900 dark:text-white mb-4">
                             الأحداث حسب النوع (آخر 7 أيام)
                         </h3>
                         <div className="space-y-3">
                             {stats.data.by_type?.slice(0, 5).map(item => (
                                 <div key={item.event_type} className="flex items-center justify-between">
-                                    <span className="text-surface-600 dark:text-surface-400">{item.event_type}</span>
-                                    <span className="font-medium text-surface-900 dark:text-white">{item.count}</span>
+                                    <span className="text-neutral-600 dark:text-neutral-400">{item.event_type}</span>
+                                    <span className="font-medium text-neutral-900 dark:text-white">{item.count}</span>
                                 </div>
                             ))}
                             {(!stats.data.by_type || stats.data.by_type.length === 0) && (
-                                <p className="text-surface-400 text-center py-4">لا توجد أحداث</p>
+                                <p className="text-neutral-400 text-center py-4">لا توجد أحداث</p>
                             )}
                         </div>
                     </div>
 
                     {/* Top Users */}
-                    <div className="bg-white dark:bg-surface-800 rounded-xl p-6 shadow-sm">
-                        <h3 className="font-semibold text-surface-900 dark:text-white mb-4">
+                    <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm">
+                        <h3 className="font-semibold text-neutral-900 dark:text-white mb-4">
                             المستخدمون الأكثر نشاطاً
                         </h3>
                         <div className="space-y-3">
@@ -162,13 +162,13 @@ function DashboardTab() {
                                         <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm">
                                             {i + 1}
                                         </span>
-                                        <span className="text-surface-700 dark:text-surface-300">{user.full_name}</span>
+                                        <span className="text-neutral-700 dark:text-neutral-300">{user.full_name}</span>
                                     </div>
-                                    <span className="text-sm text-surface-500">{user.event_count} أحداث</span>
+                                    <span className="text-sm text-neutral-500">{user.event_count} أحداث</span>
                                 </div>
                             ))}
                             {(!stats.data.top_users || stats.data.top_users.length === 0) && (
-                                <p className="text-surface-400 text-center py-4">لا توجد بيانات</p>
+                                <p className="text-neutral-400 text-center py-4">لا توجد بيانات</p>
                             )}
                         </div>
                     </div>
@@ -198,24 +198,24 @@ function LogsTab() {
     };
 
     return (
-        <div className="bg-white dark:bg-surface-800 rounded-xl shadow-sm">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm">
             {/* Search & Filters */}
-            <div className="p-4 border-b border-surface-200 dark:border-surface-700 flex flex-wrap gap-4">
+            <div className="p-4 border-b border-neutral-200 dark:border-neutral-700 flex flex-wrap gap-4">
                 <div className="relative flex-1 min-w-[200px]">
-                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
                     <input
                         type="text"
                         placeholder="بحث في السجلات..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && refetch()}
-                        className="w-full pr-10 pl-4 py-2 border border-surface-200 dark:border-surface-700 rounded-lg bg-white dark:bg-surface-800"
+                        className="w-full pr-10 pl-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800"
                     />
                 </div>
                 <select
                     value={filters.action}
                     onChange={(e) => setFilters({ ...filters, action: e.target.value })}
-                    className="px-4 py-2 border border-surface-200 dark:border-surface-700 rounded-lg bg-white dark:bg-surface-800"
+                    className="px-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800"
                 >
                     <option value="">كل العمليات</option>
                     <option value="LOGIN_SUCCESS">تسجيل دخول</option>
@@ -227,7 +227,7 @@ function LogsTab() {
                 </select>
                 <button
                     onClick={() => refetch()}
-                    className="p-2 text-surface-500 hover:text-surface-700 rounded-lg hover:bg-surface-100"
+                    className="p-2 text-neutral-500 hover:text-neutral-700 rounded-lg hover:bg-neutral-100"
                 >
                     <RefreshCw className="w-5 h-5" />
                 </button>
@@ -240,33 +240,33 @@ function LogsTab() {
             {/* Logs Table */}
             <div className="overflow-x-auto">
                 <table className="w-full">
-                    <thead className="bg-surface-50 dark:bg-surface-700">
+                    <thead className="bg-neutral-50 dark:bg-neutral-700">
                         <tr>
-                            <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">الوقت</th>
-                            <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">المستخدم</th>
-                            <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">العملية</th>
-                            <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">الجدول</th>
-                            <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">IP</th>
+                            <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الوقت</th>
+                            <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">المستخدم</th>
+                            <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">العملية</th>
+                            <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الجدول</th>
+                            <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">IP</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+                    <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                         {logs?.data?.map(log => (
-                            <tr key={log.id} className="hover:bg-surface-50 dark:hover:bg-surface-700/50">
-                                <td className="px-4 py-3 text-sm text-surface-500">
+                            <tr key={log.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                                <td className="px-4 py-3 text-sm text-neutral-500">
                                     {new Date(log.created_at).toLocaleString('ar-IQ')}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-surface-900 dark:text-white">
+                                <td className="px-4 py-3 text-sm text-neutral-900 dark:text-white">
                                     {log.user_name || 'غير معروف'}
                                 </td>
                                 <td className="px-4 py-3">
-                                    <span className={`px-2 py-1 rounded text-xs ${actionColors[log.action] || 'bg-surface-100 text-surface-700'}`}>
+                                    <span className={`px-2 py-1 rounded text-xs ${actionColors[log.action] || 'bg-neutral-100 text-neutral-700'}`}>
                                         {log.action}
                                     </span>
                                 </td>
-                                <td className="px-4 py-3 text-sm text-surface-500">
+                                <td className="px-4 py-3 text-sm text-neutral-500">
                                     {log.table_name || '-'}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-surface-400 font-mono">
+                                <td className="px-4 py-3 text-sm text-neutral-400 font-mono">
                                     {log.ip_address || '-'}
                                 </td>
                             </tr>
@@ -275,7 +275,7 @@ function LogsTab() {
                 </table>
                 {isLoading && <div className="p-8 text-center">جاري التحميل...</div>}
                 {!isLoading && (!logs?.data || logs.data.length === 0) && (
-                    <div className="p-8 text-center text-surface-400">لا توجد سجلات</div>
+                    <div className="p-8 text-center text-neutral-400">لا توجد سجلات</div>
                 )}
             </div>
         </div>
@@ -318,7 +318,7 @@ function SecurityTab() {
                         onChange={(e) => setShowResolved(e.target.checked)}
                         className="rounded"
                     />
-                    <span className="text-surface-600 dark:text-surface-400">إظهار المحلولة</span>
+                    <span className="text-neutral-600 dark:text-neutral-400">إظهار المحلولة</span>
                 </label>
             </div>
 
@@ -327,7 +327,7 @@ function SecurityTab() {
                 {events?.data?.map(event => (
                     <div
                         key={event.id}
-                        className={`bg-white dark:bg-surface-800 rounded-xl p-4 shadow-sm border-r-4 ${severityColors[event.severity] || 'border-surface-200'}`}
+                        className={`bg-white dark:bg-neutral-800 rounded-xl p-4 shadow-sm border-r-4 ${severityColors[event.severity] || 'border-neutral-200'}`}
                     >
                         <div className="flex items-start justify-between">
                             <div>
@@ -335,11 +335,11 @@ function SecurityTab() {
                                     <span className={`px-2 py-1 rounded text-xs ${severityColors[event.severity]}`}>
                                         {event.severity}
                                     </span>
-                                    <span className="font-medium text-surface-900 dark:text-white">
+                                    <span className="font-medium text-neutral-900 dark:text-white">
                                         {event.event_type}
                                     </span>
                                 </div>
-                                <p className="text-sm text-surface-500 mt-1">
+                                <p className="text-sm text-neutral-500 mt-1">
                                     {event.user_name || 'غير معروف'} • {new Date(event.created_at).toLocaleString('ar-IQ')}
                                 </p>
                             </div>
@@ -364,7 +364,7 @@ function SecurityTab() {
                 ))}
                 {isLoading && <div className="p-8 text-center">جاري التحميل...</div>}
                 {!isLoading && (!events?.data || events.data.length === 0) && (
-                    <div className="p-8 text-center text-surface-400 bg-white dark:bg-surface-800 rounded-xl">
+                    <div className="p-8 text-center text-neutral-400 bg-white dark:bg-neutral-800 rounded-xl">
                         <AlertTriangle className="w-12 h-12 mx-auto mb-2 opacity-50" />
                         <p>لا توجد أحداث أمنية</p>
                     </div>
@@ -389,13 +389,13 @@ function ReportsTab() {
             <div className="flex gap-2">
                 <button
                     onClick={() => setReportType('daily')}
-                    className={`px-4 py-2 rounded-lg ${reportType === 'daily' ? 'bg-blue-500 text-white' : 'bg-surface-100 dark:bg-surface-700'}`}
+                    className={`px-4 py-2 rounded-lg ${reportType === 'daily' ? 'bg-blue-500 text-white' : 'bg-neutral-100 dark:bg-neutral-700'}`}
                 >
                     تقرير يومي
                 </button>
                 <button
                     onClick={() => setReportType('weekly')}
-                    className={`px-4 py-2 rounded-lg ${reportType === 'weekly' ? 'bg-blue-500 text-white' : 'bg-surface-100 dark:bg-surface-700'}`}
+                    className={`px-4 py-2 rounded-lg ${reportType === 'weekly' ? 'bg-blue-500 text-white' : 'bg-neutral-100 dark:bg-neutral-700'}`}
                 >
                     تقرير أسبوعي
                 </button>
@@ -404,31 +404,31 @@ function ReportsTab() {
             {isLoading ? (
                 <div className="p-8 text-center">جاري التحميل...</div>
             ) : report?.data ? (
-                <div className="bg-white dark:bg-surface-800 rounded-xl p-6 shadow-sm space-y-6">
+                <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm space-y-6">
                     {/* Summary */}
                     <div>
-                        <h3 className="font-semibold text-surface-900 dark:text-white mb-4">ملخص</h3>
+                        <h3 className="font-semibold text-neutral-900 dark:text-white mb-4">ملخص</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-surface-50 dark:bg-surface-700/50 rounded-lg p-4">
-                                <div className="text-sm text-surface-500">العمليات</div>
+                            <div className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-4">
+                                <div className="text-sm text-neutral-500">العمليات</div>
                                 <div className="text-2xl font-bold text-blue-600">
                                     {report.data.summary?.total_operations || 0}
                                 </div>
                             </div>
-                            <div className="bg-surface-50 dark:bg-surface-700/50 rounded-lg p-4">
-                                <div className="text-sm text-surface-500">تسجيلات الدخول</div>
+                            <div className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-4">
+                                <div className="text-sm text-neutral-500">تسجيلات الدخول</div>
                                 <div className="text-2xl font-bold text-green-600">
                                     {report.data.summary?.success_logins || 0}
                                 </div>
                             </div>
-                            <div className="bg-surface-50 dark:bg-surface-700/50 rounded-lg p-4">
-                                <div className="text-sm text-surface-500">محاولات فاشلة</div>
+                            <div className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-4">
+                                <div className="text-sm text-neutral-500">محاولات فاشلة</div>
                                 <div className="text-2xl font-bold text-red-600">
                                     {report.data.summary?.failed_logins || 0}
                                 </div>
                             </div>
-                            <div className="bg-surface-50 dark:bg-surface-700/50 rounded-lg p-4">
-                                <div className="text-sm text-surface-500">أحداث أمنية</div>
+                            <div className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-4">
+                                <div className="text-sm text-neutral-500">أحداث أمنية</div>
                                 <div className="text-2xl font-bold text-yellow-600">
                                     {report.data.summary?.security_events || 0}
                                 </div>
@@ -439,7 +439,7 @@ function ReportsTab() {
                     {/* Recommendations */}
                     {report.data.recommendations && (
                         <div>
-                            <h3 className="font-semibold text-surface-900 dark:text-white mb-4">التوصيات</h3>
+                            <h3 className="font-semibold text-neutral-900 dark:text-white mb-4">التوصيات</h3>
                             <div className="space-y-2">
                                 {report.data.recommendations.map((rec, i) => (
                                     <div
@@ -452,7 +452,7 @@ function ReportsTab() {
                                         }`}
                                     >
                                         <div className="font-medium">{rec.message}</div>
-                                        <div className="text-sm text-surface-600 mt-1">{rec.action}</div>
+                                        <div className="text-sm text-neutral-600 mt-1">{rec.action}</div>
                                     </div>
                                 ))}
                             </div>
@@ -474,11 +474,11 @@ function StatCard({ title, value, icon: Icon, color, highlight }) {
     };
 
     return (
-        <div className={`bg-white dark:bg-surface-800 rounded-xl p-6 shadow-sm ${highlight ? 'ring-2 ring-red-500' : ''}`}>
+        <div className={`bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm ${highlight ? 'ring-2 ring-red-500' : ''}`}>
             <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-surface-500 text-sm">{title}</p>
-                    <p className="text-3xl font-bold text-surface-900 dark:text-white mt-1">{value}</p>
+                    <p className="text-neutral-500 text-sm">{title}</p>
+                    <p className="text-3xl font-bold text-neutral-900 dark:text-white mt-1">{value}</p>
                 </div>
                 <div className={`w-12 h-12 rounded-xl ${colorClasses[color]} flex items-center justify-center`}>
                     <Icon className="w-6 h-6" />

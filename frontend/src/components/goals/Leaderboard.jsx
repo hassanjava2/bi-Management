@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext'
 
 const RANK_ICONS = {
   1: { icon: Crown, color: 'text-yellow-500', bg: 'bg-yellow-100 dark:bg-yellow-900/30' },
-  2: { icon: Medal, color: 'text-surface-400', bg: 'bg-surface-100 dark:bg-surface-700' },
+  2: { icon: Medal, color: 'text-neutral-400', bg: 'bg-neutral-100 dark:bg-neutral-700' },
   3: { icon: Award, color: 'text-amber-600', bg: 'bg-amber-100 dark:bg-amber-900/30' },
 }
 
@@ -30,17 +30,17 @@ export default function Leaderboard({ limit = 10 }) {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Trophy className="w-5 h-5 text-amber-500" />
-          <h3 className="font-semibold text-surface-900 dark:text-white">المتصدرون</h3>
+          <h3 className="font-semibold text-neutral-900 dark:text-white">المتصدرون</h3>
         </div>
         
-        <div className="flex bg-surface-100 dark:bg-surface-700 rounded-lg p-1">
+        <div className="flex bg-neutral-100 dark:bg-neutral-700 rounded-lg p-1">
           <button
             onClick={() => setPeriod('monthly')}
             className={clsx(
               'px-3 py-1 rounded text-xs font-medium transition-colors',
               period === 'monthly' 
-                ? 'bg-white dark:bg-surface-600 text-surface-900 dark:text-white shadow-sm' 
-                : 'text-surface-600 dark:text-surface-400'
+                ? 'bg-white dark:bg-neutral-600 text-neutral-900 dark:text-white shadow-sm' 
+                : 'text-neutral-600 dark:text-neutral-400'
             )}
           >
             الشهر
@@ -50,8 +50,8 @@ export default function Leaderboard({ limit = 10 }) {
             className={clsx(
               'px-3 py-1 rounded text-xs font-medium transition-colors',
               period === 'all_time' 
-                ? 'bg-white dark:bg-surface-600 text-surface-900 dark:text-white shadow-sm' 
-                : 'text-surface-600 dark:text-surface-400'
+                ? 'bg-white dark:bg-neutral-600 text-neutral-900 dark:text-white shadow-sm' 
+                : 'text-neutral-600 dark:text-neutral-400'
             )}
           >
             الكل
@@ -64,7 +64,7 @@ export default function Leaderboard({ limit = 10 }) {
           <Spinner />
         </div>
       ) : leaders.length === 0 ? (
-        <div className="text-center py-8 text-surface-500">
+        <div className="text-center py-8 text-neutral-500">
           لا توجد بيانات
         </div>
       ) : (
@@ -81,18 +81,18 @@ export default function Leaderboard({ limit = 10 }) {
                   'flex items-center gap-3 p-3 rounded-xl transition-colors',
                   isCurrentUser 
                     ? 'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800'
-                    : 'hover:bg-surface-50 dark:hover:bg-surface-700/50'
+                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
                 )}
               >
                 {/* Rank */}
                 <div className={clsx(
                   'w-10 h-10 rounded-full flex items-center justify-center',
-                  rankConfig?.bg || 'bg-surface-100 dark:bg-surface-700'
+                  rankConfig?.bg || 'bg-neutral-100 dark:bg-neutral-700'
                 )}>
                   {RankIcon ? (
                     <RankIcon className={clsx('w-5 h-5', rankConfig?.color)} />
                   ) : (
-                    <span className="font-bold text-surface-600 dark:text-surface-400">
+                    <span className="font-bold text-neutral-600 dark:text-neutral-400">
                       {leader.rank}
                     </span>
                   )}
@@ -103,20 +103,20 @@ export default function Leaderboard({ limit = 10 }) {
                   <div className="flex items-center gap-2">
                     <p className={clsx(
                       'font-medium truncate',
-                      isCurrentUser ? 'text-primary-700 dark:text-primary-300' : 'text-surface-900 dark:text-white'
+                      isCurrentUser ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-900 dark:text-white'
                     )}>
                       {leader.full_name}
                       {isCurrentUser && <span className="text-xs mr-1">(أنت)</span>}
                     </p>
                     <span className="text-lg">{leader.level?.badge}</span>
                   </div>
-                  <p className="text-xs text-surface-500">{leader.department_name || '-'}</p>
+                  <p className="text-xs text-neutral-500">{leader.department_name || '-'}</p>
                 </div>
 
                 {/* Points */}
                 <div className="text-left">
                   <p className="font-bold text-amber-600">{leader.points?.toLocaleString()}</p>
-                  <p className="text-xs text-surface-500">نقطة</p>
+                  <p className="text-xs text-neutral-500">نقطة</p>
                 </div>
               </div>
             )

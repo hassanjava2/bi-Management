@@ -98,8 +98,8 @@ export default function ChatWindow({ isOpen, onClose, onMinimize, isMinimized })
         : 'bottom-4 left-4 w-96 h-[500px] max-h-[80vh]'
     )}>
       <div className={clsx(
-        'bg-white dark:bg-surface-800 rounded-2xl shadow-2xl overflow-hidden',
-        'border border-surface-200 dark:border-surface-700',
+        'bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl overflow-hidden',
+        'border border-neutral-200 dark:border-neutral-700',
         'flex flex-col h-full'
       )}>
         {/* Header */}
@@ -154,7 +154,7 @@ export default function ChatWindow({ isOpen, onClose, onMinimize, isMinimized })
               ))}
               
               {sendMutation.isPending && (
-                <div className="flex items-center gap-2 text-surface-500 text-sm">
+                <div className="flex items-center gap-2 text-neutral-500 text-sm">
                   <Spinner size="sm" />
                   <span>Bi يكتب...</span>
                 </div>

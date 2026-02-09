@@ -9,7 +9,7 @@ export default function FormField({ label, error, required, children, className,
       {label && (
         <label
           htmlFor={htmlFor}
-          className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1"
+          className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
         >
           {label}
           {required && <span className="text-error-500 mr-1">*</span>}

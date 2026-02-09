@@ -19,7 +19,7 @@ import { exportToCSV } from '../utils/helpers'
 
 // حالات المرتجع
 const returnStatuses = {
-  pending: { label: 'بانتظار الإرسال', color: 'bg-surface-100 text-surface-800', icon: Clock },
+  pending: { label: 'بانتظار الإرسال', color: 'bg-neutral-100 text-neutral-800', icon: Clock },
   sent: { label: 'تم الإرسال', color: 'bg-blue-100 text-blue-800', icon: Send },
   in_repair: { label: 'قيد الإصلاح', color: 'bg-yellow-100 text-yellow-800', icon: RefreshCw },
   repaired: { label: 'تم الإصلاح', color: 'bg-green-100 text-green-800', icon: CheckCircle2 },
@@ -117,12 +117,12 @@ export default function ReturnsPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
             <Package className="w-8 h-8 text-primary-600" />
             تتبع المرتجعات
             <span className="text-sm bg-red-100 text-red-800 px-2 py-1 rounded-full">أولوية قصوى</span>
           </h1>
-          <p className="text-surface-500 dark:text-surface-400 mt-1">
+          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
             متابعة المرتجعات للموردين ومراكز الصيانة
           </p>
         </div>
@@ -148,18 +148,18 @@ export default function ReturnsPage() {
 
       {/* Alert Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400">إجمالي المعلقة</p>
-              <p className="text-3xl font-bold text-surface-900 dark:text-white">{stats.total_pending || 0}</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">إجمالي المعلقة</p>
+              <p className="text-3xl font-bold text-neutral-900 dark:text-white">{stats.total_pending || 0}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
               <Package className="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border-2 border-yellow-300 dark:border-yellow-600">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border-2 border-yellow-300 dark:border-yellow-600">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-yellow-600 dark:text-yellow-400 flex items-center gap-1">
@@ -173,7 +173,7 @@ export default function ReturnsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border-2 border-red-400 dark:border-red-600">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border-2 border-red-400 dark:border-red-600">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
@@ -203,22 +203,22 @@ export default function ReturnsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-4">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="بحث بالسيريال، المنتج، أو رقم المرتجع..."
-              className="w-full pr-10 pl-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+              className="w-full pr-10 pl-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             />
           </div>
           <select
             value={selectedSupplier}
             onChange={(e) => setSelectedSupplier(e.target.value)}
-            className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           >
             <option value="all">كل الموردين</option>
             <option value="arabi">سيد أحمد - العربي</option>
@@ -229,14 +229,14 @@ export default function ReturnsPage() {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           >
             <option value="all">كل الحالات</option>
             {Object.entries(returnStatuses).map(([key, val]) => (
               <option key={key} value={key}>{val.label}</option>
             ))}
           </select>
-          <div className="flex border border-surface-300 dark:border-surface-600 rounded-lg overflow-hidden">
+          <div className="flex border border-neutral-300 dark:border-neutral-600 rounded-lg overflow-hidden">
             <button className="px-3 py-2 bg-red-600 text-white text-sm">
               🔴 متأخرة ({stats.over_14_days || 0})
             </button>
@@ -256,27 +256,27 @@ export default function ReturnsPage() {
       )}
 
       {/* Returns List */}
-      <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-surface-50 dark:bg-surface-700/50">
+            <thead className="bg-neutral-50 dark:bg-neutral-700/50">
               <tr>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">التنبيه</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">رقم المرتجع</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">المنتج</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">السيريال</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">المورد</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">سبب الإرجاع</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">تاريخ الإرسال</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">المدة</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">الحالة</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">إجراءات</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">التنبيه</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">رقم المرتجع</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">المنتج</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">السيريال</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">المورد</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">سبب الإرجاع</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">تاريخ الإرسال</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">المدة</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الحالة</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">إجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
               {returns.length === 0 ? (
                 <tr>
-                  <td colSpan="10" className="px-4 py-8 text-center text-surface-500">
+                  <td colSpan="10" className="px-4 py-8 text-center text-neutral-500">
                     لا توجد مرتجعات مطابقة للبحث
                   </td>
                 </tr>
@@ -288,7 +288,7 @@ export default function ReturnsPage() {
                   const status = returnStatuses[returnItem.status] || returnStatuses.pending
 
                   return (
-                    <tr key={returnItem.id} className="hover:bg-surface-50 dark:hover:bg-surface-700/50">
+                    <tr key={returnItem.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
                       <td className="px-4 py-3">
                         {alertLevel === 'critical' && (
                           <span className="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full animate-pulse">
@@ -318,8 +318,8 @@ export default function ReturnsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div>
-                          <p className="font-medium text-surface-900 dark:text-white">{returnItem.product_name}</p>
-                          <p className="text-sm text-surface-500">{returnItem.brand} {returnItem.model}</p>
+                          <p className="font-medium text-neutral-900 dark:text-white">{returnItem.product_name}</p>
+                          <p className="text-sm text-neutral-500">{returnItem.brand} {returnItem.model}</p>
                         </div>
                       </td>
                       <td className="px-4 py-3 font-mono text-sm">
@@ -327,11 +327,11 @@ export default function ReturnsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <Building2 className="w-4 h-4 text-surface-400" />
+                          <Building2 className="w-4 h-4 text-neutral-400" />
                           <span>{returnItem.supplier_name}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-surface-600 dark:text-surface-300">
+                      <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
                         {returnItem.reason || 'عيب مصنعي'}
                       </td>
                       <td className="px-4 py-3 text-sm">
@@ -352,24 +352,24 @@ export default function ReturnsPage() {
                         <div className="flex items-center gap-1">
                           <button 
                             onClick={() => handleViewReturn(returnItem)}
-                            className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded"
+                            className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                             title="تفاصيل"
                           >
-                            <Eye className="w-4 h-4 text-surface-500" />
+                            <Eye className="w-4 h-4 text-neutral-500" />
                           </button>
                           <button
                             onClick={() => returnsAPI.sendReminder(returnItem.id).then(() => queryClient.invalidateQueries({ queryKey: ['returns'] }))}
-                            className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded"
+                            className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                             title="تذكير"
                           >
-                            <Phone className="w-4 h-4 text-surface-500" />
+                            <Phone className="w-4 h-4 text-neutral-500" />
                           </button>
                           <button
                             onClick={() => handleViewReturn(returnItem)}
-                            className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded"
+                            className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                             title="تحديث الحالة"
                           >
-                            <RefreshCw className="w-4 h-4 text-surface-500" />
+                            <RefreshCw className="w-4 h-4 text-neutral-500" />
                           </button>
                         </div>
                       </td>
@@ -464,11 +464,11 @@ function NewReturnForm({ onClose, onSuccess }) {
       )}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             المورد / مركز الصيانة
           </label>
           <select
-            className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             value={supplierId}
             onChange={(e) => setSupplierId(e.target.value)}
             required
@@ -488,11 +488,11 @@ function NewReturnForm({ onClose, onSuccess }) {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             نوع المرتجع
           </label>
           <select
-            className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             value={returnType}
             onChange={(e) => setReturnType(e.target.value)}
           >
@@ -506,7 +506,7 @@ function NewReturnForm({ onClose, onSuccess }) {
 
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-medium text-surface-700 dark:text-surface-300">
+          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
             الأجهزة المرتجعة
           </label>
           <Button type="button" size="sm" onClick={addItem}>
@@ -516,25 +516,25 @@ function NewReturnForm({ onClose, onSuccess }) {
         </div>
         <div className="space-y-2">
           {items.map((item, index) => (
-            <div key={item.id} className="flex gap-2 items-center bg-surface-50 dark:bg-surface-700/50 p-3 rounded-lg">
+            <div key={item.id} className="flex gap-2 items-center bg-neutral-50 dark:bg-neutral-700/50 p-3 rounded-lg">
               <input
                 type="text"
                 placeholder="السيريال..."
-                className="flex-1 px-2 py-1 border border-surface-300 dark:border-surface-600 rounded text-sm dark:bg-surface-800"
+                className="flex-1 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm dark:bg-neutral-800"
                 value={item.serial}
                 onChange={(e) => updateItem(index, 'serial', e.target.value)}
               />
               <input
                 type="text"
                 placeholder="المنتج..."
-                className="flex-1 px-2 py-1 border border-surface-300 dark:border-surface-600 rounded text-sm dark:bg-surface-800"
+                className="flex-1 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm dark:bg-neutral-800"
                 value={item.product}
                 onChange={(e) => updateItem(index, 'product', e.target.value)}
               />
               <input
                 type="text"
                 placeholder="سبب الإرجاع..."
-                className="flex-1 px-2 py-1 border border-surface-300 dark:border-surface-600 rounded text-sm dark:bg-surface-800"
+                className="flex-1 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm dark:bg-neutral-800"
                 value={item.reason}
                 onChange={(e) => updateItem(index, 'reason', e.target.value)}
               />
@@ -548,29 +548,29 @@ function NewReturnForm({ onClose, onSuccess }) {
             </div>
           ))}
           {items.length === 0 && (
-            <p className="text-center text-surface-500 py-4">اضغط "إضافة جهاز" لإضافة أجهزة للمرتجع</p>
+            <p className="text-center text-neutral-500 py-4">اضغط "إضافة جهاز" لإضافة أجهزة للمرتجع</p>
           )}
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
           صور قبل الإرسال
         </label>
-        <div className="border-2 border-dashed border-surface-300 dark:border-surface-600 rounded-lg p-6 text-center">
-          <Camera className="w-8 h-8 mx-auto text-surface-400 mb-2" />
-          <p className="text-sm text-surface-500">اسحب الصور هنا أو اضغط للاختيار</p>
+        <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg p-6 text-center">
+          <Camera className="w-8 h-8 mx-auto text-neutral-400 mb-2" />
+          <p className="text-sm text-neutral-500">اسحب الصور هنا أو اضغط للاختيار</p>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
           ملاحظات
         </label>
         <textarea
           rows="3"
           placeholder="أي ملاحظات إضافية..."
-          className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
@@ -601,18 +601,18 @@ function AlertsOverduePanel({ onClose }) {
   const overdueList = Array.isArray(overdue) ? overdue : []
 
   return (
-    <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-semibold text-lg">التنبيهات والمتأخرات</h3>
         <Button variant="outline" size="sm" onClick={onClose}>إغلاق</Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h4 className="font-medium text-surface-800 dark:text-surface-200 mb-2">تنبيهات</h4>
-          {alertList.length === 0 ? <p className="text-surface-500 text-sm">لا توجد تنبيهات</p> : (
+          <h4 className="font-medium text-neutral-800 dark:text-neutral-200 mb-2">تنبيهات</h4>
+          {alertList.length === 0 ? <p className="text-neutral-500 text-sm">لا توجد تنبيهات</p> : (
             <ul className="space-y-2 text-sm">
               {alertList.slice(0, 10).map((a, i) => (
-                <li key={a.id || i} className="flex justify-between p-2 bg-surface-50 dark:bg-surface-700/50 rounded">
+                <li key={a.id || i} className="flex justify-between p-2 bg-neutral-50 dark:bg-neutral-700/50 rounded">
                   <span>{a.return_number || a.id}</span>
                   <span>{a.days != null ? `${a.days} يوم` : ''}</span>
                 </li>
@@ -621,8 +621,8 @@ function AlertsOverduePanel({ onClose }) {
           )}
         </div>
         <div>
-          <h4 className="font-medium text-surface-800 dark:text-surface-200 mb-2">متأخرات</h4>
-          {overdueList.length === 0 ? <p className="text-surface-500 text-sm">لا توجد متأخرات</p> : (
+          <h4 className="font-medium text-neutral-800 dark:text-neutral-200 mb-2">متأخرات</h4>
+          {overdueList.length === 0 ? <p className="text-neutral-500 text-sm">لا توجد متأخرات</p> : (
             <ul className="space-y-2 text-sm">
               {overdueList.slice(0, 10).map((o, i) => (
                 <li key={o.id || i} className="flex justify-between p-2 bg-red-50 dark:bg-red-900/20 rounded">
@@ -671,8 +671,8 @@ function ReturnDetails({ returnItem, onClose, onUpdated }) {
       <div className="flex items-start justify-between">
         <div>
           <p className="font-mono text-lg text-primary-600">{returnItem.return_number || `RTN-${returnItem.id}`}</p>
-          <h3 className="text-xl font-bold text-surface-900 dark:text-white">{returnItem.product_name}</h3>
-          <p className="text-sm text-surface-500">السيريال: {returnItem.serial_number}</p>
+          <h3 className="text-xl font-bold text-neutral-900 dark:text-white">{returnItem.product_name}</h3>
+          <p className="text-sm text-neutral-500">السيريال: {returnItem.serial_number}</p>
         </div>
         <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full font-medium ${status.color}`}>
           <status.icon className="w-4 h-4" />
@@ -680,37 +680,37 @@ function ReturnDetails({ returnItem, onClose, onUpdated }) {
         </span>
       </div>
 
-      <div className="bg-surface-50 dark:bg-surface-700/50 rounded-lg p-4">
+      <div className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-4">
         <h4 className="font-semibold mb-4">سجل المتابعة</h4>
         <div className="space-y-4">
           <div className="flex gap-3">
             <div className="w-3 h-3 bg-green-500 rounded-full mt-1.5"></div>
             <div className="flex-1">
               <p className="font-medium">تم الإرسال</p>
-              <p className="text-sm text-surface-500">{returnItem.sent_date ? new Date(returnItem.sent_date).toLocaleDateString('ar-IQ') : '-'}</p>
-              <p className="text-sm text-surface-600">إلى: {returnItem.supplier_name}</p>
+              <p className="text-sm text-neutral-500">{returnItem.sent_date ? new Date(returnItem.sent_date).toLocaleDateString('ar-IQ') : '-'}</p>
+              <p className="text-sm text-neutral-600">إلى: {returnItem.supplier_name}</p>
             </div>
           </div>
           <div className="flex gap-3">
             <div className="w-3 h-3 bg-yellow-500 rounded-full mt-1.5 animate-pulse"></div>
             <div className="flex-1">
               <p className="font-medium">قيد المتابعة</p>
-              <p className="text-sm text-surface-500">منذ {days} يوم</p>
+              <p className="text-sm text-neutral-500">منذ {days} يوم</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 text-sm">
-        <div><p className="text-surface-500">المورد:</p><p className="font-medium">{returnItem.supplier_name}</p></div>
-        <div><p className="text-surface-500">سبب الإرجاع:</p><p className="font-medium">{returnItem.reason || 'عيب مصنعي'}</p></div>
-        <div><p className="text-surface-500">تاريخ الإرسال:</p><p className="font-medium">{returnItem.sent_date ? new Date(returnItem.sent_date).toLocaleDateString('ar-IQ') : '-'}</p></div>
-        <div><p className="text-surface-500">المدة:</p><p className="font-medium text-red-600">{days} يوم</p></div>
+        <div><p className="text-neutral-500">المورد:</p><p className="font-medium">{returnItem.supplier_name}</p></div>
+        <div><p className="text-neutral-500">سبب الإرجاع:</p><p className="font-medium">{returnItem.reason || 'عيب مصنعي'}</p></div>
+        <div><p className="text-neutral-500">تاريخ الإرسال:</p><p className="font-medium">{returnItem.sent_date ? new Date(returnItem.sent_date).toLocaleDateString('ar-IQ') : '-'}</p></div>
+        <div><p className="text-neutral-500">المدة:</p><p className="font-medium text-red-600">{days} يوم</p></div>
       </div>
 
       {/* تحديث الحالة */}
       <div className="flex flex-wrap gap-2 items-center">
-        <select value={statusSelect} onChange={(e) => setStatusSelect(e.target.value)} className="px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700">
+        <select value={statusSelect} onChange={(e) => setStatusSelect(e.target.value)} className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700">
           {Object.entries(returnStatuses).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
         </select>
         <Button onClick={handleUpdateStatus} disabled={updateStatusMutation.isPending}>تحديث الحالة</Button>
@@ -718,7 +718,7 @@ function ReturnDetails({ returnItem, onClose, onUpdated }) {
 
       {/* إضافة متابعة */}
       <form onSubmit={handleAddFollowUp} className="flex gap-2">
-        <input type="text" placeholder="إضافة متابعة..." className="flex-1 px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg" value={followUpContent} onChange={(e) => setFollowUpContent(e.target.value)} />
+        <input type="text" placeholder="إضافة متابعة..." className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg" value={followUpContent} onChange={(e) => setFollowUpContent(e.target.value)} />
         <Button type="submit" variant="outline" disabled={addFollowUpMutation.isPending || !followUpContent.trim()}>إضافة متابعة</Button>
       </form>
 

@@ -28,7 +28,7 @@ export default function PointsCard({ compact = false }) {
       <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl">
         <div className="text-2xl">{points.level?.badge || '⭐'}</div>
         <div>
-          <p className="text-sm text-surface-600 dark:text-surface-400">نقاطي</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">نقاطي</p>
           <p className="text-xl font-bold text-amber-600">{points.total_points || 0}</p>
         </div>
       </div>
@@ -50,8 +50,8 @@ export default function PointsCard({ compact = false }) {
 
       {/* Points */}
       <div className="text-center mb-6">
-        <p className="text-sm text-surface-500 dark:text-surface-400">إجمالي النقاط</p>
-        <p className="text-4xl font-bold text-surface-900 dark:text-white">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">إجمالي النقاط</p>
+        <p className="text-4xl font-bold text-neutral-900 dark:text-white">
           {points.total_points?.toLocaleString() || 0}
         </p>
         <p className="text-sm text-green-500 mt-1">
@@ -63,18 +63,18 @@ export default function PointsCard({ compact = false }) {
       {points.next_level && (
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-surface-500">للمستوى التالي</span>
+            <span className="text-neutral-500">للمستوى التالي</span>
             <span className="text-amber-600 font-medium">
               {points.points_to_next} نقطة
             </span>
           </div>
-          <div className="h-3 bg-surface-200 dark:bg-surface-700 rounded-full overflow-hidden">
+          <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-500"
               style={{ width: `${points.progress_to_next}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs text-surface-400">
+          <div className="flex justify-between text-xs text-neutral-400">
             <span>{points.level?.name}</span>
             <span>{points.next_level?.name} {points.next_level?.badge}</span>
           </div>

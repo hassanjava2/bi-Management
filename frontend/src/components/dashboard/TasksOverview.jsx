@@ -39,14 +39,14 @@ export default function TasksOverview() {
           {items.map((item) => (
             <div
               key={item.label}
-              className="flex items-center gap-3 p-4 rounded-lg bg-surface-50 dark:bg-surface-700/50"
+              className="flex items-center gap-3 p-4 rounded-lg bg-neutral-50 dark:bg-neutral-700/50"
             >
               <item.icon className={clsx('w-8 h-8', item.color)} />
               <div>
-                <p className="text-2xl font-bold text-surface-900 dark:text-white">
+                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                   {item.value}
                 </p>
-                <p className="text-sm text-surface-500 dark:text-surface-400">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {item.label}
                 </p>
               </div>
@@ -55,9 +55,9 @@ export default function TasksOverview() {
         </div>
 
         {/* Today's tasks */}
-        <div className="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
+        <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-surface-500 dark:text-surface-400">مهام اليوم</span>
+            <span className="text-sm text-neutral-500 dark:text-neutral-400">مهام اليوم</span>
             <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
               {stats?.today || 0}
             </span>

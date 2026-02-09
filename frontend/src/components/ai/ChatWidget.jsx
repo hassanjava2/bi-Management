@@ -66,7 +66,7 @@ export default function ChatWidget() {
       {!isOpen && (
         <div className={clsx(
           'fixed bottom-24 left-6 z-40',
-          'bg-white dark:bg-surface-800 rounded-lg shadow-lg',
+          'bg-white dark:bg-neutral-800 rounded-lg shadow-lg',
           'px-3 py-2 text-sm',
           'opacity-0 hover:opacity-100 pointer-events-none',
           'transition-opacity duration-300'

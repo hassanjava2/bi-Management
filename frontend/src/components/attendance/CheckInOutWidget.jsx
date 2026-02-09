@@ -132,21 +132,21 @@ export default function CheckInOutWidget() {
       {/* Status */}
       {todayRecord && (
         <div className="grid grid-cols-3 gap-4 mb-6 text-center">
-          <div className="p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
-            <p className="text-xs text-surface-500 dark:text-surface-400 mb-1">الحضور</p>
-            <p className="font-bold text-surface-900 dark:text-white">
+          <div className="p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">الحضور</p>
+            <p className="font-bold text-neutral-900 dark:text-white">
               {formatTime(todayRecord.check_in) || '--:--'}
             </p>
           </div>
-          <div className="p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
-            <p className="text-xs text-surface-500 dark:text-surface-400 mb-1">الانصراف</p>
-            <p className="font-bold text-surface-900 dark:text-white">
+          <div className="p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">الانصراف</p>
+            <p className="font-bold text-neutral-900 dark:text-white">
               {formatTime(todayRecord.check_out) || '--:--'}
             </p>
           </div>
-          <div className="p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
-            <p className="text-xs text-surface-500 dark:text-surface-400 mb-1">ساعات العمل</p>
-            <p className="font-bold text-surface-900 dark:text-white">
+          <div className="p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">ساعات العمل</p>
+            <p className="font-bold text-neutral-900 dark:text-white">
               {formatMinutes(todayRecord.work_minutes) || '--'}
             </p>
           </div>
@@ -193,7 +193,7 @@ export default function CheckInOutWidget() {
 
       {/* Location indicator */}
       {location && (
-        <div className="mt-4 flex items-center justify-center gap-2 text-sm text-surface-500">
+        <div className="mt-4 flex items-center justify-center gap-2 text-sm text-neutral-500">
           <MapPin className="w-4 h-4" />
           <span>تم تحديد الموقع</span>
         </div>

@@ -79,10 +79,10 @@ export default function ExecutiveDashboardPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-surface-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
           لوحة المدير التنفيذية
         </h1>
-        <p className="text-surface-500 dark:text-surface-400 mt-1">
+        <p className="text-neutral-500 dark:text-neutral-400 mt-1">
           إيرادات، تدفق نقدي، أفضل البائعين، تنبيهات وروابط سريعة
         </p>
       </div>
@@ -117,27 +117,27 @@ export default function ExecutiveDashboardPage() {
 
       {/* التدفق النقدي (حسب طريقة الدفع) + أفضل البائعين */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-surface-200 dark:border-surface-700">
-            <h2 className="text-lg font-semibold text-surface-900 dark:text-white flex items-center gap-2">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
               <Wallet className="w-5 h-5 text-primary-500" />
               التدفق النقدي لهذا الشهر (حسب طريقة الدفع)
             </h2>
           </div>
           <div className="p-4">
             {cashFlow.length === 0 ? (
-              <p className="text-surface-500 dark:text-surface-400 text-sm">لا توجد حركة هذا الشهر</p>
+              <p className="text-neutral-500 dark:text-neutral-400 text-sm">لا توجد حركة هذا الشهر</p>
             ) : (
               <ul className="space-y-2">
                 {cashFlow.map((row, i) => (
                   <li
                     key={i}
-                    className="flex justify-between items-center py-2 border-b border-surface-100 dark:border-surface-700 last:border-0"
+                    className="flex justify-between items-center py-2 border-b border-neutral-100 dark:border-neutral-700 last:border-0"
                   >
-                    <span className="text-surface-700 dark:text-surface-300 capitalize">
+                    <span className="text-neutral-700 dark:text-neutral-300 capitalize">
                       {row.method || 'أخرى'}
                     </span>
-                    <span className="font-medium text-surface-900 dark:text-white">
+                    <span className="font-medium text-neutral-900 dark:text-white">
                       {formatMoney(row.total)}
                     </span>
                   </li>
@@ -147,27 +147,27 @@ export default function ExecutiveDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-surface-200 dark:border-surface-700">
-            <h2 className="text-lg font-semibold text-surface-900 dark:text-white flex items-center gap-2">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
               <Users className="w-5 h-5 text-primary-500" />
               أفضل البائعين هذا الشهر
             </h2>
           </div>
           <div className="p-4">
             {topSellers.length === 0 ? (
-              <p className="text-surface-500 dark:text-surface-400 text-sm">لا توجد مبيعات هذا الشهر</p>
+              <p className="text-neutral-500 dark:text-neutral-400 text-sm">لا توجد مبيعات هذا الشهر</p>
             ) : (
               <ul className="space-y-2">
                 {topSellers.map((row, i) => (
                   <li
                     key={i}
-                    className="flex justify-between items-center py-2 border-b border-surface-100 dark:border-surface-700 last:border-0"
+                    className="flex justify-between items-center py-2 border-b border-neutral-100 dark:border-neutral-700 last:border-0"
                   >
-                    <span className="text-surface-700 dark:text-surface-300">
+                    <span className="text-neutral-700 dark:text-neutral-300">
                       {row.employee_name || '—'}
                     </span>
-                    <span className="font-medium text-surface-900 dark:text-white">
+                    <span className="font-medium text-neutral-900 dark:text-white">
                       {formatMoney(row.total_sales)} ({row.invoice_count ?? 0} فاتورة)
                     </span>
                   </li>
@@ -180,9 +180,9 @@ export default function ExecutiveDashboardPage() {
 
       {/* التنبيهات */}
       {alertItems.length > 0 && (
-        <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-surface-200 dark:border-surface-700">
-            <h2 className="text-lg font-semibold text-surface-900 dark:text-white flex items-center gap-2">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-500" />
               تنبيهات تحتاج متابعة
             </h2>
@@ -193,7 +193,7 @@ export default function ExecutiveDashboardPage() {
                 <Link
                   key={a.key}
                   to={a.href}
-                  className="flex items-center gap-3 p-4 rounded-lg border border-surface-200 dark:border-surface-600 hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors"
+                  className="flex items-center gap-3 p-4 rounded-lg border border-neutral-200 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
                 >
                   <div
                     className={`
@@ -206,21 +206,21 @@ export default function ExecutiveDashboardPage() {
                     <a.icon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-surface-900 dark:text-white truncate">
+                    <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                       {a.label}
                     </p>
-                    <p className="text-lg font-bold text-surface-700 dark:text-surface-200">{a.count}</p>
+                    <p className="text-lg font-bold text-neutral-700 dark:text-neutral-200">{a.count}</p>
                   </div>
-                  <ArrowLeft className="w-4 h-4 text-surface-400 flex-shrink-0" />
+                  <ArrowLeft className="w-4 h-4 text-neutral-400 flex-shrink-0" />
                 </Link>
               ))}
             </div>
             {alerts.low_stock_items?.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
-                <p className="text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+              <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                   منتجات تحت الحد: (عرض 10)
                 </p>
-                <ul className="text-sm text-surface-600 dark:text-surface-400 space-y-1">
+                <ul className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
                   {alerts.low_stock_items.slice(0, 10).map((p, i) => (
                     <li key={i}>
                       {p.name} — الكمية: {p.quantity ?? 0}، الحد الأدنى: {p.min_quantity ?? 0}
@@ -234,9 +234,9 @@ export default function ExecutiveDashboardPage() {
       )}
 
       {/* روابط سريعة */}
-      <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-surface-200 dark:border-surface-700">
-          <h2 className="text-lg font-semibold text-surface-900 dark:text-white flex items-center gap-2">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-primary-500" />
             روابط سريعة
           </h2>

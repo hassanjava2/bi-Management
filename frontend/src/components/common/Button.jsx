@@ -3,11 +3,11 @@ import Spinner from './Spinner'
 
 const variants = {
   primary: 'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-button hover:shadow-md',
-  secondary: 'bg-surface-100 text-surface-700 hover:bg-surface-200 dark:bg-surface-800 dark:text-surface-200 dark:hover:bg-surface-700',
-  outline: 'border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 text-surface-700 dark:text-surface-200 hover:bg-surface-50 dark:hover:bg-surface-800 hover:border-surface-300',
+  secondary: 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700',
+  outline: 'border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:border-neutral-300',
   success: 'bg-success-600 text-white hover:bg-success-700 shadow-button',
   danger: 'bg-error-600 text-white hover:bg-error-700 shadow-button',
-  ghost: 'bg-transparent text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800',
+  ghost: 'bg-transparent text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800',
   'ghost-primary': 'bg-transparent text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20',
 }
 
@@ -25,6 +25,7 @@ export default function Button({
   size = 'md',
   loading = false,
   disabled = false,
+  ripple = false,
   className,
   icon: Icon,
   iconPosition = 'start',
@@ -34,9 +35,10 @@ export default function Button({
     <button
       className={clsx(
         'inline-flex items-center justify-center font-medium',
-        'rounded-button transition-all duration-150',
+        'rounded-button transition-all duration-smooth ease-smooth',
         'focus-visible:ring-2 focus-visible:ring-primary-500/40 focus-visible:ring-offset-2',
         'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none',
+        ripple && 'btn-ripple',
         variants[variant],
         sizes[size],
         className
@@ -45,9 +47,9 @@ export default function Button({
       {...props}
     >
       {loading && <Spinner size="sm" />}
-      {!loading && Icon && iconPosition === 'start' && <Icon className="w-4 h-4" />}
+      {!loading && Icon && iconPosition === 'start' && <Icon className="w-4 h-4 shrink-0" />}
       {children}
-      {!loading && Icon && iconPosition === 'end' && <Icon className="w-4 h-4" />}
+      {!loading && Icon && iconPosition === 'end' && <Icon className="w-4 h-4 shrink-0" />}
     </button>
   )
 }

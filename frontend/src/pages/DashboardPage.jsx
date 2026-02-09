@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { Users, CheckSquare, Clock, AlertTriangle, Receipt, Package, DollarSign, TrendingUp } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Users, CheckSquare, Clock, AlertTriangle, Receipt, Package, DollarSign, TrendingUp, PlusCircle, ShoppingCart, FileText } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import StatCard from '../components/dashboard/StatCard'
 import TasksOverview from '../components/dashboard/TasksOverview'
@@ -10,7 +11,7 @@ import { CardSkeleton } from '../components/common/LoadingSkeleton'
 import { dashboardAPI, accountingAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 
-const CHART_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+const CHART_COLORS = ['#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
 
 function formatNumber(n) {
   if (!n) return '0'
@@ -55,12 +56,44 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Welcome */}
       <div>
-        <h1 className="text-xl font-bold text-surface-900 dark:text-white">
+        <h1 className="text-page-title text-neutral-900 dark:text-white">
           مرحباً، {user?.full_name?.split(' ')[0]} 👋
         </h1>
-        <p className="text-sm text-surface-500 dark:text-surface-400 mt-0.5">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
           هذه نظرة عامة على النظام اليوم
         </p>
+      </div>
+
+      {/* Quick actions */}
+      <div className="flex flex-wrap gap-2">
+        <Link
+          to="/sales/new"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-button text-sm font-medium bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+        >
+          <PlusCircle className="w-4 h-4" />
+          فاتورة مبيعات جديدة
+        </Link>
+        <Link
+          to="/purchases/new"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-button text-sm font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+        >
+          <ShoppingCart className="w-4 h-4" />
+          فاتورة مشتريات
+        </Link>
+        <Link
+          to="/inventory"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-button text-sm font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+        >
+          <Package className="w-4 h-4" />
+          المخزون
+        </Link>
+        <Link
+          to="/tasks"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-button text-sm font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+        >
+          <FileText className="w-4 h-4" />
+          المهام
+        </Link>
       </div>
 
       {/* Stats Cards */}
@@ -73,18 +106,21 @@ export default function DashboardPage() {
             value={stats?.tasks?.total || 0}
             icon={CheckSquare}
             color="primary"
+            animate
           />
           <StatCard
             title="مهام اليوم"
             value={stats?.tasks?.today || 0}
             icon={Clock}
             color="info"
+            animate
           />
           <StatCard
             title="مهام متأخرة"
             value={stats?.tasks?.overdue || 0}
             icon={AlertTriangle}
             color="danger"
+            animate
           />
           <StatCard
             title="الحضور اليوم"
@@ -138,12 +174,13 @@ export default function DashboardPage() {
             <div className="h-[280px] -mx-2">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={salesChartData} barCategoryGap="25%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={formatNumber} />
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-neutral-200 dark:stroke-neutral-700" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} className="text-neutral-500" axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11 }} className="text-neutral-400" axisLine={false} tickLine={false} tickFormatter={formatNumber} />
                   <Tooltip 
                     formatter={(val) => [val?.toLocaleString() + ' د.ع', '']}
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '13px' }}
+                    contentStyle={{ borderRadius: '12px', border: '1px solid rgb(228 228 231)', fontSize: '13px' }}
+                    labelStyle={{ color: 'inherit' }}
                   />
                   <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                     {salesChartData.map((_, i) => (
@@ -178,7 +215,7 @@ export default function DashboardPage() {
                   </Pie>
                   <Tooltip 
                     formatter={(val) => [val?.toLocaleString() + ' د.ع', '']}
-                    contentStyle={{ borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '10px', border: '1px solid rgb(228 228 231)', fontSize: '12px' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -186,7 +223,7 @@ export default function DashboardPage() {
             {/* Legend */}
             <div className="flex flex-wrap gap-3 mt-2 justify-center">
               {paymentPie.map((d, i) => (
-                <div key={d.name} className="flex items-center gap-1.5 text-xs text-surface-600 dark:text-surface-400">
+                <div key={d.name} className="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-400">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CHART_COLORS[i] }} />
                   {d.name}
                 </div>

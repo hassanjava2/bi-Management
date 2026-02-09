@@ -53,7 +53,7 @@ export default function WarrantyPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-input bg-white dark:bg-surface-800"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-input bg-white dark:bg-neutral-800"
             >
               <option value="">كل الحالات</option>
               <option value="pending">معلق</option>
@@ -169,25 +169,25 @@ function WarrantyClaimDetails({ claimId, onClose, onUpdated }) {
   })
 
   if (isLoading) return <div className="flex justify-center py-8"><Spinner size="md" /></div>
-  if (!claim) return <p className="text-surface-500">تعذر تحميل المطالبة.</p>
+  if (!claim) return <p className="text-neutral-500">تعذر تحميل المطالبة.</p>
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
           <p className="font-mono text-primary-600">{claim.claim_number || claim.id}</p>
-          <p className="text-surface-600 dark:text-surface-400">{claim.device_display_serial || claim.device_serial}</p>
-          <p className="text-sm text-surface-500">المورد: {claim.supplier_display_name || claim.supplier_name || '—'}</p>
+          <p className="text-neutral-600 dark:text-neutral-400">{claim.device_display_serial || claim.device_serial}</p>
+          <p className="text-sm text-neutral-500">المورد: {claim.supplier_display_name || claim.supplier_name || '—'}</p>
         </div>
-        <span className="px-2 py-1 rounded-full text-sm bg-surface-100 dark:bg-surface-700">{claim.status || '—'}</span>
+        <span className="px-2 py-1 rounded-full text-sm bg-neutral-100 dark:bg-neutral-700">{claim.status || '—'}</span>
       </div>
-      {claim.issue && <p className="text-sm text-surface-600">{claim.issue}</p>}
+      {claim.issue && <p className="text-sm text-neutral-600">{claim.issue}</p>}
       <div>
         <h4 className="font-semibold mb-2">سجل التتبع</h4>
-        {trackList.length === 0 ? <p className="text-surface-500 text-sm">لا يوجد سجل</p> : (
+        {trackList.length === 0 ? <p className="text-neutral-500 text-sm">لا يوجد سجل</p> : (
           <ul className="space-y-2 text-sm">
             {trackList.map((t, i) => (
-              <li key={t.id || i} className="flex justify-between p-2 bg-surface-50 dark:bg-surface-700/50 rounded">
+              <li key={t.id || i} className="flex justify-between p-2 bg-neutral-50 dark:bg-neutral-700/50 rounded">
                 <span>{t.action || t.status || t.note || '—'}</span>
                 <span>{t.created_at ? new Date(t.created_at).toLocaleDateString('ar-IQ') : ''}</span>
               </li>

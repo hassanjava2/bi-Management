@@ -29,7 +29,7 @@ const deviceStatuses = {
   preparing: { label: 'قيد التجهيز', color: 'bg-purple-100 text-purple-800', icon: Clock },
   ready_to_sell: { label: 'جاهز للبيع', color: 'bg-green-100 text-green-800', icon: CheckCircle2 },
   reserved: { label: 'محجوز', color: 'bg-orange-100 text-orange-800', icon: Clock },
-  sold: { label: 'مباع', color: 'bg-surface-100 text-surface-800', icon: CheckCircle2 },
+  sold: { label: 'مباع', color: 'bg-neutral-100 text-neutral-800', icon: CheckCircle2 },
   returned: { label: 'مرتجع', color: 'bg-red-100 text-red-800', icon: AlertTriangle },
   in_repair: { label: 'بالصيانة', color: 'bg-amber-100 text-amber-800', icon: AlertTriangle },
   scrapped: { label: 'تالف', color: 'bg-red-200 text-red-900', icon: Trash2 },
@@ -137,11 +137,11 @@ export default function InventoryPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
             <Package className="w-8 h-8 text-primary-600" />
             إدارة المخزون
           </h1>
-          <p className="text-surface-500 dark:text-surface-400 mt-1">
+          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
             تتبع الأجهزة والسيريالات والمواقع
           </p>
         </div>
@@ -169,21 +169,21 @@ export default function InventoryPage() {
         <>
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400">إجمالي الأجهزة</p>
-              <p className="text-2xl font-bold text-surface-900 dark:text-white">{stats.total || 0}</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">إجمالي الأجهزة</p>
+              <p className="text-2xl font-bold text-neutral-900 dark:text-white">{stats.total || 0}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
               <Boxes className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400">جاهز للبيع</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">جاهز للبيع</p>
               <p className="text-2xl font-bold text-green-600">{stats.ready_to_sell || 0}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
@@ -191,10 +191,10 @@ export default function InventoryPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400">بالصيانة</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">بالصيانة</p>
               <p className="text-2xl font-bold text-amber-600">{stats.in_repair || 0}</p>
             </div>
             <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
@@ -202,10 +202,10 @@ export default function InventoryPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400">تنبيه نقص</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">تنبيه نقص</p>
               <p className="text-2xl font-bold text-red-600">{stats.low_stock || 0}</p>
             </div>
             <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
@@ -216,17 +216,17 @@ export default function InventoryPage() {
       </div>
 
       {/* Filters & Search */}
-      <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-4">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="بحث بالسيريال، الاسم، أو الموديل..."
-              className="w-full pr-10 pl-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+              className="w-full pr-10 pl-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500"
             />
           </div>
           
@@ -234,7 +234,7 @@ export default function InventoryPage() {
           <select
             value={selectedWarehouse}
             onChange={(e) => setSelectedWarehouse(e.target.value)}
-            className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
+            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
           >
             <option value="all">كل المخازن</option>
             {warehouses.map(w => (
@@ -246,7 +246,7 @@ export default function InventoryPage() {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
+            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
           >
             <option value="all">كل الحالات</option>
             {Object.entries(deviceStatuses).map(([key, val]) => (
@@ -255,10 +255,10 @@ export default function InventoryPage() {
           </select>
 
           {/* View Mode */}
-          <div className="flex border border-surface-300 dark:border-surface-600 rounded-lg overflow-hidden">
+          <div className="flex border border-neutral-300 dark:border-neutral-600 rounded-lg overflow-hidden">
             <button
               onClick={() => setViewMode('table')}
-              className={`px-3 py-2 ${viewMode === 'table' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-surface-700 text-surface-700 dark:text-surface-300'}`}
+              className={`px-3 py-2 ${viewMode === 'table' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'}`}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
@@ -266,7 +266,7 @@ export default function InventoryPage() {
             </button>
             <button
               onClick={() => setViewMode('cards')}
-              className={`px-3 py-2 ${viewMode === 'cards' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-surface-700 text-surface-700 dark:text-surface-300'}`}
+              className={`px-3 py-2 ${viewMode === 'cards' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'}`}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -274,7 +274,7 @@ export default function InventoryPage() {
             </button>
             <button
               onClick={() => setViewMode('warehouse')}
-              className={`px-3 py-2 ${viewMode === 'warehouse' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-surface-700 text-surface-700 dark:text-surface-300'}`}
+              className={`px-3 py-2 ${viewMode === 'warehouse' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'}`}
             >
               <WarehouseIcon className="w-5 h-5" />
             </button>
@@ -290,25 +290,25 @@ export default function InventoryPage() {
 
       {/* Devices Table */}
       {viewMode === 'table' && (
-        <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-surface-50 dark:bg-surface-700/50">
+              <thead className="bg-neutral-50 dark:bg-neutral-700/50">
                 <tr>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">السيريال</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">المنتج</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">المواصفات</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">المخزن</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">الموقع</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">الحالة</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">الذمة</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">إجراءات</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">السيريال</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">المنتج</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">المواصفات</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">المخزن</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">الموقع</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">الحالة</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">الذمة</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">إجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                 {devices.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="px-4 py-8 text-center text-surface-500 dark:text-surface-400">
+                    <td colSpan="8" className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
                       لا توجد أجهزة مطابقة للبحث
                     </td>
                   </tr>
@@ -316,29 +316,29 @@ export default function InventoryPage() {
                   devices.map((device) => {
                     const status = deviceStatuses[device.status] || deviceStatuses.new
                     return (
-                      <tr key={device.id} className="hover:bg-surface-50 dark:hover:bg-surface-700/50">
+                      <tr key={device.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <QrCode className="w-4 h-4 text-surface-400" />
-                            <span className="font-mono text-sm font-medium text-surface-900 dark:text-white">
+                            <QrCode className="w-4 h-4 text-neutral-400" />
+                            <span className="font-mono text-sm font-medium text-neutral-900 dark:text-white">
                               {device.serial_number}
                             </span>
                           </div>
                         </td>
                         <td className="px-4 py-3">
                           <div>
-                            <p className="font-medium text-surface-900 dark:text-white">{device.product_name || 'Dell Latitude'}</p>
-                            <p className="text-sm text-surface-500">{device.brand} {device.model}</p>
+                            <p className="font-medium text-neutral-900 dark:text-white">{device.product_name || 'Dell Latitude'}</p>
+                            <p className="text-sm text-neutral-500">{device.brand} {device.model}</p>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-surface-600 dark:text-surface-300">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
                           {device.processor || 'i7-11th'} | {device.ram_size || '16'}GB | {device.storage_size || '512'}GB
                         </td>
-                        <td className="px-4 py-3 text-sm text-surface-600 dark:text-surface-300">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
                           {warehouses.find(w => w.id === device.warehouse_id)?.name || 'المخزن الرئيسي'}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-1 text-sm text-surface-600 dark:text-surface-300">
+                          <div className="flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-300">
                             <MapPin className="w-3 h-3" />
                             {device.location_shelf || 'A'}-{device.location_row || '1'}
                           </div>
@@ -349,31 +349,31 @@ export default function InventoryPage() {
                             {status.label}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-surface-600 dark:text-surface-300">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
                           {device.custody_employee || '-'}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => handleViewDevice(device)}
-                              className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded"
+                              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                               title="عرض"
                             >
-                              <Eye className="w-4 h-4 text-surface-500" />
+                              <Eye className="w-4 h-4 text-neutral-500" />
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleEditDevice(device); }}
-                              className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded"
+                              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                               title="تعديل"
                             >
-                              <Edit className="w-4 h-4 text-surface-500" />
+                              <Edit className="w-4 h-4 text-neutral-500" />
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleViewDevice(device); }}
-                              className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded"
+                              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                               title="السجل"
                             >
-                              <History className="w-4 h-4 text-surface-500" />
+                              <History className="w-4 h-4 text-neutral-500" />
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDeleteDevice(device); }}
@@ -402,7 +402,7 @@ export default function InventoryPage() {
             return (
               <div 
                 key={device.id}
-                className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:shadow-lg transition-shadow cursor-pointer"
                 onClick={() => handleViewDevice(device)}
               >
                 <div className="flex justify-between items-start mb-3">
@@ -410,15 +410,15 @@ export default function InventoryPage() {
                     <status.icon className="w-3 h-3" />
                     {status.label}
                   </span>
-                  <button className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded">
-                    <MoreVertical className="w-4 h-4 text-surface-400" />
+                  <button className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded">
+                    <MoreVertical className="w-4 h-4 text-neutral-400" />
                   </button>
                 </div>
                 <div className="mb-3">
                   <p className="font-mono text-sm text-primary-600 dark:text-primary-400">{device.serial_number}</p>
-                  <p className="font-medium text-surface-900 dark:text-white mt-1">{device.product_name || 'Dell Latitude 7410'}</p>
+                  <p className="font-medium text-neutral-900 dark:text-white mt-1">{device.product_name || 'Dell Latitude 7410'}</p>
                 </div>
-                <div className="text-sm text-surface-600 dark:text-surface-400 space-y-1">
+                <div className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
                   <p>🖥️ {device.processor || 'i7-11th'}</p>
                   <p>💾 {device.ram_size || '16'}GB RAM | {device.storage_size || '512'}GB SSD</p>
                   <p>📍 {warehouses.find(w => w.id === device.warehouse_id)?.icon || '🏪'} {device.location_shelf || 'A'}-{device.location_row || '1'}</p>
@@ -437,14 +437,14 @@ export default function InventoryPage() {
             return (
               <div 
                 key={warehouse.id}
-                className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-4"
+                className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-surface-900 dark:text-white flex items-center gap-2">
+                  <h3 className="font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
                     <span className="text-2xl">{warehouse.icon}</span>
                     {warehouse.name}
                   </h3>
-                  <span className="bg-surface-100 dark:bg-surface-700 text-surface-700 dark:text-surface-300 px-2 py-1 rounded-full text-sm font-medium">
+                  <span className="bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 px-2 py-1 rounded-full text-sm font-medium">
                     {warehouseDevices.length}
                   </span>
                 </div>
@@ -454,7 +454,7 @@ export default function InventoryPage() {
                     return (
                       <div 
                         key={device.id}
-                        className="flex items-center justify-between p-2 bg-surface-50 dark:bg-surface-700/50 rounded-lg text-sm cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-700"
+                        className="flex items-center justify-between p-2 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg text-sm cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700"
                         onClick={() => handleViewDevice(device)}
                       >
                         <span className="font-mono text-primary-600 dark:text-primary-400">{device.serial_number}</span>
@@ -468,7 +468,7 @@ export default function InventoryPage() {
                     </button>
                   )}
                   {warehouseDevices.length === 0 && (
-                    <p className="text-center text-surface-500 dark:text-surface-400 py-4">لا توجد أجهزة</p>
+                    <p className="text-center text-neutral-500 dark:text-neutral-400 py-4">لا توجد أجهزة</p>
                   )}
                 </div>
               </div>
@@ -483,7 +483,7 @@ export default function InventoryPage() {
       {tab === 'products' && <InventoryProductsTab />}
       {tab === 'movements' && <InventoryMovementsTab />}
       {tab === 'count' && (
-        <div className="bg-white dark:bg-surface-800 rounded-card border border-surface-200 dark:border-surface-700 p-8">
+        <div className="bg-white dark:bg-neutral-800 rounded-card border border-neutral-200 dark:border-neutral-700 p-8">
           <EmptyState title="الجرد" description="هذا القسم قيد التطوير قريباً." />
         </div>
       )}
@@ -574,7 +574,7 @@ function InventoryProductsTab() {
     { key: 'category_name', label: 'الفئة' },
   ]
   return (
-    <div className="bg-white dark:bg-surface-800 rounded-card border border-surface-200 dark:border-surface-700 overflow-hidden">
+    <div className="bg-white dark:bg-neutral-800 rounded-card border border-neutral-200 dark:border-neutral-700 overflow-hidden">
       <DataTable
         columns={columns}
         data={products}
@@ -603,7 +603,7 @@ function InventoryMovementsTab() {
     { key: 'created_at', label: 'التاريخ', render: (r) => r.created_at ? new Date(r.created_at).toLocaleDateString('ar-IQ') : '—' },
   ]
   return (
-    <div className="bg-white dark:bg-surface-800 rounded-card border border-surface-200 dark:border-surface-700 overflow-hidden">
+    <div className="bg-white dark:bg-neutral-800 rounded-card border border-neutral-200 dark:border-neutral-700 overflow-hidden">
       <DataTable
         columns={columns}
         data={movements}
@@ -647,31 +647,31 @@ function AddDeviceForm({ onClose, onSuccess }) {
       )}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">المنتج</label>
-          <select className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700" value={form.product_id} onChange={(e) => setForm(f => ({ ...f, product_id: e.target.value }))} required>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">المنتج</label>
+          <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700" value={form.product_id} onChange={(e) => setForm(f => ({ ...f, product_id: e.target.value }))} required>
             <option value="">اختر المنتج...</option>
             {products.map(p => <option key={p.id} value={p.id}>{p.name || p.name_ar}</option>)}
             {products.length === 0 && <><option value="1">Dell Latitude 7410</option><option value="2">HP EliteBook 840 G7</option></>}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">السيريال (اختياري)</label>
-          <input type="text" placeholder="BI-2025-XXXXXX" className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700" value={form.serial_number} onChange={(e) => setForm(f => ({ ...f, serial_number: e.target.value }))} />
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">السيريال (اختياري)</label>
+          <input type="text" placeholder="BI-2025-XXXXXX" className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700" value={form.serial_number} onChange={(e) => setForm(f => ({ ...f, serial_number: e.target.value }))} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">المورد</label>
-          <select className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700" value={form.supplier_id} onChange={(e) => setForm(f => ({ ...f, supplier_id: e.target.value }))}>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">المورد</label>
+          <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700" value={form.supplier_id} onChange={(e) => setForm(f => ({ ...f, supplier_id: e.target.value }))}>
             <option value="">اختر المورد...</option>
             {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">سعر الشراء</label>
-          <input type="number" placeholder="0" className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700" value={form.purchase_price} onChange={(e) => setForm(f => ({ ...f, purchase_price: e.target.value }))} />
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">سعر الشراء</label>
+          <input type="number" placeholder="0" className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700" value={form.purchase_price} onChange={(e) => setForm(f => ({ ...f, purchase_price: e.target.value }))} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">المخزن</label>
-          <select className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700" value={form.warehouse_id} onChange={(e) => setForm(f => ({ ...f, warehouse_id: e.target.value }))}>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">المخزن</label>
+          <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700" value={form.warehouse_id} onChange={(e) => setForm(f => ({ ...f, warehouse_id: e.target.value }))}>
             {warehouses.map(w => <option key={w.id} value={w.id}>{w.icon} {w.name}</option>)}
           </select>
         </div>
@@ -712,18 +712,18 @@ function EditDeviceForm({ device, onClose, onSuccess }) {
       )}
       <div className="grid grid-cols-1 gap-4">
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">السيريال</label>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">السيريال</label>
           <input
             type="text"
-            className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             value={form.serial_number}
             onChange={(e) => setForm((f) => ({ ...f, serial_number: e.target.value }))}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">الحالة</label>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">الحالة</label>
           <select
-            className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             value={form.status}
             onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
           >
@@ -733,9 +733,9 @@ function EditDeviceForm({ device, onClose, onSuccess }) {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">المخزن</label>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">المخزن</label>
           <select
-            className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             value={form.warehouse_id}
             onChange={(e) => setForm((f) => ({ ...f, warehouse_id: e.target.value }))}
           >
@@ -774,13 +774,13 @@ function TransferDeviceForm({ device, onClose, onSuccess }) {
           {transferMutation.error?.response?.data?.error || transferMutation.error?.message || 'حدث خطأ'}
         </div>
       )}
-      <p className="text-sm text-surface-600 dark:text-surface-400">
-        نقل الجهاز <strong className="text-surface-900 dark:text-white">{device?.serial_number}</strong> إلى مخزن آخر.
+      <p className="text-sm text-neutral-600 dark:text-neutral-400">
+        نقل الجهاز <strong className="text-neutral-900 dark:text-white">{device?.serial_number}</strong> إلى مخزن آخر.
       </p>
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">المخزن الهدف</label>
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">المخزن الهدف</label>
         <select
-          className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           value={form.warehouse_id}
           onChange={(e) => setForm((f) => ({ ...f, warehouse_id: e.target.value }))}
           required
@@ -791,11 +791,11 @@ function TransferDeviceForm({ device, onClose, onSuccess }) {
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">السبب (اختياري)</label>
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">السبب (اختياري)</label>
         <input
           type="text"
           placeholder="مثال: نقل للتجهيز"
-          className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           value={form.reason}
           onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
         />
@@ -819,8 +819,8 @@ function DeleteDeviceConfirm({ device, onClose, onSuccess }) {
   const handleConfirm = () => deleteMutation.mutate()
   return (
     <div className="space-y-4">
-      <p className="text-surface-600 dark:text-surface-400">
-        هل أنت متأكد من حذف الجهاز <strong className="text-surface-900 dark:text-white">{device.serial_number}</strong> ({device.product_name})؟ لا يمكن التراجع.
+      <p className="text-neutral-600 dark:text-neutral-400">
+        هل أنت متأكد من حذف الجهاز <strong className="text-neutral-900 dark:text-white">{device.serial_number}</strong> ({device.product_name})؟ لا يمكن التراجع.
       </p>
       {deleteMutation.isError && (
         <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm">
@@ -861,11 +861,11 @@ function DeviceDetails({ device, onEdit, onDelete, onTransfer, onClose }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-surface-100 dark:bg-surface-700 rounded-xl flex items-center justify-center">
-            <Package className="w-8 h-8 text-surface-400" />
+          <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-700 rounded-xl flex items-center justify-center">
+            <Package className="w-8 h-8 text-neutral-400" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-surface-900 dark:text-white">{device.product_name || 'Dell Latitude 7410'}</h3>
+            <h3 className="text-xl font-bold text-neutral-900 dark:text-white">{device.product_name || 'Dell Latitude 7410'}</h3>
             <p className="font-mono text-primary-600 dark:text-primary-400">{device.serial_number}</p>
           </div>
         </div>
@@ -876,13 +876,13 @@ function DeviceDetails({ device, onEdit, onDelete, onTransfer, onClose }) {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-surface-200 dark:border-surface-700">
+      <div className="border-b border-neutral-200 dark:border-neutral-700">
         <nav className="flex gap-4">
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id)}
-              className={`px-4 py-2 border-b-2 font-medium ${activeTab === t.id ? 'border-primary-600 text-primary-600' : 'border-transparent text-surface-500 hover:text-surface-700 dark:text-surface-400'}`}
+              className={`px-4 py-2 border-b-2 font-medium ${activeTab === t.id ? 'border-primary-600 text-primary-600' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'}`}
             >
               {t.label}
             </button>
@@ -896,18 +896,18 @@ function DeviceDetails({ device, onEdit, onDelete, onTransfer, onClose }) {
           {historyLoading ? (
             <div className="flex justify-center py-8"><Spinner size="md" /></div>
           ) : historyList.length === 0 ? (
-            <p className="text-center text-surface-500 dark:text-surface-400 py-6">لا توجد سجلات لهذا الجهاز.</p>
+            <p className="text-center text-neutral-500 dark:text-neutral-400 py-6">لا توجد سجلات لهذا الجهاز.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-surface-50 dark:bg-surface-700/50">
+                <thead className="bg-neutral-50 dark:bg-neutral-700/50">
                   <tr>
-                    <th className="px-3 py-2 text-right text-surface-500">التاريخ</th>
-                    <th className="px-3 py-2 text-right text-surface-500">الإجراء</th>
-                    <th className="px-3 py-2 text-right text-surface-500">ملاحظات</th>
+                    <th className="px-3 py-2 text-right text-neutral-500">التاريخ</th>
+                    <th className="px-3 py-2 text-right text-neutral-500">الإجراء</th>
+                    <th className="px-3 py-2 text-right text-neutral-500">ملاحظات</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+                <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                   {historyList.map((h, i) => (
                     <tr key={h.id || i}>
                       <td className="px-3 py-2">{h.created_at ? new Date(h.created_at).toLocaleString('ar-IQ') : '—'}</td>
@@ -926,80 +926,80 @@ function DeviceDetails({ device, onEdit, onDelete, onTransfer, onClose }) {
       {activeTab === 'info' && (
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-4">
-          <h4 className="font-semibold text-surface-900 dark:text-white">المواصفات</h4>
+          <h4 className="font-semibold text-neutral-900 dark:text-white">المواصفات</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-surface-500">المعالج:</span>
+              <span className="text-neutral-500">المعالج:</span>
               <span className="font-medium">{device.processor || 'i7-1165G7'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-surface-500">الرام:</span>
+              <span className="text-neutral-500">الرام:</span>
               <span className="font-medium">{device.ram_size || '16'} GB {device.ram_type || 'DDR4'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-surface-500">التخزين:</span>
+              <span className="text-neutral-500">التخزين:</span>
               <span className="font-medium">{device.storage_size || '512'} GB {device.storage_type || 'SSD'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-surface-500">الشاشة:</span>
+              <span className="text-neutral-500">الشاشة:</span>
               <span className="font-medium">{device.screen_size || '14'}" {device.screen_type || 'FHD'}</span>
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="font-semibold text-surface-900 dark:text-white">الموقع</h4>
+          <h4 className="font-semibold text-neutral-900 dark:text-white">الموقع</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-surface-500">المخزن:</span>
+              <span className="text-neutral-500">المخزن:</span>
               <span className="font-medium">{warehouses.find(w => w.id === device.warehouse_id)?.name || 'الرئيسي'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-surface-500">الرف:</span>
+              <span className="text-neutral-500">الرف:</span>
               <span className="font-medium">{device.location_shelf || 'A'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-surface-500">الصف:</span>
+              <span className="text-neutral-500">الصف:</span>
               <span className="font-medium">{device.location_row || '1'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-surface-500">الذمة:</span>
+              <span className="text-neutral-500">الذمة:</span>
               <span className="font-medium">{device.custody_employee || 'لا يوجد'}</span>
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="font-semibold text-surface-900 dark:text-white">المالية</h4>
+          <h4 className="font-semibold text-neutral-900 dark:text-white">المالية</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-surface-500">سعر الشراء:</span>
+              <span className="text-neutral-500">سعر الشراء:</span>
               <span className="font-medium">{(device.purchase_cost || 0).toLocaleString()} د.ع</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-surface-500">تكاليف إضافية:</span>
+              <span className="text-neutral-500">تكاليف إضافية:</span>
               <span className="font-medium">{(device.additional_costs || 0).toLocaleString()} د.ع</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-surface-500">سعر البيع:</span>
+              <span className="text-neutral-500">سعر البيع:</span>
               <span className="font-medium text-green-600">{(device.selling_price || 0).toLocaleString()} د.ع</span>
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="font-semibold text-surface-900 dark:text-white">المصدر</h4>
+          <h4 className="font-semibold text-neutral-900 dark:text-white">المصدر</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-surface-500">المورد:</span>
+              <span className="text-neutral-500">المورد:</span>
               <span className="font-medium">{device.supplier_name || '-'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-surface-500">تاريخ الشراء:</span>
+              <span className="text-neutral-500">تاريخ الشراء:</span>
               <span className="font-medium">{device.purchase_date || '-'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-surface-500">رقم الفاتورة:</span>
+              <span className="text-neutral-500">رقم الفاتورة:</span>
               <span className="font-medium">{device.purchase_invoice_id || '-'}</span>
             </div>
           </div>
@@ -1008,10 +1008,10 @@ function DeviceDetails({ device, onEdit, onDelete, onTransfer, onClose }) {
       )}
 
       {activeTab === 'photos' && (
-        <p className="text-center text-surface-500 dark:text-surface-400 py-6">قسم الصور قيد التطوير.</p>
+        <p className="text-center text-neutral-500 dark:text-neutral-400 py-6">قسم الصور قيد التطوير.</p>
       )}
       {activeTab === 'maintenance' && (
-        <p className="text-center text-surface-500 dark:text-surface-400 py-6">قسم الصيانة قيد التطوير.</p>
+        <p className="text-center text-neutral-500 dark:text-neutral-400 py-6">قسم الصيانة قيد التطوير.</p>
       )}
 
       {/* Actions */}

@@ -32,7 +32,7 @@ const invoiceTypes = {
 
 // حالات الفاتورة
 const invoiceStatuses = {
-  draft: { label: 'مسودة', color: 'bg-surface-100 text-surface-800' },
+  draft: { label: 'مسودة', color: 'bg-neutral-100 text-neutral-800' },
   confirmed: { label: 'مؤكدة', color: 'bg-blue-100 text-blue-800' },
   processing: { label: 'قيد التجهيز', color: 'bg-yellow-100 text-yellow-800' },
   shipped: { label: 'تم الشحن', color: 'bg-indigo-100 text-indigo-800' },
@@ -136,11 +136,11 @@ export default function SalesPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
             <Receipt className="w-8 h-8 text-primary-600" />
             المبيعات والفواتير
           </h1>
-          <p className="text-surface-500 dark:text-surface-400 mt-1">
+          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
             إدارة جميع أنواع الفواتير والمبيعات
           </p>
         </div>
@@ -218,49 +218,49 @@ export default function SalesPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400">مبيعات اليوم</p>
-              <p className="text-2xl font-bold text-surface-900 dark:text-white">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">مبيعات اليوم</p>
+              <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                 {(stats.today_sales || 0).toLocaleString()}
               </p>
-              <p className="text-xs text-surface-500">د.ع</p>
+              <p className="text-xs text-neutral-500">د.ع</p>
             </div>
             <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
               <DollarSign className="w-6 h-6 text-green-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400">فواتير اليوم</p>
-              <p className="text-2xl font-bold text-surface-900 dark:text-white">{stats.today_count || 0}</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">فواتير اليوم</p>
+              <p className="text-2xl font-bold text-neutral-900 dark:text-white">{stats.today_count || 0}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
               <Receipt className="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400">مبيعات الشهر</p>
-              <p className="text-2xl font-bold text-surface-900 dark:text-white">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">مبيعات الشهر</p>
+              <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                 {(stats.month_sales / 1000000 || 0).toFixed(1)}M
               </p>
-              <p className="text-xs text-surface-500">د.ع</p>
+              <p className="text-xs text-neutral-500">د.ع</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-purple-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400">بانتظار التوصيل</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">بانتظار التوصيل</p>
               <p className="text-2xl font-bold text-amber-600">{stats.pending_deliveries || 0}</p>
             </div>
             <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
@@ -271,14 +271,14 @@ export default function SalesPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-surface-200 dark:border-surface-700">
+      <div className="border-b border-neutral-200 dark:border-neutral-700">
         <nav className="flex gap-4">
           <button 
             onClick={() => setActiveTab('invoices')}
             className={`px-4 py-2 border-b-2 font-medium transition-colors ${
               activeTab === 'invoices' 
                 ? 'border-primary-600 text-primary-600' 
-                : 'border-transparent text-surface-500 hover:text-surface-700'
+                : 'border-transparent text-neutral-500 hover:text-neutral-700'
             }`}
           >
             الفواتير
@@ -288,7 +288,7 @@ export default function SalesPage() {
             className={`px-4 py-2 border-b-2 font-medium transition-colors ${
               activeTab === 'pending' 
                 ? 'border-primary-600 text-primary-600' 
-                : 'border-transparent text-surface-500 hover:text-surface-700'
+                : 'border-transparent text-neutral-500 hover:text-neutral-700'
             }`}
           >
             قيد التوصيل
@@ -301,7 +301,7 @@ export default function SalesPage() {
             className={`px-4 py-2 border-b-2 font-medium transition-colors ${
               activeTab === 'installments' 
                 ? 'border-primary-600 text-primary-600' 
-                : 'border-transparent text-surface-500 hover:text-surface-700'
+                : 'border-transparent text-neutral-500 hover:text-neutral-700'
             }`}
           >
             الأقساط
@@ -311,22 +311,22 @@ export default function SalesPage() {
 
       {/* Filters */}
       {activeTab === 'invoices' && (
-        <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-4">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="بحث برقم الفاتورة، اسم الزبون، أو السيريال..."
-                className="w-full pr-10 pl-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+                className="w-full pr-10 pl-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
               />
             </div>
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             >
               <option value="all">كل الأنواع</option>
               {Object.entries(invoiceTypes).map(([key, val]) => (
@@ -336,7 +336,7 @@ export default function SalesPage() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             >
               <option value="all">كل الحالات</option>
               {Object.entries(invoiceStatuses).map(([key, val]) => (
@@ -347,13 +347,13 @@ export default function SalesPage() {
               type="date"
               value={dateRange.from}
               onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
-              className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             />
             <input
               type="date"
               value={dateRange.to}
               onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
-              className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             />
           </div>
         </div>
@@ -361,25 +361,25 @@ export default function SalesPage() {
 
       {/* Invoices Table */}
       {activeTab === 'invoices' && (
-        <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-surface-50 dark:bg-surface-700/50">
+              <thead className="bg-neutral-50 dark:bg-neutral-700/50">
                 <tr>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">رقم الفاتورة</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">النوع</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">الزبون/المورد</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">المنتجات</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">المبلغ</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">الحالة</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">التاريخ</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">إجراءات</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">رقم الفاتورة</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">النوع</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الزبون/المورد</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">المنتجات</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">المبلغ</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الحالة</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">التاريخ</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">إجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                 {!invoices || invoices.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="px-4 py-8 text-center text-surface-500">
+                    <td colSpan="8" className="px-4 py-8 text-center text-neutral-500">
                       {isLoading ? 'جاري التحميل...' : 'لا توجد فواتير مطابقة للبحث'}
                     </td>
                   </tr>
@@ -388,7 +388,7 @@ export default function SalesPage() {
                     const type = invoiceTypes[invoice.type] || invoiceTypes.sale
                     const status = invoiceStatuses[invoice.status] || invoiceStatuses.draft
                     return (
-                      <tr key={invoice.id} className="hover:bg-surface-50 dark:hover:bg-surface-700/50">
+                      <tr key={invoice.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
                         <td className="px-4 py-3">
                           <span className="font-mono font-medium text-primary-600">
                             {invoice.invoice_number}
@@ -402,52 +402,52 @@ export default function SalesPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <User className="w-4 h-4 text-surface-400" />
+                            <User className="w-4 h-4 text-neutral-400" />
                             <span>{invoice.customer_name || invoice.supplier_name || '-'}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1">
-                            <Package className="w-4 h-4 text-surface-400" />
+                            <Package className="w-4 h-4 text-neutral-400" />
                             <span>{invoice.items_count || 1} منتج</span>
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="font-semibold text-surface-900 dark:text-white">
+                          <span className="font-semibold text-neutral-900 dark:text-white">
                             {(invoice.total || 0).toLocaleString()}
                           </span>
-                          <span className="text-xs text-surface-500 mr-1">د.ع</span>
+                          <span className="text-xs text-neutral-500 mr-1">د.ع</span>
                         </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${status.color}`}>
                             {status.label}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-surface-500">
+                        <td className="px-4 py-3 text-sm text-neutral-500">
                           {new Date(invoice.created_at).toLocaleDateString('ar-IQ')}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => openInvoiceDetails(invoice)}
-                              className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded"
+                              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                               title="تفاصيل"
                             >
-                              <Eye className="w-4 h-4 text-surface-500" />
+                              <Eye className="w-4 h-4 text-neutral-500" />
                             </button>
                             <button
                               onClick={() => openInvoiceDetails(invoice)}
-                              className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded"
+                              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                               title="طباعة"
                             >
-                              <Printer className="w-4 h-4 text-surface-500" />
+                              <Printer className="w-4 h-4 text-neutral-500" />
                             </button>
                             <button
                               onClick={() => openInvoiceDetails(invoice)}
-                              className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded"
+                              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                               title="تعديل"
                             >
-                              <Edit className="w-4 h-4 text-surface-500" />
+                              <Edit className="w-4 h-4 text-neutral-500" />
                             </button>
                           </div>
                         </td>
@@ -608,11 +608,11 @@ function NewInvoiceForm({ type, onClose, onSuccess }) {
       {/* Customer Selection */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             {type === 'purchase' ? 'المورد' : 'الزبون'}
           </label>
           <select
-            className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             value={type === 'purchase' ? supplierId : customerId}
             onChange={(e) => {
               const val = e.target.value
@@ -625,13 +625,13 @@ function NewInvoiceForm({ type, onClose, onSuccess }) {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             طريقة الدفع
           </label>
           <select
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value)}
-            className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           >
             <option value="cash">نقدي</option>
             <option value="credit">آجل</option>
@@ -675,7 +675,7 @@ function NewInvoiceForm({ type, onClose, onSuccess }) {
       {/* Items */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-medium text-surface-700 dark:text-surface-300">
+          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
             المنتجات
           </label>
           <Button type="button" size="sm" onClick={addItem}>
@@ -683,23 +683,23 @@ function NewInvoiceForm({ type, onClose, onSuccess }) {
             إضافة منتج
           </Button>
         </div>
-        <div className="border border-surface-200 dark:border-surface-700 rounded-lg overflow-hidden">
+        <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
           <table className="w-full">
-            <thead className="bg-surface-50 dark:bg-surface-700/50">
+            <thead className="bg-neutral-50 dark:bg-neutral-700/50">
               <tr>
-                <th className="px-3 py-2 text-right text-sm font-medium text-surface-500">السيريال</th>
-                <th className="px-3 py-2 text-right text-sm font-medium text-surface-500">المنتج</th>
-                <th className="px-3 py-2 text-right text-sm font-medium text-surface-500 w-20">الكمية</th>
-                <th className="px-3 py-2 text-right text-sm font-medium text-surface-500 w-32">السعر</th>
-                <th className="px-3 py-2 text-right text-sm font-medium text-surface-500">ترقيات</th>
-                <th className="px-3 py-2 text-right text-sm font-medium text-surface-500 w-24">المجموع</th>
+                <th className="px-3 py-2 text-right text-sm font-medium text-neutral-500">السيريال</th>
+                <th className="px-3 py-2 text-right text-sm font-medium text-neutral-500">المنتج</th>
+                <th className="px-3 py-2 text-right text-sm font-medium text-neutral-500 w-20">الكمية</th>
+                <th className="px-3 py-2 text-right text-sm font-medium text-neutral-500 w-32">السعر</th>
+                <th className="px-3 py-2 text-right text-sm font-medium text-neutral-500">ترقيات</th>
+                <th className="px-3 py-2 text-right text-sm font-medium text-neutral-500 w-24">المجموع</th>
                 <th className="px-3 py-2 w-10"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-4 py-6 text-center text-surface-500">
+                  <td colSpan="7" className="px-4 py-6 text-center text-neutral-500">
                     اضغط "إضافة منتج" لإضافة منتجات للفاتورة
                   </td>
                 </tr>
@@ -710,12 +710,12 @@ function NewInvoiceForm({ type, onClose, onSuccess }) {
                       <input
                         type="text"
                         placeholder="مسح أو إدخال..."
-                        className="w-full px-2 py-1 border border-surface-300 dark:border-surface-600 rounded text-sm"
+                        className="w-full px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm"
                       />
                     </td>
                     <td className="px-3 py-2">
                       <select
-                        className="w-full px-2 py-1 border border-surface-300 dark:border-surface-600 rounded text-sm"
+                        className="w-full px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm"
                         value={item.product_id || ''}
                         onChange={(e) => setItemProduct(index, e.target.value)}
                       >
@@ -728,7 +728,7 @@ function NewInvoiceForm({ type, onClose, onSuccess }) {
                         type="number"
                         value={item.qty}
                         min="1"
-                        className="w-full px-2 py-1 border border-surface-300 dark:border-surface-600 rounded text-sm text-center"
+                        className="w-full px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm text-center"
                         onChange={(e) => updateItem(index, 'qty', e.target.value)}
                       />
                     </td>
@@ -736,7 +736,7 @@ function NewInvoiceForm({ type, onClose, onSuccess }) {
                       <input
                         type="number"
                         placeholder="0"
-                        className="w-full px-2 py-1 border border-surface-300 dark:border-surface-600 rounded text-sm"
+                        className="w-full px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm"
                         value={item.price || ''}
                         onChange={(e) => updateItem(index, 'price', e.target.value)}
                       />
@@ -767,7 +767,7 @@ function NewInvoiceForm({ type, onClose, onSuccess }) {
       </div>
 
       {/* Summary */}
-      <div className="bg-surface-50 dark:bg-surface-700/50 rounded-lg p-4">
+      <div className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-4">
         <div className="flex justify-between items-center text-lg font-bold">
           <span>المجموع الكلي:</span>
           <span className="text-primary-600">{calculateTotal().toLocaleString()} د.ع</span>
@@ -834,13 +834,13 @@ function InvoiceDetailsContent({ invoiceId, onClose, onCancel, onPrinted }) {
   }
 
   if (isLoading) return <div className="flex justify-center py-8"><Spinner size="md" /></div>
-  if (error || !invoice) return <p className="text-surface-500 py-4">تعذر تحميل الفاتورة.</p>
+  if (error || !invoice) return <p className="text-neutral-500 py-4">تعذر تحميل الفاتورة.</p>
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap justify-between items-start gap-4">
         <div>
-          <p className="text-sm text-surface-500">رقم الفاتورة</p>
+          <p className="text-sm text-neutral-500">رقم الفاتورة</p>
           <p className="font-mono font-semibold text-primary-600">{invoice.invoice_number}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -852,13 +852,13 @@ function InvoiceDetailsContent({ invoiceId, onClose, onCancel, onPrinted }) {
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4 text-sm">
-        <div><span className="text-surface-500">الزبون/المورد:</span> {invoice.customer_name || invoice.supplier_name || '-'}</div>
-        <div><span className="text-surface-500">التاريخ:</span> {invoice.created_at ? new Date(invoice.created_at).toLocaleDateString('ar-IQ') : '-'}</div>
-        <div><span className="text-surface-500">المبلغ:</span> <strong>{(invoice.total || 0).toLocaleString()} د.ع</strong></div>
+        <div><span className="text-neutral-500">الزبون/المورد:</span> {invoice.customer_name || invoice.supplier_name || '-'}</div>
+        <div><span className="text-neutral-500">التاريخ:</span> {invoice.created_at ? new Date(invoice.created_at).toLocaleDateString('ar-IQ') : '-'}</div>
+        <div><span className="text-neutral-500">المبلغ:</span> <strong>{(invoice.total || 0).toLocaleString()} د.ع</strong></div>
       </div>
-      <div className="border border-surface-200 dark:border-surface-700 rounded-lg overflow-hidden">
+      <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-surface-50 dark:bg-surface-700/50">
+          <thead className="bg-neutral-50 dark:bg-neutral-700/50">
             <tr>
               <th className="px-3 py-2 text-right">المنتج</th>
               <th className="px-3 py-2 text-right">الكمية</th>
@@ -866,7 +866,7 @@ function InvoiceDetailsContent({ invoiceId, onClose, onCancel, onPrinted }) {
               <th className="px-3 py-2 text-right">المجموع</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
             {(items || []).map((i, idx) => (
               <tr key={i.id || idx}>
                 <td className="px-3 py-2">{i.product_name || '-'}</td>
@@ -914,12 +914,12 @@ function CancelInvoiceForm({ invoiceId, onClose, onSuccess }) {
   }
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <p className="text-surface-600 dark:text-surface-400">إلغاء الفاتورة رقم <strong>{invoiceId}</strong>. يُفضّل ذكر السبب.</p>
+      <p className="text-neutral-600 dark:text-neutral-400">إلغاء الفاتورة رقم <strong>{invoiceId}</strong>. يُفضّل ذكر السبب.</p>
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">سبب الإلغاء (اختياري)</label>
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">سبب الإلغاء (اختياري)</label>
         <input
           type="text"
-          className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="مثال: طلب العميل"
@@ -973,13 +973,13 @@ function InstallmentsTab() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {defaultPlatforms.map(({ key, name, logo, fee, count, pending, total }) => (
-          <div key={key} className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+          <div key={key} className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{logo}</span>
                 <div>
                   <h3 className="font-semibold text-lg">{name}</h3>
-                  <p className="text-sm text-surface-500">نسبة الرفع: {fee}</p>
+                  <p className="text-sm text-neutral-500">نسبة الرفع: {fee}</p>
                 </div>
               </div>
             </div>
@@ -987,33 +987,33 @@ function InstallmentsTab() {
               <Spinner size="sm" />
             ) : (
               <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="bg-surface-50 dark:bg-surface-700/50 rounded-lg p-3">
+                <div className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-3">
                   <p className="text-2xl font-bold text-green-600">{count ?? 0}</p>
-                  <p className="text-xs text-surface-500">فواتير الشهر</p>
+                  <p className="text-xs text-neutral-500">فواتير الشهر</p>
                 </div>
-                <div className="bg-surface-50 dark:bg-surface-700/50 rounded-lg p-3">
+                <div className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-3">
                   <p className="text-2xl font-bold text-blue-600">{pending ?? 0}</p>
-                  <p className="text-xs text-surface-500">بانتظار التحويل</p>
+                  <p className="text-xs text-neutral-500">بانتظار التحويل</p>
                 </div>
-                <div className="bg-surface-50 dark:bg-surface-700/50 rounded-lg p-3">
+                <div className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-3">
                   <p className="text-2xl font-bold text-purple-600">{(total / 1000000 || 0).toFixed(1)}M</p>
-                  <p className="text-xs text-surface-500">إجمالي الشهر</p>
+                  <p className="text-xs text-neutral-500">إجمالي الشهر</p>
                 </div>
               </div>
             )}
           </div>
         ))}
       </div>
-      <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
         <h3 className="font-semibold text-lg mb-4">التحويلات المنتظرة</h3>
         {pendingLoading ? (
           <Spinner size="sm" />
         ) : pendingList.length === 0 ? (
-          <div className="text-center text-surface-500 py-8">لا توجد تحويلات منتظرة</div>
+          <div className="text-center text-neutral-500 py-8">لا توجد تحويلات منتظرة</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-surface-50 dark:bg-surface-700/50">
+              <thead className="bg-neutral-50 dark:bg-neutral-700/50">
                 <tr>
                   <th className="px-3 py-2 text-right">الفاتورة/العميل</th>
                   <th className="px-3 py-2 text-right">المبلغ</th>
@@ -1021,7 +1021,7 @@ function InstallmentsTab() {
                   <th className="px-3 py-2 text-right">إجراء</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                 {pendingList.map((t) => (
                   <tr key={t.id || t.invoice_id}>
                     <td className="px-3 py-2">{t.invoice_number || t.customer_name || t.id}</td>
@@ -1066,19 +1066,19 @@ function ReportsPanel({ onClose }) {
   const monthly = monthlyData?.data?.data || monthlyData?.data || {}
 
   return (
-    <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6 space-y-6">
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-surface-900 dark:text-white">التقارير</h3>
+        <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">التقارير</h3>
         <Button variant="outline" size="sm" onClick={onClose}>إغلاق</Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h4 className="font-medium text-surface-800 dark:text-surface-200 mb-2">التقرير اليومي</h4>
+          <h4 className="font-medium text-neutral-800 dark:text-neutral-200 mb-2">التقرير اليومي</h4>
           <input
             type="date"
             value={dailyDate}
             onChange={(e) => setDailyDate(e.target.value)}
-            className="mb-3 px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="mb-3 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           />
           {dailyLoading ? <Spinner size="sm" /> : (
             <div className="text-sm space-y-1">
@@ -1088,19 +1088,19 @@ function ReportsPanel({ onClose }) {
           )}
         </div>
         <div>
-          <h4 className="font-medium text-surface-800 dark:text-surface-200 mb-2">التقرير الشهري</h4>
+          <h4 className="font-medium text-neutral-800 dark:text-neutral-200 mb-2">التقرير الشهري</h4>
           <div className="flex gap-2 mb-3">
             <select
               value={monthlyMonth}
               onChange={(e) => setMonthlyMonth(Number(e.target.value))}
-              className="px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             >
               {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => <option key={m} value={m}>{m}</option>)}
             </select>
             <select
               value={monthlyYear}
               onChange={(e) => setMonthlyYear(Number(e.target.value))}
-              className="px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             >
               {[new Date().getFullYear(), new Date().getFullYear() - 1].map(y => <option key={y} value={y}>{y}</option>)}
             </select>

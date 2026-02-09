@@ -37,19 +37,19 @@ export default function RecentTasks() {
       </Card.Header>
       <Card.Body className="p-0">
         {tasks.length === 0 ? (
-          <div className="p-6 text-center text-surface-500">
+          <div className="p-6 text-center text-neutral-500">
             لا توجد مهام
           </div>
         ) : (
-          <div className="divide-y divide-surface-200 dark:divide-surface-700">
+          <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
             {tasks.map((task) => (
-              <div key={task.id} className="p-4 hover:bg-surface-50 dark:hover:bg-surface-700/50">
+              <div key={task.id} className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-surface-900 dark:text-white truncate">
+                    <h4 className="font-medium text-neutral-900 dark:text-white truncate">
                       {task.title}
                     </h4>
-                    <div className="mt-1 flex items-center gap-2 text-sm text-surface-500">
+                    <div className="mt-1 flex items-center gap-2 text-sm text-neutral-500">
                       <Clock className="w-4 h-4" />
                       <span>{formatRelativeTime(task.due_date)}</span>
                     </div>

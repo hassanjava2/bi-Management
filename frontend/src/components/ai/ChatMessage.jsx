@@ -23,12 +23,12 @@ export default function ChatMessage({ message, isUser }) {
         'max-w-[80%] rounded-2xl px-4 py-2',
         isUser 
           ? 'bg-primary-600 text-white rounded-br-sm' 
-          : 'bg-surface-100 dark:bg-surface-700 text-surface-900 dark:text-white rounded-bl-sm'
+          : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-white rounded-bl-sm'
       )}>
         <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         <p className={clsx(
           'text-xs mt-1',
-          isUser ? 'text-primary-200' : 'text-surface-500 dark:text-surface-400'
+          isUser ? 'text-primary-200' : 'text-neutral-500 dark:text-neutral-400'
         )}>
           {formatTime(message.timestamp || message.created_at)}
         </p>

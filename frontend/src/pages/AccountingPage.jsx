@@ -58,8 +58,8 @@ export default function AccountingPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
         <AlertTriangle className="w-16 h-16 text-red-500 mb-4" />
-        <h2 className="text-xl font-bold text-surface-900 dark:text-white">غير مصرح</h2>
-        <p className="text-surface-500 mt-2">هذه الصفحة متاحة للمالك فقط</p>
+        <h2 className="text-xl font-bold text-neutral-900 dark:text-white">غير مصرح</h2>
+        <p className="text-neutral-500 mt-2">هذه الصفحة متاحة للمالك فقط</p>
       </div>
     )
   }
@@ -82,12 +82,12 @@ export default function AccountingPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
             <DollarSign className="w-8 h-8 text-primary-600" />
             المحاسبة والمالية
             <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">🔒 سري</span>
           </h1>
-          <p className="text-surface-500 dark:text-surface-400 mt-1">
+          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
             إدارة الحسابات والتقارير المالية
           </p>
         </div>
@@ -151,7 +151,7 @@ export default function AccountingPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-surface-200 dark:border-surface-700">
+      <div className="border-b border-neutral-200 dark:border-neutral-700">
         <nav className="flex gap-4 overflow-x-auto">
           {[
             { id: 'overview', label: 'نظرة عامة', icon: BarChart3 },
@@ -168,7 +168,7 @@ export default function AccountingPage() {
               className={`flex items-center gap-2 px-4 py-2 border-b-2 font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-surface-500 hover:text-surface-700'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -182,7 +182,7 @@ export default function AccountingPage() {
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profit & Loss Summary */}
-          <div className="lg:col-span-2 bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+          <div className="lg:col-span-2 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
               <PieChart className="w-5 h-5 text-primary-600" />
               ملخص الأرباح والخسائر
@@ -220,24 +220,24 @@ export default function AccountingPage() {
           </div>
 
           {/* Cash Balance */}
-          <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+          <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
               <Wallet className="w-5 h-5 text-primary-600" />
               الصناديق
             </h3>
             <div className="space-y-4">
               <div className="p-4 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-900/30 rounded-lg">
-                <p className="text-sm text-surface-600 dark:text-surface-400">الصندوق الرئيسي</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">الصندوق الرئيسي</p>
                 <p className="text-2xl font-bold text-primary-600">{(stats.cash_balance || 0).toLocaleString()}</p>
-                <p className="text-xs text-surface-500">د.ع</p>
+                <p className="text-xs text-neutral-500">د.ع</p>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-surface-500">صندوق حسين</span>
+                  <span className="text-neutral-500">صندوق حسين</span>
                   <span>500,000</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-surface-500">صندوق أحمد</span>
+                  <span className="text-neutral-500">صندوق أحمد</span>
                   <span>350,000</span>
                 </div>
               </div>
@@ -245,7 +245,7 @@ export default function AccountingPage() {
           </div>
 
           {/* Debts Section */}
-          <div className="lg:col-span-3 bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+          <div className="lg:col-span-3 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-primary-600" />
               الديون والالتزامات
@@ -258,11 +258,11 @@ export default function AccountingPage() {
                   ديون علينا (نحن مدينين)
                 </h4>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
+                  <div className="flex justify-between items-center p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
                     <span>شركة الوزير</span>
                     <span className="font-bold text-red-600">7,000,000</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
+                  <div className="flex justify-between items-center p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
                     <span>سيد أحمد - العربي</span>
                     <span className="font-bold text-red-600">3,500,000</span>
                   </div>
@@ -282,11 +282,11 @@ export default function AccountingPage() {
                   ديون لنا (الزبائن مدينين)
                 </h4>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
+                  <div className="flex justify-between items-center p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
                     <span>أحمد محمد</span>
                     <span className="font-bold text-green-600">1,200,000</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
+                  <div className="flex justify-between items-center p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
                     <span>شركة الأمل</span>
                     <span className="font-bold text-green-600">2,800,000</span>
                   </div>
@@ -358,7 +358,7 @@ function VouchersTab({ onNewReceipt, onNewPayment }) {
   const list = Array.isArray(vouchers) ? vouchers : []
 
   return (
-    <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <h3 className="font-semibold text-lg">سندات القبض والدفع</h3>
         <div className="flex flex-wrap gap-2">
@@ -367,12 +367,12 @@ function VouchersTab({ onNewReceipt, onNewPayment }) {
             placeholder="بحث..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700 w-40"
+            className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 w-40"
           />
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           >
             <option value="all">الكل</option>
             <option value="receipt">قبض</option>
@@ -395,11 +395,11 @@ function VouchersTab({ onNewReceipt, onNewPayment }) {
       {isLoading ? (
         <div className="flex justify-center py-8"><Spinner size="md" /></div>
       ) : list.length === 0 ? (
-        <div className="text-center text-surface-500 py-8">لا توجد سندات</div>
+        <div className="text-center text-neutral-500 py-8">لا توجد سندات</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-surface-50 dark:bg-surface-700/50">
+            <thead className="bg-neutral-50 dark:bg-neutral-700/50">
               <tr>
                 <th className="px-3 py-2 text-right">التاريخ</th>
                 <th className="px-3 py-2 text-right">النوع</th>
@@ -407,7 +407,7 @@ function VouchersTab({ onNewReceipt, onNewPayment }) {
                 <th className="px-3 py-2 text-right">البيان</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
               {list.map((v) => (
                 <tr key={v.id}>
                   <td className="px-3 py-2">{v.created_at ? new Date(v.created_at).toLocaleDateString('ar-IQ') : '-'}</td>
@@ -435,7 +435,7 @@ function ExpensesTab() {
   const list = Array.isArray(expenses) ? expenses : []
 
   return (
-    <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-semibold text-lg">المصاريف</h3>
         <div className="flex gap-2">
@@ -452,11 +452,11 @@ function ExpensesTab() {
       {isLoading ? (
         <div className="flex justify-center py-8"><Spinner size="md" /></div>
       ) : list.length === 0 ? (
-        <div className="text-center text-surface-500 py-8">لا توجد مصاريف مسجلة</div>
+        <div className="text-center text-neutral-500 py-8">لا توجد مصاريف مسجلة</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-surface-50 dark:bg-surface-700/50">
+            <thead className="bg-neutral-50 dark:bg-neutral-700/50">
               <tr>
                 <th className="px-3 py-2 text-right">التاريخ</th>
                 <th className="px-3 py-2 text-right">الفئة</th>
@@ -464,7 +464,7 @@ function ExpensesTab() {
                 <th className="px-3 py-2 text-right">البيان</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
               {list.map((e) => (
                 <tr key={e.id}>
                   <td className="px-3 py-2">{e.created_at ? new Date(e.created_at).toLocaleDateString('ar-IQ') : '-'}</td>
@@ -545,22 +545,22 @@ function ReceivablesTab() {
   const list = Array.isArray(receivables) ? receivables : []
 
   return (
-    <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
       <h3 className="font-semibold text-lg mb-4">ذمم العملاء (مدينة لنا)</h3>
       {isLoading ? (
         <div className="flex justify-center py-8"><Spinner size="md" /></div>
       ) : list.length === 0 ? (
-        <div className="text-center text-surface-500 py-8">لا توجد ذمم مدينة</div>
+        <div className="text-center text-neutral-500 py-8">لا توجد ذمم مدينة</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-surface-50 dark:bg-surface-700/50">
+            <thead className="bg-neutral-50 dark:bg-neutral-700/50">
               <tr>
                 <th className="px-3 py-2 text-right">العميل</th>
                 <th className="px-3 py-2 text-right">المبلغ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
               {list.map((r) => (
                 <tr key={r.customer_id || r.id}>
                   <td className="px-3 py-2">{r.customer_name || r.name || r.customer_id || '-'}</td>
@@ -585,22 +585,22 @@ function PayablesTab() {
   const list = Array.isArray(payables) ? payables : []
 
   return (
-    <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
       <h3 className="font-semibold text-lg mb-4">ذمم الموردين (دائنة علينا)</h3>
       {isLoading ? (
         <div className="flex justify-center py-8"><Spinner size="md" /></div>
       ) : list.length === 0 ? (
-        <div className="text-center text-surface-500 py-8">لا توجد ذمم دائنة</div>
+        <div className="text-center text-neutral-500 py-8">لا توجد ذمم دائنة</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-surface-50 dark:bg-surface-700/50">
+            <thead className="bg-neutral-50 dark:bg-neutral-700/50">
               <tr>
                 <th className="px-3 py-2 text-right">المورد</th>
                 <th className="px-3 py-2 text-right">المبلغ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
               {list.map((p) => (
                 <tr key={p.supplier_id || p.id}>
                   <td className="px-3 py-2">{p.supplier_name || p.name || p.supplier_id || '-'}</td>
@@ -627,7 +627,7 @@ function CashboxTab() {
   const list = Array.isArray(boxes) ? boxes : []
 
   return (
-    <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-semibold text-lg">الصناديق</h3>
         <Button size="sm" onClick={() => setShowTransfer(true)}>تحويل بين القاصات</Button>
@@ -657,9 +657,9 @@ function CashBoxBalance({ boxId, name }) {
   })
   const balance = data?.data?.data?.balance ?? data?.data?.balance ?? 0
   return (
-    <div className="p-4 bg-surface-50 dark:bg-surface-700/50 rounded-lg">
-      <p className="text-sm text-surface-500">{name}</p>
-      <p className="text-xl font-bold text-surface-900 dark:text-white">{(balance || 0).toLocaleString()} د.ع</p>
+    <div className="p-4 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
+      <p className="text-sm text-neutral-500">{name}</p>
+      <p className="text-xl font-bold text-neutral-900 dark:text-white">{(balance || 0).toLocaleString()} د.ع</p>
     </div>
   )
 }
@@ -742,7 +742,7 @@ function AccountingReportsTab() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2 items-center mb-4">
-        <span className="text-sm text-surface-500">الفترة:</span>
+        <span className="text-sm text-neutral-500">الفترة:</span>
         <input type="date" value={dateRange.from} onChange={(e) => setDateRange((r) => ({ ...r, from: e.target.value }))} className="px-3 py-2 border rounded-lg" />
         <input type="date" value={dateRange.to} onChange={(e) => setDateRange((r) => ({ ...r, to: e.target.value }))} className="px-3 py-2 border rounded-lg" />
       </div>
@@ -751,22 +751,22 @@ function AccountingReportsTab() {
           <button
             key={r.id}
             onClick={() => setSelectedReport(selectedReport === r.id ? null : r.id)}
-            className={`p-6 rounded-xl border text-right transition-shadow ${selectedReport === r.id ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20' : 'border-surface-200 dark:border-surface-700 hover:shadow-lg'}`}
+            className={`p-6 rounded-xl border text-right transition-shadow ${selectedReport === r.id ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20' : 'border-neutral-200 dark:border-neutral-700 hover:shadow-lg'}`}
           >
             <r.icon className={`w-10 h-10 mb-3 text-${r.color}-600`} />
             <p className="font-semibold">{r.title}</p>
-            <p className="text-sm text-surface-500 mt-1">اضغط لعرض التقرير</p>
+            <p className="text-sm text-neutral-500 mt-1">اضغط لعرض التقرير</p>
           </button>
         ))}
       </div>
       {selectedReport && (
-        <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-6">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
           {reports.find((r) => r.id === selectedReport)?.data ? (
             <pre className="text-sm overflow-auto max-h-96 whitespace-pre-wrap">
               {JSON.stringify(reports.find((r) => r.id === selectedReport)?.data, null, 2)}
             </pre>
           ) : (
-            <p className="text-surface-500">اختر فترة ثم اضغط على التقرير لتحميل البيانات.</p>
+            <p className="text-neutral-500">اختر فترة ثم اضغط على التقرير لتحميل البيانات.</p>
           )}
         </div>
       )}
@@ -825,7 +825,7 @@ function VoucherForm({ type, onClose, onSuccess }) {
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
           المبلغ
         </label>
         <input
@@ -833,18 +833,18 @@ function VoucherForm({ type, onClose, onSuccess }) {
           placeholder="0"
           min="1"
           step="any"
-          className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700 text-lg font-bold"
+          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-lg font-bold"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           required
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
           {type === 'receipt' ? 'من' : 'إلى'}
         </label>
         <select
-          className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           value={partyType}
           onChange={(e) => { setPartyType(e.target.value); setPartyId('') }}
         >
@@ -857,11 +857,11 @@ function VoucherForm({ type, onClose, onSuccess }) {
       </div>
       {partyType && (partyType === 'customer' || partyType === 'supplier') && (
         <div>
-          <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             {partyType === 'customer' ? 'العميل' : 'المورد'}
           </label>
           <select
-            className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
             value={partyId}
             onChange={(e) => setPartyId(e.target.value)}
           >
@@ -873,23 +873,23 @@ function VoucherForm({ type, onClose, onSuccess }) {
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
           البيان
         </label>
         <textarea
           rows="2"
           placeholder="وصف السند..."
-          className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
           الصندوق
         </label>
         <select
-          className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           value={cashBox}
           onChange={(e) => setCashBox(e.target.value)}
         >

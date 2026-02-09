@@ -42,18 +42,18 @@ export default function PermissionsPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-surface-900 dark:text-white flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                         <Shield className="w-7 h-7 text-purple-500" />
                         إدارة الصلاحيات
                     </h1>
-                    <p className="text-surface-600 dark:text-surface-400 mt-1">
+                    <p className="text-neutral-600 dark:text-neutral-400 mt-1">
                         إدارة الأدوار والصلاحيات للمستخدمين
                     </p>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-surface-200 dark:border-surface-700">
+            <div className="border-b border-neutral-200 dark:border-neutral-700">
                 <nav className="flex gap-4">
                     {tabs.map(tab => (
                         <button
@@ -62,7 +62,7 @@ export default function PermissionsPage() {
                             className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
                                 activeTab === tab.id
                                     ? 'border-purple-500 text-purple-600 dark:text-purple-400'
-                                    : 'border-transparent text-surface-500 hover:text-surface-700 dark:hover:text-surface-300'
+                                    : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
                             }`}
                         >
                             <tab.icon className="w-5 h-5" />
@@ -73,7 +73,7 @@ export default function PermissionsPage() {
             </div>
 
             {/* Content */}
-            <div className="bg-white dark:bg-surface-800 rounded-xl shadow-sm">
+            <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm">
                 {activeTab === 'roles' && (
                     <RolesTab 
                         selectedRole={selectedRole}
@@ -117,7 +117,7 @@ function RolesTab({ selectedRole, setSelectedRole }) {
             {/* Roles List */}
             <div className="lg:col-span-1 space-y-4">
                 <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-surface-900 dark:text-white">الأدوار</h3>
+                    <h3 className="font-semibold text-neutral-900 dark:text-white">الأدوار</h3>
                     <button
                         onClick={() => setShowCreateModal(true)}
                         className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
@@ -135,7 +135,7 @@ function RolesTab({ selectedRole, setSelectedRole }) {
                             className={`w-full text-right p-4 rounded-lg border transition-all ${
                                 selectedRole === role.name
                                     ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                                    : 'border-surface-200 dark:border-surface-700 hover:border-purple-300'
+                                    : 'border-neutral-200 dark:border-neutral-700 hover:border-purple-300'
                             }`}
                         >
                             <div className="flex items-center justify-between">
@@ -146,11 +146,11 @@ function RolesTab({ selectedRole, setSelectedRole }) {
                                 }`}>
                                     Level {role.security_level}
                                 </span>
-                                <span className="font-medium text-surface-900 dark:text-white">
+                                <span className="font-medium text-neutral-900 dark:text-white">
                                     {role.display_name}
                                 </span>
                             </div>
-                            <p className="text-sm text-surface-500 mt-1 text-right">
+                            <p className="text-sm text-neutral-500 mt-1 text-right">
                                 {role.users_count} مستخدم
                             </p>
                         </button>
@@ -159,32 +159,32 @@ function RolesTab({ selectedRole, setSelectedRole }) {
             </div>
 
             {/* Role Details */}
-            <div className="lg:col-span-2 border-r border-surface-200 dark:border-surface-700 pr-6">
+            <div className="lg:col-span-2 border-r border-neutral-200 dark:border-neutral-700 pr-6">
                 {selectedRole && roleDetails ? (
                     <div className="space-y-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="text-xl font-bold text-surface-900 dark:text-white">
+                                <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
                                     {roleDetails.data.display_name}
                                 </h3>
-                                <p className="text-surface-500">{roleDetails.data.description}</p>
+                                <p className="text-neutral-500">{roleDetails.data.description}</p>
                             </div>
                             {!roleDetails.data.is_system && (
-                                <button className="text-surface-400 hover:text-surface-600">
+                                <button className="text-neutral-400 hover:text-neutral-600">
                                     <Edit className="w-5 h-5" />
                                 </button>
                             )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-surface-50 dark:bg-surface-700/50 rounded-lg p-4">
-                                <div className="text-sm text-surface-500">مستوى الأمان</div>
+                            <div className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-4">
+                                <div className="text-sm text-neutral-500">مستوى الأمان</div>
                                 <div className="text-2xl font-bold text-purple-600">
                                     {roleDetails.data.security_level}
                                 </div>
                             </div>
-                            <div className="bg-surface-50 dark:bg-surface-700/50 rounded-lg p-4">
-                                <div className="text-sm text-surface-500">عدد الصلاحيات</div>
+                            <div className="bg-neutral-50 dark:bg-neutral-700/50 rounded-lg p-4">
+                                <div className="text-sm text-neutral-500">عدد الصلاحيات</div>
                                 <div className="text-2xl font-bold text-green-600">
                                     {roleDetails.data.permissions?.length || 0}
                                 </div>
@@ -192,7 +192,7 @@ function RolesTab({ selectedRole, setSelectedRole }) {
                         </div>
 
                         <div>
-                            <h4 className="font-semibold text-surface-900 dark:text-white mb-3">
+                            <h4 className="font-semibold text-neutral-900 dark:text-white mb-3">
                                 الصلاحيات
                             </h4>
                             <div className="flex flex-wrap gap-2">
@@ -208,7 +208,7 @@ function RolesTab({ selectedRole, setSelectedRole }) {
                         </div>
                     </div>
                 ) : (
-                    <div className="flex items-center justify-center h-64 text-surface-400">
+                    <div className="flex items-center justify-center h-64 text-neutral-400">
                         <div className="text-center">
                             <Shield className="w-12 h-12 mx-auto mb-2 opacity-50" />
                             <p>اختر دوراً لعرض التفاصيل</p>
@@ -288,27 +288,27 @@ function PermissionsTab() {
 
     return (
         <div className="p-6">
-            <h3 className="font-semibold text-surface-900 dark:text-white mb-4">
+            <h3 className="font-semibold text-neutral-900 dark:text-white mb-4">
                 جميع الصلاحيات المتاحة
             </h3>
 
             <div className="space-y-2">
                 {permissions?.data && Object.entries(permissions.data).map(([category, perms]) => (
-                    <div key={category} className="border border-surface-200 dark:border-surface-700 rounded-lg overflow-hidden">
+                    <div key={category} className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
                         <button
                             onClick={() => toggleCategory(category)}
-                            className="w-full flex items-center justify-between p-4 bg-surface-50 dark:bg-surface-700/50 hover:bg-surface-100 dark:hover:bg-surface-700"
+                            className="w-full flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-700/50 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                         >
                             <div className="flex items-center gap-2">
                                 {expandedCategories.has(category) ? 
                                     <ChevronDown className="w-5 h-5" /> : 
                                     <ChevronRight className="w-5 h-5" />
                                 }
-                                <span className="font-medium text-surface-900 dark:text-white">
+                                <span className="font-medium text-neutral-900 dark:text-white">
                                     {categoryNames[category] || category}
                                 </span>
                             </div>
-                            <span className="text-sm text-surface-500">
+                            <span className="text-sm text-neutral-500">
                                 {perms.length} صلاحية
                             </span>
                         </button>
@@ -318,14 +318,14 @@ function PermissionsTab() {
                                 {perms.map(perm => (
                                     <div
                                         key={perm.id}
-                                        className="flex items-center gap-3 p-3 bg-white dark:bg-surface-800 rounded-lg border border-surface-100 dark:border-surface-700"
+                                        className="flex items-center gap-3 p-3 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700"
                                     >
                                         <Key className="w-4 h-4 text-purple-500" />
                                         <div>
-                                            <div className="font-medium text-surface-900 dark:text-white text-sm">
+                                            <div className="font-medium text-neutral-900 dark:text-white text-sm">
                                                 {perm.display_name}
                                             </div>
-                                            <div className="text-xs text-surface-400">
+                                            <div className="text-xs text-neutral-400">
                                                 {perm.name}
                                             </div>
                                         </div>
@@ -390,13 +390,13 @@ function UsersPermissionsTab({ searchUser, setSearchUser }) {
             {/* Users List */}
             <div className="lg:col-span-1 space-y-4">
                 <div className="relative">
-                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
                     <input
                         type="text"
                         placeholder="بحث عن مستخدم..."
                         value={searchUser}
                         onChange={(e) => setSearchUser(e.target.value)}
-                        className="w-full pr-10 pl-4 py-2 border border-surface-200 dark:border-surface-700 rounded-lg bg-white dark:bg-surface-800"
+                        className="w-full pr-10 pl-4 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800"
                     />
                 </div>
 
@@ -408,14 +408,14 @@ function UsersPermissionsTab({ searchUser, setSearchUser }) {
                             className={`w-full text-right p-3 rounded-lg border transition-all ${
                                 selectedUserId === user.id
                                     ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                                    : 'border-surface-200 dark:border-surface-700 hover:border-purple-300'
+                                    : 'border-neutral-200 dark:border-neutral-700 hover:border-purple-300'
                             }`}
                         >
-                            <div className="font-medium text-surface-900 dark:text-white">
+                            <div className="font-medium text-neutral-900 dark:text-white">
                                 {user.full_name}
                             </div>
-                            <div className="text-sm text-surface-500 flex items-center justify-between">
-                                <span className="px-2 py-0.5 bg-surface-100 dark:bg-surface-700 rounded text-xs">
+                            <div className="text-sm text-neutral-500 flex items-center justify-between">
+                                <span className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-xs">
                                     {user.role}
                                 </span>
                                 <span>{user.email}</span>
@@ -426,21 +426,21 @@ function UsersPermissionsTab({ searchUser, setSearchUser }) {
             </div>
 
             {/* User Permissions */}
-            <div className="lg:col-span-2 border-r border-surface-200 dark:border-surface-700 pr-6">
+            <div className="lg:col-span-2 border-r border-neutral-200 dark:border-neutral-700 pr-6">
                 {selectedUserId && userPerms ? (
                     <div className="space-y-6">
                         <div>
-                            <h3 className="text-xl font-bold text-surface-900 dark:text-white">
+                            <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
                                 {userPerms.data.user?.full_name}
                             </h3>
-                            <p className="text-surface-500">
+                            <p className="text-neutral-500">
                                 {userPerms.data.user?.email} • {userPerms.data.user?.role}
                             </p>
                         </div>
 
                         {/* Current Permissions */}
                         <div>
-                            <h4 className="font-semibold text-surface-900 dark:text-white mb-3 flex items-center gap-2">
+                            <h4 className="font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
                                 <Check className="w-5 h-5 text-green-500" />
                                 الصلاحيات الحالية ({userPerms.data.permissions?.length || 0})
                             </h4>
@@ -465,7 +465,7 @@ function UsersPermissionsTab({ searchUser, setSearchUser }) {
                         {/* Custom Permissions */}
                         {userPerms.data.custom_permissions?.length > 0 && (
                             <div>
-                                <h4 className="font-semibold text-surface-900 dark:text-white mb-3 flex items-center gap-2">
+                                <h4 className="font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
                                     <Key className="w-5 h-5 text-purple-500" />
                                     صلاحيات مخصصة
                                 </h4>
@@ -485,7 +485,7 @@ function UsersPermissionsTab({ searchUser, setSearchUser }) {
                                                 </span>
                                                 <div>
                                                     <span className="font-medium">{cp.name}</span>
-                                                    <span className="text-sm text-surface-500 mr-2">
+                                                    <span className="text-sm text-neutral-500 mr-2">
                                                         بواسطة {cp.granted_by_name}
                                                     </span>
                                                 </div>
@@ -512,7 +512,7 @@ function UsersPermissionsTab({ searchUser, setSearchUser }) {
                         )}
                     </div>
                 ) : (
-                    <div className="flex items-center justify-center h-64 text-surface-400">
+                    <div className="flex items-center justify-center h-64 text-neutral-400">
                         <div className="text-center">
                             <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
                             <p>اختر مستخدماً لعرض صلاحياته</p>

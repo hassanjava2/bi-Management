@@ -88,11 +88,11 @@ export default function DeliveryPage() {
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2 items-center justify-between">
           <div className="flex gap-2 items-center">
-            <span className="text-sm text-surface-500">إجمالي: {(stats.total || 0)} | معلق: {pendingCount}</span>
+            <span className="text-sm text-neutral-500">إجمالي: {(stats.total || 0)} | معلق: {pendingCount}</span>
             <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-input bg-white dark:bg-surface-800"
+            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-input bg-white dark:bg-neutral-800"
           >
             <option value="">كل الحالات</option>
               {Object.entries(statusLabels).map(([k, v]) => (

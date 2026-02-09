@@ -67,11 +67,11 @@ export default function NotificationBell() {
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 relative transition-colors"
+        className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 relative transition-colors"
       >
         <Bell className={clsx(
           'w-5 h-5 transition-colors',
-          isOpen ? 'text-primary-600' : 'text-surface-600 dark:text-surface-400'
+          isOpen ? 'text-primary-600' : 'text-neutral-600 dark:text-neutral-400'
         )} />
         
         {/* Badge */}
@@ -84,10 +84,10 @@ export default function NotificationBell() {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute left-0 mt-2 w-80 bg-white dark:bg-surface-800 rounded-xl shadow-lg border border-surface-200 dark:border-surface-700 z-50 animate-slideIn overflow-hidden">
+        <div className="absolute left-0 mt-2 w-80 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 z-50 animate-slideIn overflow-hidden">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between">
-            <h3 className="font-semibold text-surface-900 dark:text-white">
+          <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+            <h3 className="font-semibold text-neutral-900 dark:text-white">
               الإشعارات
             </h3>
             {unreadCount > 0 && (
@@ -104,17 +104,17 @@ export default function NotificationBell() {
                 <Spinner />
               </div>
             ) : notifications.length === 0 ? (
-              <div className="py-8 text-center text-surface-500 dark:text-surface-400">
+              <div className="py-8 text-center text-neutral-500 dark:text-neutral-400">
                 <Bell className="w-10 h-10 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">لا توجد إشعارات</p>
               </div>
             ) : (
-              <div className="divide-y divide-surface-100 dark:divide-surface-700">
+              <div className="divide-y divide-neutral-100 dark:divide-neutral-700">
                 {notifications.map((notif) => (
                   <div
                     key={notif.id}
                     className={clsx(
-                      'px-4 py-3 hover:bg-surface-50 dark:hover:bg-surface-700/50 cursor-pointer transition-colors',
+                      'px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors',
                       !notif.is_read && 'bg-primary-50/50 dark:bg-primary-900/10'
                     )}
                     onClick={() => {
@@ -131,15 +131,15 @@ export default function NotificationBell() {
                         <p className={clsx(
                           'text-sm',
                           notif.is_read 
-                            ? 'text-surface-600 dark:text-surface-400' 
-                            : 'text-surface-900 dark:text-white font-medium'
+                            ? 'text-neutral-600 dark:text-neutral-400' 
+                            : 'text-neutral-900 dark:text-white font-medium'
                         )}>
                           {notif.title}
                         </p>
-                        <p className="text-xs text-surface-500 dark:text-surface-400 mt-0.5 line-clamp-1">
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-1">
                           {notif.body}
                         </p>
-                        <p className="text-xs text-surface-400 mt-1">
+                        <p className="text-xs text-neutral-400 mt-1">
                           {formatRelativeTime(notif.created_at)}
                         </p>
                       </div>
@@ -157,7 +157,7 @@ export default function NotificationBell() {
           <Link
             to="/notifications"
             onClick={() => setIsOpen(false)}
-            className="flex items-center justify-center gap-2 px-4 py-3 border-t border-surface-200 dark:border-surface-700 text-sm text-primary-600 dark:text-primary-400 hover:bg-surface-50 dark:hover:bg-surface-700/50 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 text-sm text-primary-600 dark:text-primary-400 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
           >
             عرض الكل
             <ExternalLink className="w-4 h-4" />

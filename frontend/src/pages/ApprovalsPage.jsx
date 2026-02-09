@@ -94,13 +94,13 @@ export default function ApprovalsPage() {
         <div className="flex flex-wrap gap-2 items-center">
           <button
             onClick={() => setActiveTab('list')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'list' ? 'bg-primary-600 text-white' : 'bg-surface-100 dark:bg-surface-700'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'list' ? 'bg-primary-600 text-white' : 'bg-neutral-100 dark:bg-neutral-700'}`}
           >
             قائمة الموافقات
           </button>
           <button
             onClick={() => setActiveTab('my-requests')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'my-requests' ? 'bg-primary-600 text-white' : 'bg-surface-100 dark:bg-surface-700'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${activeTab === 'my-requests' ? 'bg-primary-600 text-white' : 'bg-neutral-100 dark:bg-neutral-700'}`}
           >
             طلباتي
           </button>
@@ -109,7 +109,7 @@ export default function ApprovalsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-input bg-white dark:bg-surface-800"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-input bg-white dark:bg-neutral-800"
               >
                 <option value="pending">معلقة</option>
                 <option value="all">الكل</option>
@@ -120,7 +120,7 @@ export default function ApprovalsPage() {
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-input bg-white dark:bg-surface-800"
+                  className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-input bg-white dark:bg-neutral-800"
                 >
                   <option value="">كل الأنواع</option>
                   {types.map((t) => (

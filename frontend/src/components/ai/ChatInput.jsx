@@ -31,7 +31,7 @@ export default function ChatInput({ onSend, disabled, placeholder = 'اكتب ر
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-end gap-2 p-3 border-t border-surface-200 dark:border-surface-700">
+    <form onSubmit={handleSubmit} className="flex items-end gap-2 p-3 border-t border-neutral-200 dark:border-neutral-700">
       <textarea
         ref={textareaRef}
         value={message}
@@ -41,10 +41,10 @@ export default function ChatInput({ onSend, disabled, placeholder = 'اكتب ر
         disabled={disabled}
         rows={1}
         className={clsx(
-          'flex-1 resize-none rounded-xl border border-surface-300 dark:border-surface-600',
-          'px-4 py-2 text-sm bg-white dark:bg-surface-700',
+          'flex-1 resize-none rounded-xl border border-neutral-300 dark:border-neutral-600',
+          'px-4 py-2 text-sm bg-white dark:bg-neutral-700',
           'focus:outline-none focus:ring-2 focus:ring-primary-500',
-          'placeholder-surface-400 dark:placeholder-surface-500',
+          'placeholder-neutral-400 dark:placeholder-neutral-500',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
       />
@@ -56,7 +56,7 @@ export default function ChatInput({ onSend, disabled, placeholder = 'اكتب ر
           'p-2 rounded-xl transition-colors',
           message.trim() && !disabled
             ? 'bg-primary-600 text-white hover:bg-primary-700'
-            : 'bg-surface-200 dark:bg-surface-700 text-surface-400 cursor-not-allowed'
+            : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed'
         )}
       >
         {disabled ? (

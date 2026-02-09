@@ -107,7 +107,7 @@ function ProductSearch({ onSelect, productSearchInputRef }) {
   return (
     <div className="relative" ref={dropdownRef}>
       <div className="relative">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
         <input
           ref={(el) => {
             inputRef.current = el
@@ -122,7 +122,7 @@ function ProductSearch({ onSelect, productSearchInputRef }) {
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="ابحث عن منتج بالاسم... (Enter إضافة، Esc إغلاق)"
-          className="w-full pr-10 pl-4 py-3 border border-surface-300 dark:border-surface-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-lg bg-white dark:bg-surface-800 text-surface-900 dark:text-white"
+          className="w-full pr-10 pl-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
         />
         {isLoading && (
           <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary-500 animate-spin" />
@@ -130,27 +130,27 @@ function ProductSearch({ onSelect, productSearchInputRef }) {
       </div>
 
       {isOpen && results.length > 0 && (
-        <div ref={listRef} className="absolute z-50 w-full mt-2 bg-white dark:bg-surface-800 rounded-xl shadow-2xl border border-surface-200 dark:border-surface-600 max-h-96 overflow-y-auto">
+        <div ref={listRef} className="absolute z-50 w-full mt-2 bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-600 max-h-96 overflow-y-auto">
           {results.map((product, i) => (
             <button
               key={product.id}
               type="button"
               onClick={() => handleSelect(product)}
               className={clsx(
-                'w-full px-4 py-3 text-right border-b border-surface-100 dark:border-surface-700 last:border-0 flex items-center gap-4 transition-colors',
-                i === selectedIndex ? 'bg-primary-50 dark:bg-primary-900/30' : 'hover:bg-surface-50 dark:hover:bg-surface-700/50'
+                'w-full px-4 py-3 text-right border-b border-neutral-100 dark:border-neutral-700 last:border-0 flex items-center gap-4 transition-colors',
+                i === selectedIndex ? 'bg-primary-50 dark:bg-primary-900/30' : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
               )}
             >
               <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center flex-shrink-0">
                 <Package className="w-5 h-5 text-primary-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-surface-900 dark:text-white truncate">{product.name}</p>
-                <p className="text-sm text-surface-500 dark:text-surface-400">{product.group_name}</p>
+                <p className="font-medium text-neutral-900 dark:text-white truncate">{product.name}</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">{product.group_name}</p>
               </div>
               <div className="text-left flex-shrink-0">
                 <p className="font-bold text-primary-600">{formatNumber(product.sale_price)}</p>
-                <p className="text-xs text-surface-400">د.ع</p>
+                <p className="text-xs text-neutral-400">د.ع</p>
               </div>
             </button>
           ))}
@@ -158,9 +158,9 @@ function ProductSearch({ onSelect, productSearchInputRef }) {
       )}
 
       {isOpen && query.length >= 2 && results.length === 0 && !isLoading && (
-        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-surface-800 rounded-xl shadow-xl border border-surface-200 dark:border-surface-600 p-6 text-center">
-          <AlertCircle className="w-12 h-12 text-surface-300 mx-auto mb-2" />
-          <p className="text-surface-500 dark:text-surface-400">لا توجد نتائج</p>
+        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-600 p-6 text-center">
+          <AlertCircle className="w-12 h-12 text-neutral-300 mx-auto mb-2" />
+          <p className="text-neutral-500 dark:text-neutral-400">لا توجد نتائج</p>
         </div>
       )}
     </div>
@@ -237,7 +237,7 @@ function CustomerSearch({ onSelect }) {
   return (
     <div className="relative" ref={dropdownRef}>
       <div className="relative">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
         <input
           ref={inputRef}
           type="text"
@@ -249,7 +249,7 @@ function CustomerSearch({ onSelect }) {
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="ابحث بالاسم أو رقم الهاتف (حرفين على الأقل)"
-          className="w-full pr-10 pl-4 py-3 border border-surface-300 dark:border-surface-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-surface-800 text-surface-900 dark:text-white"
+          className="w-full pr-10 pl-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
         />
         {isLoading && (
           <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary-500 animate-spin" />
@@ -257,14 +257,14 @@ function CustomerSearch({ onSelect }) {
       </div>
 
       {isOpen && results.length > 0 && (
-        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-surface-800 rounded-xl shadow-2xl border border-surface-200 dark:border-surface-600 max-h-64 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-600 max-h-64 overflow-y-auto">
           {results.map((c, i) => (
             <button
               key={c.id}
               type="button"
               onClick={() => handleSelect(c)}
               className={clsx(
-                'w-full px-4 py-3 text-right hover:bg-surface-50 dark:hover:bg-surface-700/50 border-b border-surface-100 dark:border-surface-700 last:border-0 flex items-center gap-3 transition-colors',
+                'w-full px-4 py-3 text-right hover:bg-neutral-50 dark:hover:bg-neutral-700/50 border-b border-neutral-100 dark:border-neutral-700 last:border-0 flex items-center gap-3 transition-colors',
                 i === selectedIndex ? 'bg-primary-50 dark:bg-primary-900/30' : ''
               )}
             >
@@ -272,8 +272,8 @@ function CustomerSearch({ onSelect }) {
                 <User className="w-5 h-5 text-primary-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-surface-900 dark:text-white truncate">{c.name}</p>
-                <p className="text-sm text-surface-500 dark:text-surface-400">{c.phone || c.phone2 || '—'}</p>
+                <p className="font-medium text-neutral-900 dark:text-white truncate">{c.name}</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">{c.phone || c.phone2 || '—'}</p>
               </div>
             </button>
           ))}
@@ -281,8 +281,8 @@ function CustomerSearch({ onSelect }) {
       )}
 
       {isOpen && query.length >= 2 && results.length === 0 && !isLoading && (
-        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-surface-800 rounded-xl shadow-xl border border-surface-200 dark:border-surface-600 p-4 text-center">
-          <p className="text-surface-500 dark:text-surface-400 text-sm">لا يوجد عميل بهذا الاسم أو الرقم. اترك فارغاً للعميل النقدي.</p>
+        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-600 p-4 text-center">
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm">لا يوجد عميل بهذا الاسم أو الرقم. اترك فارغاً للعميل النقدي.</p>
         </div>
       )}
     </div>
@@ -337,7 +337,7 @@ function SupplierSearch({ onSelect }) {
   return (
     <div className="relative" ref={dropdownRef}>
       <div className="relative">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
         <input
           ref={inputRef}
           type="text"
@@ -346,20 +346,20 @@ function SupplierSearch({ onSelect }) {
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="ابحث عن مورد بالاسم أو الهاتف"
-          className="w-full pr-10 pl-4 py-3 border border-surface-300 dark:border-surface-600 rounded-xl focus:ring-2 focus:ring-primary-500 bg-white dark:bg-surface-800 text-surface-900 dark:text-white"
+          className="w-full pr-10 pl-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-primary-500 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
         />
         {isLoading && <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary-500 animate-spin" />}
       </div>
       {isOpen && results.length > 0 && (
-        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-surface-800 rounded-xl shadow-2xl border border-surface-200 dark:border-surface-600 max-h-64 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-600 max-h-64 overflow-y-auto">
           {results.map((s, i) => (
-            <button key={s.id} type="button" onClick={() => handleSelect(s)} className={clsx('w-full px-4 py-3 text-right border-b border-surface-100 dark:border-surface-700 last:border-0 flex items-center gap-3', i === selectedIndex ? 'bg-primary-50 dark:bg-primary-900/30' : 'hover:bg-surface-50 dark:hover:bg-surface-700/50')}>
+            <button key={s.id} type="button" onClick={() => handleSelect(s)} className={clsx('w-full px-4 py-3 text-right border-b border-neutral-100 dark:border-neutral-700 last:border-0 flex items-center gap-3', i === selectedIndex ? 'bg-primary-50 dark:bg-primary-900/30' : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/50')}>
               <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center flex-shrink-0">
                 <Building2 className="w-5 h-5 text-primary-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-surface-900 dark:text-white truncate">{s.name}</p>
-                <p className="text-sm text-surface-500 dark:text-surface-400">{s.phone || s.phone2 || '—'}</p>
+                <p className="font-medium text-neutral-900 dark:text-white truncate">{s.name}</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">{s.phone || s.phone2 || '—'}</p>
               </div>
             </button>
           ))}
@@ -374,21 +374,21 @@ function InvoiceItem({ item, index, onUpdate, onRemove, showBuyPrice }) {
   const [isEditing, setIsEditing] = useState(false)
 
   return (
-    <tr className="hover:bg-surface-50 transition-colors">
-      <td className="px-4 py-3 text-center font-medium text-surface-500">
+    <tr className="hover:bg-neutral-50 transition-colors">
+      <td className="px-4 py-3 text-center font-medium text-neutral-500">
         {index + 1}
       </td>
       <td className="px-4 py-3">
         <div>
-          <p className="font-medium text-surface-900">{item.name}</p>
-          <p className="text-sm text-surface-500">{item.group_name}</p>
+          <p className="font-medium text-neutral-900">{item.name}</p>
+          <p className="text-sm text-neutral-500">{item.group_name}</p>
         </div>
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center justify-center gap-2">
           <button
             onClick={() => onUpdate(index, { quantity: Math.max(1, item.quantity - 1) })}
-            className="w-8 h-8 rounded-lg bg-surface-100 hover:bg-surface-200 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors"
           >
             <Minus className="w-4 h-4" />
           </button>
@@ -396,19 +396,19 @@ function InvoiceItem({ item, index, onUpdate, onRemove, showBuyPrice }) {
             type="number"
             value={item.quantity}
             onChange={(e) => onUpdate(index, { quantity: Math.max(1, parseInt(e.target.value) || 1) })}
-            className="w-16 text-center border border-surface-300 rounded-lg py-1 font-medium"
+            className="w-16 text-center border border-neutral-300 rounded-lg py-1 font-medium"
             min="1"
           />
           <button
             onClick={() => onUpdate(index, { quantity: item.quantity + 1 })}
-            className="w-8 h-8 rounded-lg bg-surface-100 hover:bg-surface-200 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors"
           >
             <Plus className="w-4 h-4" />
           </button>
         </div>
       </td>
       {showBuyPrice && (
-        <td className="px-4 py-3 text-center text-surface-500">
+        <td className="px-4 py-3 text-center text-neutral-500">
           {formatNumber(item.buy_price)}
         </td>
       )}
@@ -431,7 +431,7 @@ function InvoiceItem({ item, index, onUpdate, onRemove, showBuyPrice }) {
           </button>
         )}
       </td>
-      <td className="px-4 py-3 text-center font-bold text-surface-900">
+      <td className="px-4 py-3 text-center font-bold text-neutral-900">
         {formatNumber(item.quantity * item.unit_price)}
       </td>
       {showBuyPrice && (
@@ -599,15 +599,15 @@ export default function NewInvoicePage() {
   const TypeIcon = typeConfig.icon
 
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-surface-900">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
       {/* Header */}
-      <div className="bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 sticky top-0 z-40">
+      <div className="bg-white dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate(-1)}
-                className="p-2 hover:bg-surface-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -619,10 +619,10 @@ export default function NewInvoicePage() {
                   <TypeIcon className={`w-6 h-6 text-${typeConfig.color}-600`} />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-surface-900 dark:text-white">
+                  <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                     فاتورة {typeConfig.name}
                   </h1>
-                  <p className="text-sm text-surface-500">
+                  <p className="text-sm text-neutral-500">
                     {new Date().toLocaleDateString('ar-IQ', { 
                       weekday: 'long', 
                       year: 'numeric', 
@@ -635,7 +635,7 @@ export default function NewInvoicePage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 text-sm text-surface-600 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={showBuyPrice}
@@ -652,7 +652,7 @@ export default function NewInvoicePage() {
                   'flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-all',
                   items.length > 0
                     ? 'bg-primary-600 text-white hover:bg-primary-700'
-                    : 'bg-surface-200 text-surface-400 cursor-not-allowed'
+                    : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
                 )}
               >
                 {saveMutation.isPending ? (
@@ -684,7 +684,7 @@ export default function NewInvoicePage() {
           {/* القسم الأيسر - البنود */}
           <div className="col-span-12 lg:col-span-8 space-y-6">
             {/* اختيار نوع الفاتورة */}
-            <div className="bg-white dark:bg-surface-800 rounded-2xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-4 shadow-sm">
               <div className="grid grid-cols-4 gap-3">
                 {Object.entries(invoiceTypes).map(([key, config]) => (
                   <button
@@ -694,16 +694,16 @@ export default function NewInvoicePage() {
                       'flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all',
                       invoiceType === key
                         ? `border-${config.color}-500 bg-${config.color}-50`
-                        : 'border-surface-200 hover:border-surface-300'
+                        : 'border-neutral-200 hover:border-neutral-300'
                     )}
                   >
                     <config.icon className={clsx(
                       'w-6 h-6',
-                      invoiceType === key ? `text-${config.color}-600` : 'text-surface-400'
+                      invoiceType === key ? `text-${config.color}-600` : 'text-neutral-400'
                     )} />
                     <span className={clsx(
                       'text-sm font-medium',
-                      invoiceType === key ? `text-${config.color}-700` : 'text-surface-600'
+                      invoiceType === key ? `text-${config.color}-700` : 'text-neutral-600'
                     )}>
                       {config.name}
                     </span>
@@ -742,8 +742,8 @@ export default function NewInvoicePage() {
             )}
 
             {/* البحث عن المنتجات */}
-            <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-sm">
-              <h3 className="font-bold text-surface-900 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
                 <Package className="w-5 h-5 text-primary-600" />
                 إضافة منتجات
               </h3>
@@ -751,27 +751,27 @@ export default function NewInvoicePage() {
             </div>
 
             {/* جدول البنود */}
-            <div className="bg-white dark:bg-surface-800 rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm overflow-hidden">
               {items.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-surface-50 dark:bg-surface-700">
+                    <thead className="bg-neutral-50 dark:bg-neutral-700">
                       <tr>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-surface-500 uppercase w-12">#</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-surface-500 uppercase">المنتج</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-surface-500 uppercase w-32">الكمية</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase w-12">#</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase">المنتج</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase w-32">الكمية</th>
                         {showBuyPrice && (
-                          <th className="px-4 py-3 text-center text-xs font-medium text-surface-500 uppercase w-28">الشراء</th>
+                          <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase w-28">الشراء</th>
                         )}
-                        <th className="px-4 py-3 text-center text-xs font-medium text-surface-500 uppercase w-28">السعر</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-surface-500 uppercase w-28">المجموع</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase w-28">السعر</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase w-28">المجموع</th>
                         {showBuyPrice && (
-                          <th className="px-4 py-3 text-center text-xs font-medium text-surface-500 uppercase w-24">الربح</th>
+                          <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase w-24">الربح</th>
                         )}
-                        <th className="px-4 py-3 text-center text-xs font-medium text-surface-500 uppercase w-16"></th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase w-16"></th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-surface-100 dark:divide-surface-700">
+                    <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
                       {items.map((item, index) => (
                         <InvoiceItem
                           key={`${item.product_id}-${index}`}
@@ -787,9 +787,9 @@ export default function NewInvoicePage() {
                 </div>
               ) : (
                 <div className="p-12 text-center">
-                  <Package className="w-16 h-16 text-surface-300 mx-auto mb-4" />
-                  <p className="text-surface-500 text-lg">لا توجد منتجات</p>
-                  <p className="text-surface-400 text-sm">ابحث وأضف منتجات من الأعلى</p>
+                  <Package className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+                  <p className="text-neutral-500 text-lg">لا توجد منتجات</p>
+                  <p className="text-neutral-400 text-sm">ابحث وأضف منتجات من الأعلى</p>
                 </div>
               )}
             </div>
@@ -798,21 +798,21 @@ export default function NewInvoicePage() {
           {/* القسم الأيمن - الملخص */}
           <div className="col-span-12 lg:col-span-4 space-y-6">
             {/* بيانات العميل / المورد */}
-            <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-sm">
-              <h3 className="font-bold text-surface-900 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
                 {invoiceType === 'purchase' ? <Building2 className="w-5 h-5 text-primary-600" /> : <User className="w-5 h-5 text-primary-600" />}
                 {invoiceType === 'purchase' ? 'المورد' : 'العميل'}
               </h3>
               
               {invoiceType === 'purchase' ? (
                 supplier ? (
-                  <div className="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700 rounded-xl">
+                  <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
                     <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center">
                       <Building2 className="w-5 h-5 text-primary-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-surface-900 dark:text-white">{supplier.name}</p>
-                      <p className="text-sm text-surface-500">{supplier.phone}</p>
+                      <p className="font-medium text-neutral-900 dark:text-white">{supplier.name}</p>
+                      <p className="text-sm text-neutral-500">{supplier.phone}</p>
                     </div>
                     <button type="button" onClick={() => setSupplier(null)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg">
                       <X className="w-4 h-4" />
@@ -821,18 +821,18 @@ export default function NewInvoicePage() {
                 ) : (
                   <div className="space-y-3">
                     <SupplierSearch onSelect={setSupplier} />
-                    <p className="text-sm text-surface-500 dark:text-surface-400 text-center">اختر المورد</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center">اختر المورد</p>
                   </div>
                 )
               ) : customer ? (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700 rounded-xl">
+                  <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
                     <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center">
                       <User className="w-5 h-5 text-primary-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-surface-900 dark:text-white">{customer.name}</p>
-                      <p className="text-sm text-surface-500">{customer.phone}</p>
+                      <p className="font-medium text-neutral-900 dark:text-white">{customer.name}</p>
+                      <p className="text-sm text-neutral-500">{customer.phone}</p>
                     </div>
                     <button type="button" onClick={() => setCustomer(null)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg">
                       <X className="w-4 h-4" />
@@ -842,7 +842,7 @@ export default function NewInvoicePage() {
               ) : (
                 <div className="space-y-3">
                   <CustomerSearch onSelect={setCustomer} />
-                  <p className="text-sm text-surface-500 dark:text-surface-400 text-center">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center">
                     ابحث واختر عميلاً من القائمة، أو اترك فارغاً للعميل النقدي
                   </p>
                 </div>
@@ -850,21 +850,21 @@ export default function NewInvoicePage() {
             </div>
 
             {/* الخصم */}
-            <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-sm">
-              <h3 className="font-bold text-surface-900 dark:text-white mb-4">الخصم</h3>
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-bold text-neutral-900 dark:text-white mb-4">الخصم</h3>
               <div className="flex gap-2">
                 <input
                   type="number"
                   value={discount}
                   onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                  className="flex-1 px-4 py-2 border border-surface-300 rounded-xl text-center font-medium"
+                  className="flex-1 px-4 py-2 border border-neutral-300 rounded-xl text-center font-medium"
                   placeholder="0"
                   min="0"
                 />
                 <select
                   value={discountType}
                   onChange={(e) => setDiscountType(e.target.value)}
-                  className="px-4 py-2 border border-surface-300 rounded-xl"
+                  className="px-4 py-2 border border-neutral-300 rounded-xl"
                 >
                   <option value="amount">د.ع</option>
                   <option value="percent">%</option>
@@ -933,13 +933,13 @@ export default function NewInvoicePage() {
             </div>
 
             {/* ملاحظات */}
-            <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-sm">
-              <h3 className="font-bold text-surface-900 dark:text-white mb-4">ملاحظات</h3>
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-bold text-neutral-900 dark:text-white mb-4">ملاحظات</h3>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border border-surface-300 rounded-xl resize-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 border border-neutral-300 rounded-xl resize-none focus:ring-2 focus:ring-primary-500"
                 placeholder="ملاحظات إضافية..."
               />
             </div>
@@ -953,7 +953,7 @@ export default function NewInvoicePage() {
                   'flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all',
                   items.length > 0
                     ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                    : 'bg-surface-200 text-surface-400 cursor-not-allowed'
+                    : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
                 )}
               >
                 <Check className="w-6 h-6" />

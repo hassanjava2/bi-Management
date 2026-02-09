@@ -80,37 +80,37 @@ export default function AttendanceReport() {
       <Card>
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               من تاريخ
             </label>
             <input
               type="date"
               value={filters.from_date}
               onChange={(e) => setFilters({ ...filters, from_date: e.target.value })}
-              className="w-full rounded-lg border border-surface-300 dark:border-surface-600 px-3 py-2 dark:bg-surface-700"
+              className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 px-3 py-2 dark:bg-neutral-700"
             />
           </div>
           
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               إلى تاريخ
             </label>
             <input
               type="date"
               value={filters.to_date}
               onChange={(e) => setFilters({ ...filters, to_date: e.target.value })}
-              className="w-full rounded-lg border border-surface-300 dark:border-surface-600 px-3 py-2 dark:bg-surface-700"
+              className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 px-3 py-2 dark:bg-neutral-700"
             />
           </div>
 
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               الموظف
             </label>
             <select
               value={filters.user_id}
               onChange={(e) => setFilters({ ...filters, user_id: e.target.value })}
-              className="w-full rounded-lg border border-surface-300 dark:border-surface-600 px-3 py-2 dark:bg-surface-700"
+              className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 px-3 py-2 dark:bg-neutral-700"
             >
               <option value="">كل الموظفين</option>
               {users.map(u => (
@@ -120,13 +120,13 @@ export default function AttendanceReport() {
           </div>
 
           <div className="flex-1 min-w-[150px]">
-            <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               الحالة
             </label>
             <select
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="w-full rounded-lg border border-surface-300 dark:border-surface-600 px-3 py-2 dark:bg-surface-700"
+              className="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 px-3 py-2 dark:bg-neutral-700"
             >
               <option value="">الكل</option>
               <option value="present">حاضر</option>
@@ -147,9 +147,9 @@ export default function AttendanceReport() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 text-center border border-surface-200 dark:border-surface-700">
-          <p className="text-2xl font-bold text-surface-900 dark:text-white">{summary.total}</p>
-          <p className="text-xs text-surface-500">إجمالي السجلات</p>
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 text-center border border-neutral-200 dark:border-neutral-700">
+          <p className="text-2xl font-bold text-neutral-900 dark:text-white">{summary.total}</p>
+          <p className="text-xs text-neutral-500">إجمالي السجلات</p>
         </div>
         <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center border border-green-200 dark:border-green-800">
           <p className="text-2xl font-bold text-green-600">{summary.present}</p>
@@ -184,54 +184,54 @@ export default function AttendanceReport() {
             <Spinner size="lg" />
           </div>
         ) : records.length === 0 ? (
-          <div className="text-center py-12 text-surface-500">
+          <div className="text-center py-12 text-neutral-500">
             <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
             <p>لا توجد سجلات</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-surface-50 dark:bg-surface-700">
+              <thead className="bg-neutral-50 dark:bg-neutral-700">
                 <tr>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">التاريخ</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">الموظف</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">القسم</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">الحضور</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">الانصراف</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">ساعات العمل</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">التأخير</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">الحالة</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">التاريخ</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الموظف</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">القسم</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الحضور</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الانصراف</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">ساعات العمل</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">التأخير</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الحالة</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
                 {records.map(record => (
-                  <tr key={record.id} className="hover:bg-surface-50 dark:hover:bg-surface-700/50">
-                    <td className="px-4 py-3 text-sm text-surface-900 dark:text-white">
+                  <tr key={record.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                    <td className="px-4 py-3 text-sm text-neutral-900 dark:text-white">
                       {formatDate(record.date)}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <div>
-                        <p className="font-medium text-surface-900 dark:text-white">{record.user_name}</p>
-                        <p className="text-xs text-surface-500">{record.employee_code}</p>
+                        <p className="font-medium text-neutral-900 dark:text-white">{record.user_name}</p>
+                        <p className="text-xs text-neutral-500">{record.employee_code}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-surface-600 dark:text-surface-400">
+                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
                       {record.department_name || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-surface-600 dark:text-surface-400">
+                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
                       {formatTime(record.check_in) || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-surface-600 dark:text-surface-400">
+                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
                       {formatTime(record.check_out) || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-surface-600 dark:text-surface-400">
+                    <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
                       {formatMinutes(record.work_minutes)}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {record.late_minutes > 0 ? (
                         <span className="text-orange-600">{record.late_minutes} د</span>
                       ) : (
-                        <span className="text-surface-400">-</span>
+                        <span className="text-neutral-400">-</span>
                       )}
                     </td>
                     <td className="px-4 py-3">

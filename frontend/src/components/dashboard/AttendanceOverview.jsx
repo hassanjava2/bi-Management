@@ -45,7 +45,7 @@ export default function AttendanceOverview() {
                 stroke="currentColor"
                 strokeWidth="12"
                 fill="none"
-                className="text-surface-200 dark:text-surface-700"
+                className="text-neutral-200 dark:text-neutral-700"
               />
               <circle
                 cx="64"
@@ -59,21 +59,21 @@ export default function AttendanceOverview() {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl font-bold text-surface-900 dark:text-white">
+              <span className="text-2xl font-bold text-neutral-900 dark:text-white">
                 {attendanceRate}%
               </span>
-              <span className="text-xs text-surface-500">نسبة الحضور</span>
+              <span className="text-xs text-neutral-500">نسبة الحضور</span>
             </div>
           </div>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-surface-50 dark:bg-surface-700/50">
-            <Users className="w-5 h-5 text-surface-500" />
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-700/50">
+            <Users className="w-5 h-5 text-neutral-500" />
             <div>
-              <p className="text-lg font-semibold text-surface-900 dark:text-white">{total}</p>
-              <p className="text-xs text-surface-500">إجمالي</p>
+              <p className="text-lg font-semibold text-neutral-900 dark:text-white">{total}</p>
+              <p className="text-xs text-neutral-500">إجمالي</p>
             </div>
           </div>
           

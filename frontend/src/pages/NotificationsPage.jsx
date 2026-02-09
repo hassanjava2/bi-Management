@@ -60,8 +60,8 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white">الإشعارات</h1>
-          <p className="text-surface-500 dark:text-surface-400 mt-1">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">الإشعارات</h1>
+          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
             {unreadCount > 0 ? `لديك ${unreadCount} إشعارات غير مقروءة` : 'لا توجد إشعارات جديدة'}
           </p>
         </div>
@@ -84,8 +84,8 @@ export default function NotificationsPage() {
         </div>
       ) : notifications.length === 0 ? (
         <Card className="text-center py-12">
-          <Bell className="w-12 h-12 text-surface-300 mx-auto mb-4" />
-          <p className="text-surface-500">لا توجد إشعارات</p>
+          <Bell className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
+          <p className="text-neutral-500">لا توجد إشعارات</p>
         </Card>
       ) : (
         <div className="space-y-3">
@@ -108,15 +108,15 @@ export default function NotificationsPage() {
                       <h3 className={clsx(
                         'font-medium',
                         notif.is_read 
-                          ? 'text-surface-600 dark:text-surface-400' 
-                          : 'text-surface-900 dark:text-white'
+                          ? 'text-neutral-600 dark:text-neutral-400' 
+                          : 'text-neutral-900 dark:text-white'
                       )}>
                         {notif.title}
                       </h3>
-                      <p className="text-sm text-surface-500 dark:text-surface-400 mt-1">
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                         {notif.body}
                       </p>
-                      <p className="text-xs text-surface-400 mt-2">
+                      <p className="text-xs text-neutral-400 mt-2">
                         {formatRelativeTime(notif.created_at)}
                       </p>
                     </div>
@@ -125,10 +125,10 @@ export default function NotificationsPage() {
                       {!notif.is_read && (
                         <button
                           onClick={() => markAsReadMutation.mutate(notif.id)}
-                          className="p-2 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg"
+                          className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg"
                           title="تحديد كمقروء"
                         >
-                          <Check className="w-4 h-4 text-surface-400" />
+                          <Check className="w-4 h-4 text-neutral-400" />
                         </button>
                       )}
                       <button

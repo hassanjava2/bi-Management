@@ -240,10 +240,10 @@ export default function BotDashboard() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-screen bg-surface-100 dark:bg-surface-900">
+            <div className="flex items-center justify-center h-screen bg-neutral-100 dark:bg-neutral-900">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                    <p className="mt-4 text-surface-600 dark:text-surface-400">جاري تحميل البوت...</p>
+                    <p className="mt-4 text-neutral-600 dark:text-neutral-400">جاري تحميل البوت...</p>
                 </div>
             </div>
         );
@@ -251,11 +251,11 @@ export default function BotDashboard() {
 
     if (error) {
         return (
-            <div className="flex items-center justify-center h-screen bg-surface-100 dark:bg-surface-900">
-                <div className="text-center p-8 bg-white dark:bg-surface-800 rounded-lg shadow-lg">
+            <div className="flex items-center justify-center h-screen bg-neutral-100 dark:bg-neutral-900">
+                <div className="text-center p-8 bg-white dark:bg-neutral-800 rounded-lg shadow-lg">
                     <div className="text-6xl mb-4">❌</div>
                     <h2 className="text-xl font-bold text-red-600 mb-2">خطأ في الاتصال</h2>
-                    <p className="text-surface-600 dark:text-surface-400 mb-4">{error}</p>
+                    <p className="text-neutral-600 dark:text-neutral-400 mb-4">{error}</p>
                     <button 
                         onClick={fetchData}
                         className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
@@ -268,10 +268,10 @@ export default function BotDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-surface-100 dark:bg-surface-900 p-6" dir="rtl">
+        <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 p-6" dir="rtl">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-3xl font-bold text-surface-800 dark:text-white flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-neutral-800 dark:text-white flex items-center gap-3">
                     🤖 البوت الذكي
                     <span className={`text-sm px-3 py-1 rounded-full ${
                         botStatus?.isRunning 
@@ -285,13 +285,13 @@ export default function BotDashboard() {
                             : 'متوقف'}
                     </span>
                 </h1>
-                <p className="text-surface-600 dark:text-surface-400 mt-1">
+                <p className="text-neutral-600 dark:text-neutral-400 mt-1">
                     نظام ذكي يعمل في الخلفية لإنشاء البيانات، اكتشاف الأخطاء، وتحسين النظام
                 </p>
             </div>
 
             {/* Controls */}
-            <div className="bg-white dark:bg-surface-800 rounded-lg shadow p-4 mb-6">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow p-4 mb-6">
                 <div className="flex flex-wrap gap-3">
                     {!botStatus?.isRunning ? (
                         <button onClick={handleStart} className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center gap-2">
@@ -314,7 +314,7 @@ export default function BotDashboard() {
                         </>
                     )}
                     
-                    <div className="border-r border-surface-300 dark:border-surface-600 mx-2"></div>
+                    <div className="border-r border-neutral-300 dark:border-neutral-600 mx-2"></div>
                     
                     <button onClick={handleRunTest} className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition">
                         🧪 اختبار فوري
@@ -332,7 +332,7 @@ export default function BotDashboard() {
                         🎨 تحليل UX
                     </button>
                     
-                    <div className="border-r border-surface-300 dark:border-surface-600 mx-2"></div>
+                    <div className="border-r border-neutral-300 dark:border-neutral-600 mx-2"></div>
                     
                     <button onClick={handleSimulate} className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition">
                         🎭 محاكاة مستخدم
@@ -341,13 +341,13 @@ export default function BotDashboard() {
                         👤 سيناريو واحد
                     </button>
                     
-                    <div className="border-r border-surface-300 dark:border-surface-600 mx-2"></div>
+                    <div className="border-r border-neutral-300 dark:border-neutral-600 mx-2"></div>
                     
                     <button onClick={handleTestFeatures} className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition font-bold">
                         🔬 فحص 840 ميزة
                     </button>
                     
-                    <div className="border-r border-surface-300 dark:border-surface-600 mx-2"></div>
+                    <div className="border-r border-neutral-300 dark:border-neutral-600 mx-2"></div>
                     
                     {workerStats?.isWorking ? (
                         <button onClick={handleStopWorker} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition animate-pulse">
@@ -405,8 +405,8 @@ export default function BotDashboard() {
             </div>
 
             {/* Tabs */}
-            <div className="bg-white dark:bg-surface-800 rounded-lg shadow">
-                <div className="border-b border-surface-200 dark:border-surface-700">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg shadow">
+                <div className="border-b border-neutral-200 dark:border-neutral-700">
                     <nav className="flex gap-4 px-4">
                         {['overview', 'errors', 'suggestions', 'performance', 'logs'].map(tab => (
                             <button
@@ -415,7 +415,7 @@ export default function BotDashboard() {
                                 className={`py-4 px-2 border-b-2 transition ${
                                     activeTab === tab
                                         ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                        : 'border-transparent text-surface-500 hover:text-surface-700'
+                                        : 'border-transparent text-neutral-500 hover:text-neutral-700'
                                 }`}
                             >
                                 {tab === 'overview' && '📊 نظرة عامة'}
@@ -436,8 +436,8 @@ export default function BotDashboard() {
                                 <h3 className="text-lg font-semibold mb-3">🎯 النشاط الأخير</h3>
                                 <div className="space-y-2">
                                     {logs.slice(0, 10).map((log, i) => (
-                                        <div key={i} className="p-2 bg-surface-50 dark:bg-surface-700 rounded text-sm">
-                                            <span className="text-surface-500">{new Date(log.created_at).toLocaleTimeString('ar-IQ')}</span>
+                                        <div key={i} className="p-2 bg-neutral-50 dark:bg-neutral-700 rounded text-sm">
+                                            <span className="text-neutral-500">{new Date(log.created_at).toLocaleTimeString('ar-IQ')}</span>
                                             <span className="mx-2">-</span>
                                             <span>{log.action}</span>
                                         </div>
@@ -451,7 +451,7 @@ export default function BotDashboard() {
                                     <div className="space-y-3">
                                         <ProgressBar label="المعالج (CPU)" value={performance.summary.avgCpuUsage} />
                                         <ProgressBar label="الذاكرة" value={performance.summary.avgMemoryUsage} />
-                                        <div className="text-sm text-surface-600 dark:text-surface-400">
+                                        <div className="text-sm text-neutral-600 dark:text-neutral-400">
                                             متوسط وقت الاستعلام: {performance.summary.avgDbQueryTime}ms
                                         </div>
                                     </div>
@@ -463,7 +463,7 @@ export default function BotDashboard() {
                                         {performance.recommendations.map((rec, i) => (
                                             <div key={i} className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded mb-2">
                                                 <div className="font-medium">{rec.title}</div>
-                                                <ul className="text-sm text-surface-600 dark:text-surface-400 mt-1">
+                                                <ul className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                                                     {rec.suggestions.map((s, j) => <li key={j}>• {s}</li>)}
                                                 </ul>
                                             </div>
@@ -478,7 +478,7 @@ export default function BotDashboard() {
                     {activeTab === 'errors' && (
                         <div className="space-y-3">
                             {errors.length === 0 ? (
-                                <div className="text-center py-8 text-surface-500">
+                                <div className="text-center py-8 text-neutral-500">
                                     ✅ لا توجد أخطاء
                                 </div>
                             ) : (
@@ -486,7 +486,7 @@ export default function BotDashboard() {
                                     <div key={i} className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
                                         <div className="flex justify-between">
                                             <span className="font-medium text-red-800 dark:text-red-400">{error.source}</span>
-                                            <span className="text-sm text-surface-500">{new Date(error.timestamp).toLocaleString('ar-IQ')}</span>
+                                            <span className="text-sm text-neutral-500">{new Date(error.timestamp).toLocaleString('ar-IQ')}</span>
                                         </div>
                                         <p className="text-sm mt-1">{error.message}</p>
                                     </div>
@@ -499,7 +499,7 @@ export default function BotDashboard() {
                     {activeTab === 'suggestions' && (
                         <div className="space-y-3">
                             {suggestions.length === 0 ? (
-                                <div className="text-center py-8 text-surface-500">
+                                <div className="text-center py-8 text-neutral-500">
                                     لا توجد اقتراحات حالياً
                                 </div>
                             ) : (
@@ -514,8 +514,8 @@ export default function BotDashboard() {
                                                 }`}>
                                                     {suggestion.priority}
                                                 </span>
-                                                <span className="mx-2 text-sm text-surface-500">{suggestion.type}</span>
-                                                <span className="text-sm text-surface-500">{suggestion.component}</span>
+                                                <span className="mx-2 text-sm text-neutral-500">{suggestion.type}</span>
+                                                <span className="text-sm text-neutral-500">{suggestion.component}</span>
                                             </div>
                                             {suggestion.status === 'pending' && suggestion.autoFix && (
                                                 <button
@@ -537,16 +537,16 @@ export default function BotDashboard() {
                     {activeTab === 'performance' && (
                         <div>
                             <div className="grid md:grid-cols-3 gap-4 mb-6">
-                                <div className="p-4 bg-surface-50 dark:bg-surface-700 rounded-lg">
-                                    <h4 className="text-sm text-surface-500 mb-1">المعالج</h4>
+                                <div className="p-4 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+                                    <h4 className="text-sm text-neutral-500 mb-1">المعالج</h4>
                                     <div className="text-2xl font-bold">{performance?.summary?.avgCpuUsage || 0}%</div>
                                 </div>
-                                <div className="p-4 bg-surface-50 dark:bg-surface-700 rounded-lg">
-                                    <h4 className="text-sm text-surface-500 mb-1">الذاكرة</h4>
+                                <div className="p-4 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+                                    <h4 className="text-sm text-neutral-500 mb-1">الذاكرة</h4>
                                     <div className="text-2xl font-bold">{performance?.summary?.avgMemoryUsage || 0}%</div>
                                 </div>
-                                <div className="p-4 bg-surface-50 dark:bg-surface-700 rounded-lg">
-                                    <h4 className="text-sm text-surface-500 mb-1">وقت الاستعلام</h4>
+                                <div className="p-4 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+                                    <h4 className="text-sm text-neutral-500 mb-1">وقت الاستعلام</h4>
                                     <div className="text-2xl font-bold">{performance?.summary?.avgDbQueryTime || 0}ms</div>
                                 </div>
                             </div>
@@ -583,10 +583,10 @@ export default function BotDashboard() {
                     {activeTab === 'logs' && (
                         <div className="space-y-2 max-h-96 overflow-y-auto">
                             {logs.map((log, i) => (
-                                <div key={i} className="p-2 bg-surface-50 dark:bg-surface-700 rounded text-sm font-mono">
-                                    <span className="text-surface-400">[{new Date(log.created_at).toLocaleString('ar-IQ')}]</span>
+                                <div key={i} className="p-2 bg-neutral-50 dark:bg-neutral-700 rounded text-sm font-mono">
+                                    <span className="text-neutral-400">[{new Date(log.created_at).toLocaleString('ar-IQ')}]</span>
                                     <span className="mx-2 text-blue-600">{log.action}</span>
-                                    {log.data && <span className="text-surface-500">{JSON.stringify(JSON.parse(log.data || '{}'))}</span>}
+                                    {log.data && <span className="text-neutral-500">{JSON.stringify(JSON.parse(log.data || '{}'))}</span>}
                                 </div>
                             ))}
                         </div>
@@ -600,7 +600,7 @@ export default function BotDashboard() {
 // Helper Components
 function StatCard({ title, value, icon, color = 'gray' }) {
     const colors = {
-        gray: 'bg-surface-100 text-surface-800',
+        gray: 'bg-neutral-100 text-neutral-800',
         blue: 'bg-blue-100 text-blue-800',
         green: 'bg-green-100 text-green-800',
         red: 'bg-red-100 text-red-800',
@@ -626,7 +626,7 @@ function ProgressBar({ label, value }) {
                 <span>{label}</span>
                 <span>{value}%</span>
             </div>
-            <div className="h-2 bg-surface-200 rounded-full overflow-hidden">
+            <div className="h-2 bg-neutral-200 rounded-full overflow-hidden">
                 <div className={`h-full ${color} transition-all`} style={{ width: `${value}%` }}></div>
             </div>
         </div>

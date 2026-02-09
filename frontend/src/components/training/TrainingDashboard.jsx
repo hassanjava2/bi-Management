@@ -29,11 +29,11 @@ export default function TrainingDashboard() {
   if (!progress?.in_training) {
     return (
       <Card className="text-center py-12">
-        <GraduationCap className="w-16 h-16 mx-auto text-surface-400 mb-4" />
-        <h3 className="text-xl font-semibold text-surface-900 dark:text-white mb-2">
+        <GraduationCap className="w-16 h-16 mx-auto text-neutral-400 mb-4" />
+        <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
           لا يوجد تدريب حالي
         </h3>
-        <p className="text-surface-500">
+        <p className="text-neutral-500">
           أنت جاهز للعمل! لا يوجد برنامج تدريب نشط حالياً.
         </p>
       </Card>
@@ -80,19 +80,19 @@ export default function TrainingDashboard() {
           <div className="grid grid-cols-3 gap-4 mt-6">
             <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
               <p className="text-2xl font-bold text-green-600">{progress.completed_tasks}</p>
-              <p className="text-sm text-surface-500">مهام مكتملة</p>
+              <p className="text-sm text-neutral-500">مهام مكتملة</p>
             </div>
             <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl">
               <p className="text-2xl font-bold text-orange-600">
                 {progress.total_tasks - progress.completed_tasks}
               </p>
-              <p className="text-sm text-surface-500">مهام متبقية</p>
+              <p className="text-sm text-neutral-500">مهام متبقية</p>
             </div>
             <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
               <p className="text-2xl font-bold text-blue-600">
                 {progress.duration_days - progress.current_day + 1}
               </p>
-              <p className="text-sm text-surface-500">أيام متبقية</p>
+              <p className="text-sm text-neutral-500">أيام متبقية</p>
             </div>
           </div>
         </Card.Body>
@@ -106,15 +106,15 @@ export default function TrainingDashboard() {
               <Calendar className="w-5 h-5 text-orange-500" />
               <Card.Title>مهام اليوم</Card.Title>
             </div>
-            <span className="text-sm text-surface-500">
+            <span className="text-sm text-neutral-500">
               {completedToday}/{todayTasks.length} مكتمل
             </span>
           </div>
         </Card.Header>
         <Card.Body className="space-y-4">
           {todayTasks.length === 0 ? (
-            <div className="text-center py-8 text-surface-500">
-              <Award className="w-12 h-12 mx-auto mb-3 text-surface-400" />
+            <div className="text-center py-8 text-neutral-500">
+              <Award className="w-12 h-12 mx-auto mb-3 text-neutral-400" />
               <p>أكملت جميع مهام اليوم!</p>
             </div>
           ) : (
@@ -141,22 +141,22 @@ export default function TrainingDashboard() {
               {upcomingTasks.slice(0, 3).map((task, idx) => (
                 <div 
                   key={idx}
-                  className="flex items-center gap-3 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg"
+                  className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg"
                 >
-                  <div className="w-8 h-8 rounded-full bg-surface-200 dark:bg-surface-600 
-                                flex items-center justify-center text-sm font-medium text-surface-600 dark:text-surface-300">
+                  <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-600 
+                                flex items-center justify-center text-sm font-medium text-neutral-600 dark:text-neutral-300">
                     {task.day}
                   </div>
                   <div>
-                    <p className="font-medium text-surface-900 dark:text-white text-sm">
+                    <p className="font-medium text-neutral-900 dark:text-white text-sm">
                       {task.title}
                     </p>
-                    <p className="text-xs text-surface-500">اليوم {task.day}</p>
+                    <p className="text-xs text-neutral-500">اليوم {task.day}</p>
                   </div>
                 </div>
               ))}
               {upcomingTasks.length > 3 && (
-                <p className="text-center text-sm text-surface-500 pt-2">
+                <p className="text-center text-sm text-neutral-500 pt-2">
                   +{upcomingTasks.length - 3} مهام أخرى
                 </p>
               )}

@@ -13,26 +13,26 @@ export default function TrainingPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-surface-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
           <GraduationCap className="w-7 h-7 text-primary-500" />
           التدريب
         </h1>
-        <p className="text-surface-500 dark:text-surface-400 mt-1">
+        <p className="text-neutral-500 dark:text-neutral-400 mt-1">
           برنامج التدريب والتطوير
         </p>
       </div>
 
       {/* Tabs (for HR/Admin) */}
       {canViewReport && (
-        <div className="flex bg-surface-100 dark:bg-surface-800 rounded-xl p-1">
+        <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-xl p-1">
           <button
             onClick={() => setActiveTab('my-training')}
             className={`
               flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
               transition-all flex-1 justify-center
               ${activeTab === 'my-training'
-                ? 'bg-white dark:bg-surface-700 text-surface-900 dark:text-white shadow-sm'
-                : 'text-surface-600 dark:text-surface-400 hover:text-surface-900'
+                ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               }
             `}
           >
@@ -45,8 +45,8 @@ export default function TrainingPage() {
               flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
               transition-all flex-1 justify-center
               ${activeTab === 'report'
-                ? 'bg-white dark:bg-surface-700 text-surface-900 dark:text-white shadow-sm'
-                : 'text-surface-600 dark:text-surface-400 hover:text-surface-900'
+                ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
               }
             `}
           >

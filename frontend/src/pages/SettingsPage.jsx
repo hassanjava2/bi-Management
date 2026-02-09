@@ -60,7 +60,7 @@ export default function SettingsPage() {
       <div className="space-y-6">
         {categories.length === 0 ? (
           <Card>
-            <p className="text-surface-500 dark:text-surface-400 text-center py-8">لا توجد إعدادات مسجلة</p>
+            <p className="text-neutral-500 dark:text-neutral-400 text-center py-8">لا توجد إعدادات مسجلة</p>
           </Card>
         ) : (
           categories.map((category) => (
@@ -69,15 +69,15 @@ export default function SettingsPage() {
               <Card.Body>
                 <div className="space-y-4">
                   {Object.entries(settings[category] || {}).map(([key, value]) => (
-                    <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-2 border-b border-surface-100 dark:border-surface-700 pb-4 last:border-0 last:pb-0">
-                      <label className="text-sm font-medium text-surface-700 dark:text-surface-300 sm:w-48">{key}</label>
+                    <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-2 border-b border-neutral-100 dark:border-neutral-700 pb-4 last:border-0 last:pb-0">
+                      <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 sm:w-48">{key}</label>
                       {editingKey === key ? (
                         <div className="flex-1 flex gap-2">
                           <input
                             type="text"
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
-                            className="flex-1 px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-input bg-white dark:bg-surface-800"
+                            className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-input bg-white dark:bg-neutral-800"
                           />
                           <Button size="sm" onClick={() => handleSave(key)} disabled={updateMutation.isPending}>
                             {updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -86,7 +86,7 @@ export default function SettingsPage() {
                         </div>
                       ) : (
                         <div className="flex-1 flex items-center gap-2">
-                          <span className="text-surface-900 dark:text-white">{String(value)}</span>
+                          <span className="text-neutral-900 dark:text-white">{String(value)}</span>
                           <Button variant="ghost" size="sm" onClick={() => { setEditingKey(key); setEditValue(String(value)) }}>
                             تعديل
                           </Button>

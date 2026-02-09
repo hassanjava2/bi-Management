@@ -74,7 +74,7 @@ export default function AttendanceCalendar({ userId }) {
       vacation: 'bg-blue-500',
       sick: 'bg-pink-500',
     }
-    return colors[status] || 'bg-surface-300'
+    return colors[status] || 'bg-neutral-300'
   }
 
   const goToPreviousMonth = () => {
@@ -91,18 +91,18 @@ export default function AttendanceCalendar({ userId }) {
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={goToPreviousMonth}
-          className="p-2 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors"
+          className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
         >
           <ChevronRight className="w-5 h-5" />
         </button>
         
-        <h3 className="text-lg font-semibold text-surface-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
           {MONTHS[month]} {year}
         </h3>
         
         <button
           onClick={goToNextMonth}
-          className="p-2 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors"
+          className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
@@ -137,7 +137,7 @@ export default function AttendanceCalendar({ userId }) {
           {/* Weekday headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {WEEKDAYS.map(day => (
-              <div key={day} className="text-center text-xs font-medium text-surface-500 py-2">
+              <div key={day} className="text-center text-xs font-medium text-neutral-500 py-2">
                 {day}
               </div>
             ))}
@@ -155,7 +155,7 @@ export default function AttendanceCalendar({ userId }) {
                   item.day === null && 'invisible',
                   item.isToday && 'ring-2 ring-primary-500',
                   item.isFuture && 'opacity-50',
-                  item.isWeekend && !item.record && 'bg-surface-100 dark:bg-surface-700/50',
+                  item.isWeekend && !item.record && 'bg-neutral-100 dark:bg-neutral-700/50',
                   item.record && 'hover:opacity-80'
                 )}
               >
@@ -163,7 +163,7 @@ export default function AttendanceCalendar({ userId }) {
                   <>
                     <span className={clsx(
                       'text-sm',
-                      item.isToday ? 'font-bold text-primary-600' : 'text-surface-700 dark:text-surface-300'
+                      item.isToday ? 'font-bold text-primary-600' : 'text-neutral-700 dark:text-neutral-300'
                     )}>
                       {item.day}
                     </span>
@@ -198,27 +198,27 @@ export default function AttendanceCalendar({ userId }) {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-surface-50 dark:bg-surface-700 rounded-lg">
-                <p className="text-xs text-surface-500 mb-1">وقت الحضور</p>
+              <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+                <p className="text-xs text-neutral-500 mb-1">وقت الحضور</p>
                 <p className="font-semibold">{formatTime(selectedDay.record.check_in) || '-'}</p>
               </div>
-              <div className="text-center p-3 bg-surface-50 dark:bg-surface-700 rounded-lg">
-                <p className="text-xs text-surface-500 mb-1">وقت الانصراف</p>
+              <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+                <p className="text-xs text-neutral-500 mb-1">وقت الانصراف</p>
                 <p className="font-semibold">{formatTime(selectedDay.record.check_out) || '-'}</p>
               </div>
-              <div className="text-center p-3 bg-surface-50 dark:bg-surface-700 rounded-lg">
-                <p className="text-xs text-surface-500 mb-1">ساعات العمل</p>
+              <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+                <p className="text-xs text-neutral-500 mb-1">ساعات العمل</p>
                 <p className="font-semibold">{formatMinutes(selectedDay.record.work_minutes)}</p>
               </div>
-              <div className="text-center p-3 bg-surface-50 dark:bg-surface-700 rounded-lg">
-                <p className="text-xs text-surface-500 mb-1">التأخير</p>
+              <div className="text-center p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+                <p className="text-xs text-neutral-500 mb-1">التأخير</p>
                 <p className="font-semibold">{selectedDay.record.late_minutes || 0} دقيقة</p>
               </div>
             </div>
 
             {selectedDay.record.notes && (
-              <div className="p-3 bg-surface-50 dark:bg-surface-700 rounded-lg">
-                <p className="text-xs text-surface-500 mb-1">ملاحظات</p>
+              <div className="p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg">
+                <p className="text-xs text-neutral-500 mb-1">ملاحظات</p>
                 <p className="text-sm">{selectedDay.record.notes}</p>
               </div>
             )}

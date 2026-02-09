@@ -160,11 +160,11 @@ export default function SuppliersPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
             <Building2 className="w-8 h-8 text-primary-600" />
             إدارة الموردين
           </h1>
-          <p className="text-surface-500 dark:text-surface-400 mt-1">
+          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
             إدارة الموردين ومراكز الصيانة
           </p>
         </div>
@@ -182,13 +182,13 @@ export default function SuppliersPage() {
 
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="بحث بالاسم أو الهاتف..."
-          className="w-full pr-10 pl-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+          className="w-full pr-10 pl-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
         />
       </div>
 
@@ -197,7 +197,7 @@ export default function SuppliersPage() {
         {suppliers.map((supplier) => (
           <div 
             key={supplier.id}
-            className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 p-4 hover:shadow-lg transition-shadow"
+            className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:shadow-lg transition-shadow"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
@@ -205,8 +205,8 @@ export default function SuppliersPage() {
                   <Building2 className="w-6 h-6 text-primary-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-surface-900 dark:text-white">{supplier.name}</h3>
-                  <p className="text-sm text-surface-500">{supplier.contact_person || '-'}</p>
+                  <h3 className="font-semibold text-neutral-900 dark:text-white">{supplier.name}</h3>
+                  <p className="text-sm text-neutral-500">{supplier.contact_person || '-'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
@@ -215,7 +215,7 @@ export default function SuppliersPage() {
               </div>
             </div>
 
-            <div className="space-y-2 text-sm text-surface-600 dark:text-surface-400 mb-4">
+            <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
                 <span>{supplier.phone || '-'}</span>
@@ -226,20 +226,20 @@ export default function SuppliersPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 p-3 bg-surface-50 dark:bg-surface-700/50 rounded-lg text-center text-sm mb-4">
+            <div className="grid grid-cols-3 gap-2 p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg text-center text-sm mb-4">
               <div>
-                <p className="font-bold text-surface-900 dark:text-white">{supplier.total_purchases || 0}</p>
-                <p className="text-xs text-surface-500">مشتريات</p>
+                <p className="font-bold text-neutral-900 dark:text-white">{supplier.total_purchases || 0}</p>
+                <p className="text-xs text-neutral-500">مشتريات</p>
               </div>
               <div>
                 <p className="font-bold text-amber-600">{supplier.pending_returns || 0}</p>
-                <p className="text-xs text-surface-500">مرتجعات</p>
+                <p className="text-xs text-neutral-500">مرتجعات</p>
               </div>
               <div>
                 <p className={`font-bold ${(supplier.balance || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {Math.abs(supplier.balance || 0).toLocaleString()}
                 </p>
-                <p className="text-xs text-surface-500">{(supplier.balance || 0) >= 0 ? 'لنا' : 'علينا'}</p>
+                <p className="text-xs text-neutral-500">{(supplier.balance || 0) >= 0 ? 'لنا' : 'علينا'}</p>
               </div>
             </div>
 
@@ -260,7 +260,7 @@ export default function SuppliersPage() {
       </div>
 
       {suppliers.length === 0 && (
-        <div className="text-center py-12 text-surface-500">
+        <div className="text-center py-12 text-neutral-500">
           لا يوجد موردين مسجلين
         </div>
       )}
@@ -282,7 +282,7 @@ export default function SuppliersPage() {
             <label className="block text-sm font-medium mb-1">اسم المورد / الشركة</label>
             <input
               type="text"
-              className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+              className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
               placeholder="مثل: العربي للحاسبات"
               value={addForm.name}
               onChange={(e) => setAddForm((f) => ({ ...f, name: e.target.value }))}
@@ -294,7 +294,7 @@ export default function SuppliersPage() {
               <label className="block text-sm font-medium mb-1">الشخص المسؤول</label>
               <input
                 type="text"
-                className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+                className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
                 placeholder="الاسم"
                 value={addForm.contact_person}
                 onChange={(e) => setAddForm((f) => ({ ...f, contact_person: e.target.value }))}
@@ -303,7 +303,7 @@ export default function SuppliersPage() {
             <div>
               <label className="block text-sm font-medium mb-1">نوع المورد</label>
               <select
-                className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+                className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
                 value={addForm.type}
                 onChange={(e) => setAddForm((f) => ({ ...f, type: e.target.value }))}
               >
@@ -318,7 +318,7 @@ export default function SuppliersPage() {
               <label className="block text-sm font-medium mb-1">الهاتف</label>
               <input
                 type="tel"
-                className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+                className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
                 placeholder="07XXXXXXXXX"
                 value={addForm.phone}
                 onChange={(e) => setAddForm((f) => ({ ...f, phone: e.target.value }))}
@@ -328,7 +328,7 @@ export default function SuppliersPage() {
               <label className="block text-sm font-medium mb-1">هاتف 2</label>
               <input
                 type="tel"
-                className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+                className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
                 placeholder="اختياري"
                 value={addForm.phone2}
                 onChange={(e) => setAddForm((f) => ({ ...f, phone2: e.target.value }))}
@@ -339,7 +339,7 @@ export default function SuppliersPage() {
             <label className="block text-sm font-medium mb-1">العنوان</label>
             <input
               type="text"
-              className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+              className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
               placeholder="العنوان الكامل"
               value={addForm.address}
               onChange={(e) => setAddForm((f) => ({ ...f, address: e.target.value }))}
@@ -349,7 +349,7 @@ export default function SuppliersPage() {
             <label className="block text-sm font-medium mb-1">ملاحظات</label>
             <textarea
               rows="2"
-              className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+              className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
               placeholder="أي ملاحظات..."
               value={addForm.notes}
               onChange={(e) => setAddForm((f) => ({ ...f, notes: e.target.value }))}
@@ -374,16 +374,16 @@ export default function SuppliersPage() {
           )}
           <div>
             <label className="block text-sm font-medium mb-1">اسم المورد / الشركة</label>
-            <input type="text" className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} required />
+            <input type="text" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">الشخص المسؤول</label>
-              <input type="text" className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={editForm.contact_person} onChange={(e) => setEditForm((f) => ({ ...f, contact_person: e.target.value }))} />
+              <input type="text" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={editForm.contact_person} onChange={(e) => setEditForm((f) => ({ ...f, contact_person: e.target.value }))} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">نوع المورد</label>
-              <select className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={editForm.type} onChange={(e) => setEditForm((f) => ({ ...f, type: e.target.value }))}>
+              <select className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={editForm.type} onChange={(e) => setEditForm((f) => ({ ...f, type: e.target.value }))}>
                 <option value="company">شركة</option>
                 <option value="individual">فرد</option>
                 <option value="repair">مركز صيانة</option>
@@ -393,20 +393,20 @@ export default function SuppliersPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">الهاتف</label>
-              <input type="tel" className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={editForm.phone} onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))} />
+              <input type="tel" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={editForm.phone} onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">هاتف 2</label>
-              <input type="tel" className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={editForm.phone2} onChange={(e) => setEditForm((f) => ({ ...f, phone2: e.target.value }))} />
+              <input type="tel" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={editForm.phone2} onChange={(e) => setEditForm((f) => ({ ...f, phone2: e.target.value }))} />
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">العنوان</label>
-            <input type="text" className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={editForm.address} onChange={(e) => setEditForm((f) => ({ ...f, address: e.target.value }))} />
+            <input type="text" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={editForm.address} onChange={(e) => setEditForm((f) => ({ ...f, address: e.target.value }))} />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">ملاحظات</label>
-            <textarea rows="2" className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600" value={editForm.notes} onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))} />
+            <textarea rows="2" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={editForm.notes} onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))} />
           </div>
           <div className="flex justify-end gap-2 pt-4 border-t">
             <Button type="button" variant="outline" onClick={() => setShowEditModal(false)}>إلغاء</Button>
@@ -419,7 +419,7 @@ export default function SuppliersPage() {
       <Modal isOpen={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="تأكيد الحذف" size="sm">
         {selectedSupplier && (
           <div className="space-y-4">
-            <p className="text-surface-600 dark:text-surface-400">هل أنت متأكد من حذف المورد <strong>{selectedSupplier.name}</strong>؟</p>
+            <p className="text-neutral-600 dark:text-neutral-400">هل أنت متأكد من حذف المورد <strong>{selectedSupplier.name}</strong>؟</p>
             {deleteMutation.isError && <div className="p-3 rounded-lg bg-error-50 text-error-700 text-sm">{deleteMutation.error?.response?.data?.error || deleteMutation.error?.message}</div>}
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>إلغاء</Button>
@@ -433,9 +433,9 @@ export default function SuppliersPage() {
       <Modal isOpen={showDetailsModal} onClose={() => setShowDetailsModal(false)} title={selectedSupplier ? `تفاصيل: ${selectedSupplier.name}` : ''} size="lg">
         {selectedSupplier && (
           <div className="space-y-4">
-            <div className="flex gap-2 border-b border-surface-200 dark:border-surface-700 pb-2">
+            <div className="flex gap-2 border-b border-neutral-200 dark:border-neutral-700 pb-2">
               {['info', 'transactions', 'returns', 'stats'].map((tab) => (
-                <button key={tab} type="button" onClick={() => setDetailsTab(tab)} className={`px-3 py-1.5 rounded-lg text-sm font-medium ${detailsTab === tab ? 'bg-primary-600 text-white' : 'text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800'}`}>
+                <button key={tab} type="button" onClick={() => setDetailsTab(tab)} className={`px-3 py-1.5 rounded-lg text-sm font-medium ${detailsTab === tab ? 'bg-primary-600 text-white' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}>
                   {tab === 'info' && 'البيانات'}
                   {tab === 'transactions' && 'المعاملات'}
                   {tab === 'returns' && 'المرتجعات'}
@@ -445,10 +445,10 @@ export default function SuppliersPage() {
             </div>
             {detailsTab === 'info' && (
               <div className="grid grid-cols-2 gap-4">
-                <div><p className="text-sm text-surface-500">الشخص المسؤول</p><p className="font-medium">{selectedSupplier.contact_person || '-'}</p></div>
-                <div><p className="text-sm text-surface-500">الهاتف</p><p className="font-medium">{selectedSupplier.phone || '-'}</p></div>
-                <div><p className="text-sm text-surface-500">العنوان</p><p className="font-medium">{selectedSupplier.address || '-'}</p></div>
-                <div><p className="text-sm text-surface-500">الرصيد</p><p className={`font-bold ${(selectedSupplier.balance || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>{Math.abs(selectedSupplier.balance || 0).toLocaleString()} د.ع</p></div>
+                <div><p className="text-sm text-neutral-500">الشخص المسؤول</p><p className="font-medium">{selectedSupplier.contact_person || '-'}</p></div>
+                <div><p className="text-sm text-neutral-500">الهاتف</p><p className="font-medium">{selectedSupplier.phone || '-'}</p></div>
+                <div><p className="text-sm text-neutral-500">العنوان</p><p className="font-medium">{selectedSupplier.address || '-'}</p></div>
+                <div><p className="text-sm text-neutral-500">الرصيد</p><p className={`font-bold ${(selectedSupplier.balance || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>{Math.abs(selectedSupplier.balance || 0).toLocaleString()} د.ع</p></div>
                 <div className="col-span-2 flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => { setShowDetailsModal(false); handleEditSupplier(null, selectedSupplier); setShowEditModal(true); }}><Edit className="w-4 h-4 ml-1" /> تعديل</Button>
                   <Button variant="danger" size="sm" onClick={() => { setShowDetailsModal(false); handleDeleteClick(null, selectedSupplier); setShowDeleteConfirm(true); }}><Trash2 className="w-4 h-4 ml-1" /> حذف</Button>
@@ -457,12 +457,12 @@ export default function SuppliersPage() {
             )}
             {detailsTab === 'transactions' && (
               <div className="max-h-64 overflow-y-auto">
-                {supplierTransactions.length === 0 ? <p className="text-surface-500 text-center py-4">لا توجد معاملات</p> : (
+                {supplierTransactions.length === 0 ? <p className="text-neutral-500 text-center py-4">لا توجد معاملات</p> : (
                   <table className="w-full text-sm">
                     <thead><tr className="border-b"><th className="text-right py-2">النوع</th><th className="text-right py-2">التاريخ</th><th className="text-right py-2">المبلغ</th></tr></thead>
                     <tbody>
                       {supplierTransactions.map((tr, i) => (
-                        <tr key={tr.id || i} className="border-b border-surface-100">
+                        <tr key={tr.id || i} className="border-b border-neutral-100">
                           <td className="py-2">{tr.type || tr.description || '-'}</td>
                           <td className="py-2">{tr.created_at ? new Date(tr.created_at).toLocaleDateString('ar-IQ') : '-'}</td>
                           <td className="py-2">{(tr.amount || tr.total || 0).toLocaleString()}</td>
@@ -475,12 +475,12 @@ export default function SuppliersPage() {
             )}
             {detailsTab === 'returns' && (
               <div className="max-h-64 overflow-y-auto">
-                {supplierReturns.length === 0 ? <p className="text-surface-500 text-center py-4">لا توجد مرتجعات</p> : (
+                {supplierReturns.length === 0 ? <p className="text-neutral-500 text-center py-4">لا توجد مرتجعات</p> : (
                   <table className="w-full text-sm">
                     <thead><tr className="border-b"><th className="text-right py-2">رقم المرتجع</th><th className="text-right py-2">التاريخ</th><th className="text-right py-2">الحالة</th></tr></thead>
                     <tbody>
                       {supplierReturns.map((r) => (
-                        <tr key={r.id} className="border-b border-surface-100">
+                        <tr key={r.id} className="border-b border-neutral-100">
                           <td className="py-2">{r.return_number || r.id}</td>
                           <td className="py-2">{r.created_at ? new Date(r.created_at).toLocaleDateString('ar-IQ') : '-'}</td>
                           <td className="py-2">{r.status || '-'}</td>
@@ -493,10 +493,10 @@ export default function SuppliersPage() {
             )}
             {detailsTab === 'stats' && (
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg"><p className="text-sm text-surface-500">إجمالي المشتريات</p><p className="font-bold">{(supplierStats.total_purchases || selectedSupplier.total_purchases || 0).toLocaleString()}</p></div>
-                <div className="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg"><p className="text-sm text-surface-500">المرتجعات</p><p className="font-bold text-amber-600">{supplierStats.total_returns ?? supplierStats.pending_returns ?? 0}</p></div>
-                <div className="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg"><p className="text-sm text-surface-500">المعلقة</p><p className="font-bold">{supplierStats.pending_returns ?? 0}</p></div>
-                <div className="p-3 bg-surface-50 dark:bg-surface-800 rounded-lg"><p className="text-sm text-surface-500">التقييم</p><p className="font-bold">{supplierStats.quality_score ?? selectedSupplier.rating ?? '-'}</p></div>
+                <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg"><p className="text-sm text-neutral-500">إجمالي المشتريات</p><p className="font-bold">{(supplierStats.total_purchases || selectedSupplier.total_purchases || 0).toLocaleString()}</p></div>
+                <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg"><p className="text-sm text-neutral-500">المرتجعات</p><p className="font-bold text-amber-600">{supplierStats.total_returns ?? supplierStats.pending_returns ?? 0}</p></div>
+                <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg"><p className="text-sm text-neutral-500">المعلقة</p><p className="font-bold">{supplierStats.pending_returns ?? 0}</p></div>
+                <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg"><p className="text-sm text-neutral-500">التقييم</p><p className="font-bold">{supplierStats.quality_score ?? selectedSupplier.rating ?? '-'}</p></div>
               </div>
             )}
           </div>

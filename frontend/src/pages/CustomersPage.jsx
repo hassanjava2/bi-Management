@@ -19,7 +19,7 @@ import { customersAPI } from '../services/api'
 // مستويات العملاء
 const customerTiers = {
   bronze: { label: 'برونزي', color: 'bg-amber-100 text-amber-800', min: 0 },
-  silver: { label: 'فضي', color: 'bg-surface-200 text-surface-800', min: 5000000 },
+  silver: { label: 'فضي', color: 'bg-neutral-200 text-neutral-800', min: 5000000 },
   gold: { label: 'ذهبي', color: 'bg-yellow-100 text-yellow-800', min: 15000000 },
   platinum: { label: 'بلاتيني', color: 'bg-purple-100 text-purple-800', min: 30000000 },
 }
@@ -194,11 +194,11 @@ export default function CustomersPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
             <Users className="w-8 h-8 text-primary-600" />
             إدارة العملاء
           </h1>
-          <p className="text-surface-500 dark:text-surface-400 mt-1">
+          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
             إدارة العملاء والذمم والولاء
           </p>
         </div>
@@ -214,37 +214,37 @@ export default function CustomersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500">إجمالي العملاء</p>
+              <p className="text-sm text-neutral-500">إجمالي العملاء</p>
               <p className="text-2xl font-bold">{stats.total || 0}</p>
             </div>
             <Users className="w-8 h-8 text-blue-500" />
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500">عملاء بذمم</p>
+              <p className="text-sm text-neutral-500">عملاء بذمم</p>
               <p className="text-2xl font-bold text-amber-600">{stats.with_balance || 0}</p>
             </div>
             <AlertTriangle className="w-8 h-8 text-amber-500" />
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500">إجمالي الذمم</p>
+              <p className="text-sm text-neutral-500">إجمالي الذمم</p>
               <p className="text-2xl font-bold text-red-600">{(stats.total_receivables / 1000000 || 0).toFixed(1)}M</p>
             </div>
             <DollarSign className="w-8 h-8 text-red-500" />
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-800 rounded-xl p-4 border border-surface-200 dark:border-surface-700">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-surface-500">VIP</p>
+              <p className="text-sm text-neutral-500">VIP</p>
               <p className="text-2xl font-bold text-purple-600">{stats.vip_count || 0}</p>
             </div>
             <Crown className="w-8 h-8 text-purple-500" />
@@ -255,19 +255,19 @@ export default function CustomersPage() {
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="بحث بالاسم أو الهاتف..."
-            className="w-full pr-10 pl-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+            className="w-full pr-10 pl-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
           />
         </div>
         <select
           value={selectedTier}
           onChange={(e) => setSelectedTier(e.target.value)}
-          className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg bg-white dark:bg-surface-700"
+          className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
         >
           <option value="all">كل المستويات</option>
           {Object.entries(customerTiers).map(([key, val]) => (
@@ -277,24 +277,24 @@ export default function CustomersPage() {
       </div>
 
       {/* Customers Table */}
-      <div className="bg-white dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 overflow-hidden">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-surface-50 dark:bg-surface-700/50">
+            <thead className="bg-neutral-50 dark:bg-neutral-700/50">
               <tr>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">العميل</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">الهاتف</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">المستوى</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">المشتريات</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">الرصيد</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">آخر شراء</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-surface-500">إجراءات</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">العميل</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الهاتف</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">المستوى</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">المشتريات</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الرصيد</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">آخر شراء</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">إجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-200 dark:divide-surface-700">
+            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
               {customers.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-4 py-8 text-center text-surface-500">
+                  <td colSpan="7" className="px-4 py-8 text-center text-neutral-500">
                     لا يوجد عملاء
                   </td>
                 </tr>
@@ -302,7 +302,7 @@ export default function CustomersPage() {
                 customers.map((customer) => {
                   const tier = customerTiers[getCustomerTier(customer.total_purchases)] || customerTiers.bronze
                   return (
-                    <tr key={customer.id} className="hover:bg-surface-50 dark:hover:bg-surface-700/50">
+                    <tr key={customer.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
@@ -311,14 +311,14 @@ export default function CustomersPage() {
                             </span>
                           </div>
                           <div>
-                            <p className="font-medium text-surface-900 dark:text-white">{customer.name}</p>
-                            <p className="text-sm text-surface-500">{customer.type === 'wholesale' ? 'جملة' : 'مفرد'}</p>
+                            <p className="font-medium text-neutral-900 dark:text-white">{customer.name}</p>
+                            <p className="text-sm text-neutral-500">{customer.type === 'wholesale' ? 'جملة' : 'مفرد'}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-surface-400" />
+                          <Phone className="w-4 h-4 text-neutral-400" />
                           <span>{customer.phone || '-'}</span>
                         </div>
                       </td>
@@ -330,7 +330,7 @@ export default function CustomersPage() {
                       <td className="px-4 py-3">
                         <div>
                           <p className="font-medium">{(customer.total_purchases || 0).toLocaleString()}</p>
-                          <p className="text-xs text-surface-500">{customer.purchase_count || 0} فاتورة</p>
+                          <p className="text-xs text-neutral-500">{customer.purchase_count || 0} فاتورة</p>
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -339,24 +339,24 @@ export default function CustomersPage() {
                           {(customer.balance || 0) > 0 && <span className="text-xs mr-1">علينا</span>}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-surface-500">
+                      <td className="px-4 py-3 text-sm text-neutral-500">
                         {customer.last_purchase ? new Date(customer.last_purchase).toLocaleDateString('ar-IQ') : '-'}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           <button 
                             onClick={() => handleViewCustomer(customer)}
-                            className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded"
+                            className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                             title="عرض"
                           >
-                            <Eye className="w-4 h-4 text-surface-500" />
+                            <Eye className="w-4 h-4 text-neutral-500" />
                           </button>
                           <button 
                             onClick={(e) => handleEditCustomer(e, customer)}
-                            className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded"
+                            className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                             title="تعديل"
                           >
-                            <Edit className="w-4 h-4 text-surface-500" />
+                            <Edit className="w-4 h-4 text-neutral-500" />
                           </button>
                           <button 
                             onClick={(e) => handleDeleteClick(e, customer)}
@@ -393,7 +393,7 @@ export default function CustomersPage() {
             <label className="block text-sm font-medium mb-1">اسم العميل</label>
             <input
               type="text"
-              className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+              className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
               value={addForm.name}
               onChange={(e) => setAddForm((f) => ({ ...f, name: e.target.value }))}
               required
@@ -404,7 +404,7 @@ export default function CustomersPage() {
               <label className="block text-sm font-medium mb-1">الهاتف</label>
               <input
                 type="tel"
-                className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+                className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
                 value={addForm.phone}
                 onChange={(e) => setAddForm((f) => ({ ...f, phone: e.target.value }))}
                 required
@@ -413,7 +413,7 @@ export default function CustomersPage() {
             <div>
               <label className="block text-sm font-medium mb-1">نوع العميل</label>
               <select
-                className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+                className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
                 value={addForm.type}
                 onChange={(e) => setAddForm((f) => ({ ...f, type: e.target.value }))}
               >
@@ -426,7 +426,7 @@ export default function CustomersPage() {
             <label className="block text-sm font-medium mb-1">العنوان</label>
             <input
               type="text"
-              className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+              className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
               value={addForm.address}
               onChange={(e) => setAddForm((f) => ({ ...f, address: e.target.value }))}
             />
@@ -435,7 +435,7 @@ export default function CustomersPage() {
             <label className="block text-sm font-medium mb-1">حد الائتمان</label>
             <input
               type="number"
-              className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+              className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
               placeholder="0"
               value={addForm.credit_limit}
               onChange={(e) => setAddForm((f) => ({ ...f, credit_limit: e.target.value }))}
@@ -467,7 +467,7 @@ export default function CustomersPage() {
             <label className="block text-sm font-medium mb-1">اسم العميل</label>
             <input
               type="text"
-              className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+              className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
               value={editForm.name}
               onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
               required
@@ -478,7 +478,7 @@ export default function CustomersPage() {
               <label className="block text-sm font-medium mb-1">الهاتف</label>
               <input
                 type="tel"
-                className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+                className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
                 value={editForm.phone}
                 onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
               />
@@ -486,7 +486,7 @@ export default function CustomersPage() {
             <div>
               <label className="block text-sm font-medium mb-1">نوع العميل</label>
               <select
-                className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+                className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
                 value={editForm.type}
                 onChange={(e) => setEditForm((f) => ({ ...f, type: e.target.value }))}
               >
@@ -499,7 +499,7 @@ export default function CustomersPage() {
             <label className="block text-sm font-medium mb-1">العنوان</label>
             <input
               type="text"
-              className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+              className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
               value={editForm.address}
               onChange={(e) => setEditForm((f) => ({ ...f, address: e.target.value }))}
             />
@@ -508,7 +508,7 @@ export default function CustomersPage() {
             <label className="block text-sm font-medium mb-1">حد الائتمان</label>
             <input
               type="number"
-              className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+              className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
               value={editForm.credit_limit}
               onChange={(e) => setEditForm((f) => ({ ...f, credit_limit: e.target.value }))}
             />
@@ -531,7 +531,7 @@ export default function CustomersPage() {
       >
         {selectedCustomer && (
           <div className="space-y-4">
-            <p className="text-surface-600 dark:text-surface-400">
+            <p className="text-neutral-600 dark:text-neutral-400">
               هل أنت متأكد من حذف العميل <strong>{selectedCustomer.name}</strong>؟ لا يمكن التراجع.
             </p>
             {deleteMutation.isError && (
@@ -558,7 +558,7 @@ export default function CustomersPage() {
       >
         {selectedCustomer && (
           <div className="space-y-4">
-            <div className="flex gap-2 border-b border-surface-200 dark:border-surface-700 pb-2">
+            <div className="flex gap-2 border-b border-neutral-200 dark:border-neutral-700 pb-2">
               {['info', 'invoices', 'transactions', 'balance'].map((tab) => (
                 <button
                   key={tab}
@@ -567,7 +567,7 @@ export default function CustomersPage() {
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
                     detailsTab === tab
                       ? 'bg-primary-600 text-white'
-                      : 'text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                   }`}
                 >
                   {tab === 'info' && 'البيانات'}
@@ -580,19 +580,19 @@ export default function CustomersPage() {
             {detailsTab === 'info' && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-surface-500">الهاتف</p>
+                  <p className="text-sm text-neutral-500">الهاتف</p>
                   <p className="font-medium">{selectedCustomer.phone || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-surface-500">العنوان</p>
+                  <p className="text-sm text-neutral-500">العنوان</p>
                   <p className="font-medium">{selectedCustomer.addresses || selectedCustomer.address || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-surface-500">إجمالي المشتريات</p>
+                  <p className="text-sm text-neutral-500">إجمالي المشتريات</p>
                   <p className="font-medium">{(selectedCustomer.total_purchases || 0).toLocaleString()} د.ع</p>
                 </div>
                 <div>
-                  <p className="text-sm text-surface-500">الرصيد الحالي</p>
+                  <p className="text-sm text-neutral-500">الرصيد الحالي</p>
                   <p className={`font-bold ${(selectedCustomer.balance || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
                     {Math.abs(selectedCustomer.balance || 0).toLocaleString()} د.ع
                   </p>
@@ -610,7 +610,7 @@ export default function CustomersPage() {
             {detailsTab === 'invoices' && (
               <div className="max-h-64 overflow-y-auto">
                 {customerInvoices.length === 0 ? (
-                  <p className="text-surface-500 text-center py-4">لا توجد فواتير</p>
+                  <p className="text-neutral-500 text-center py-4">لا توجد فواتير</p>
                 ) : (
                   <table className="w-full text-sm">
                     <thead>
@@ -622,7 +622,7 @@ export default function CustomersPage() {
                     </thead>
                     <tbody>
                       {customerInvoices.map((inv) => (
-                        <tr key={inv.id} className="border-b border-surface-100">
+                        <tr key={inv.id} className="border-b border-neutral-100">
                           <td className="py-2">{inv.invoice_number || inv.id}</td>
                           <td className="py-2">{inv.created_at ? new Date(inv.created_at).toLocaleDateString('ar-IQ') : '-'}</td>
                           <td className="py-2">{(inv.total || 0).toLocaleString()}</td>
@@ -636,7 +636,7 @@ export default function CustomersPage() {
             {detailsTab === 'transactions' && (
               <div className="max-h-64 overflow-y-auto">
                 {customerTransactions.length === 0 ? (
-                  <p className="text-surface-500 text-center py-4">لا توجد معاملات</p>
+                  <p className="text-neutral-500 text-center py-4">لا توجد معاملات</p>
                 ) : (
                   <table className="w-full text-sm">
                     <thead>
@@ -648,7 +648,7 @@ export default function CustomersPage() {
                     </thead>
                     <tbody>
                       {customerTransactions.map((tr, i) => (
-                        <tr key={tr.id || i} className="border-b border-surface-100">
+                        <tr key={tr.id || i} className="border-b border-neutral-100">
                           <td className="py-2">{tr.type || tr.description || '-'}</td>
                           <td className="py-2">{tr.created_at ? new Date(tr.created_at).toLocaleDateString('ar-IQ') : '-'}</td>
                           <td className="py-2">{(tr.amount || tr.total || 0).toLocaleString()}</td>
@@ -661,13 +661,13 @@ export default function CustomersPage() {
             )}
             {detailsTab === 'balance' && (
               <form onSubmit={handleAdjustBalance} className="space-y-4">
-                <p className="text-sm text-surface-500">الرصيد الحالي: <strong className="text-surface-900 dark:text-white">{(selectedCustomer.balance || 0).toLocaleString()} د.ع</strong></p>
+                <p className="text-sm text-neutral-500">الرصيد الحالي: <strong className="text-neutral-900 dark:text-white">{(selectedCustomer.balance || 0).toLocaleString()} د.ع</strong></p>
                 <div>
                   <label className="block text-sm font-medium mb-1">المبلغ (موجب = إضافة للذمة، سالب = خصم)</label>
                   <input
                     type="number"
                     step="any"
-                    className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
                     placeholder="0"
                     value={adjustBalanceForm.amount}
                     onChange={(e) => setAdjustBalanceForm((f) => ({ ...f, amount: e.target.value }))}
@@ -677,7 +677,7 @@ export default function CustomersPage() {
                   <label className="block text-sm font-medium mb-1">ملاحظة</label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border rounded-lg dark:bg-surface-800 dark:border-surface-600"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600"
                     value={adjustBalanceForm.note}
                     onChange={(e) => setAdjustBalanceForm((f) => ({ ...f, note: e.target.value }))}
                   />
