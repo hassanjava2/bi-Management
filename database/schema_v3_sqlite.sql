@@ -322,6 +322,11 @@ CREATE TABLE IF NOT EXISTS invoices (
     total REAL DEFAULT 0,
     paid_amount REAL DEFAULT 0,
     remaining_amount REAL DEFAULT 0,
+    payment_method TEXT,
+    notes TEXT,
+    discount_percent REAL DEFAULT 0,
+    shipping_cost REAL DEFAULT 0,
+    sub_type TEXT,
     due_date TEXT,
     auditor_id TEXT,
     audited_at TEXT,
@@ -380,6 +385,16 @@ CREATE TABLE IF NOT EXISTS pending_invoice_reminders (
     remind_count INTEGER DEFAULT 0,
     notify_creator INTEGER DEFAULT 1,
     notify_supervisor INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS invoice_expenses (
+    id TEXT PRIMARY KEY,
+    invoice_id TEXT NOT NULL,
+    expense_type TEXT,
+    amount REAL DEFAULT 0,
+    currency TEXT DEFAULT 'IQD',
+    notes TEXT,
     created_at TEXT DEFAULT (datetime('now'))
 );
 

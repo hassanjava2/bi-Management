@@ -29,6 +29,9 @@ CREATE INDEX IF NOT EXISTS idx_returns_status ON returns(status);
 CREATE INDEX IF NOT EXISTS idx_warranty_status ON warranty_claims(status);
 CREATE INDEX IF NOT EXISTS idx_approvals_status ON approvals(status);
 CREATE INDEX IF NOT EXISTS idx_deliveries_status ON deliveries(status);
+CREATE INDEX IF NOT EXISTS idx_invoice_expenses_invoice ON invoice_expenses(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_sub_type ON invoices(sub_type);
+CREATE INDEX IF NOT EXISTS idx_invoices_payment_method ON invoices(payment_method);
 CREATE INDEX IF NOT EXISTS idx_devices_status ON devices(status);
 CREATE INDEX IF NOT EXISTS idx_devices_warehouse ON devices(warehouse_id);
 
