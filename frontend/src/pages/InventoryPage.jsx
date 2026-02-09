@@ -1,6 +1,6 @@
-﻿/**
+/**
  * Bi Management - Inventory Page
- * ØµÙØ­Ø© Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø®Ø²ÙˆÙ† ÙˆØ§Ù„Ø£Ø¬Ù‡Ø²Ø© Ø¨Ø§Ù„Ø³ÙŠØ±ÙŠØ§Ù„Ø§Øª
+ * صفحة إدارة المخزون والأجهزة بالسيريالات
  */
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -28,10 +28,10 @@ import { inventoryAPI } from '../services/api'
 import { exportToCSV } from '../utils/helpers'
 
 const INVENTORY_TABS = [
-  { id: 'devices', label: 'Ø§Ù„Ø£Ø¬Ù‡Ø²Ø©' },
-  { id: 'products', label: 'Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª' },
-  { id: 'movements', label: 'Ø­Ø±ÙƒØ© Ø§Ù„Ù…Ø®Ø²ÙˆÙ†' },
-  { id: 'count', label: 'Ø§Ù„Ø¬Ø±Ø¯' },
+  { id: 'devices', label: 'الأجهزة' },
+  { id: 'products', label: 'المنتجات' },
+  { id: 'movements', label: 'حركة المخزون' },
+  { id: 'count', label: 'الجرد' },
 ]
 
 export default function InventoryPage() {
@@ -54,7 +54,7 @@ export default function InventoryPage() {
   const [viewMode, setViewMode] = useState('table')
   const queryClient = useQueryClient()
 
-  // Ø¬Ù„Ø¨ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ†
+  // جلب بيانات المخزون
   const { data: inventoryData, isLoading } = useQuery({
     queryKey: ['inventory', searchTerm, selectedWarehouse, selectedStatus],
     queryFn: () => inventoryAPI.getDevices({ 
@@ -64,7 +64,7 @@ export default function InventoryPage() {
     }),
   })
 
-  // Ø¬Ù„Ø¨ Ø¥Ø­ØµØ§Ø¦ÙŠØ§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ†
+  // جلب إحصائيات المخزون
   const { data: statsData } = useQuery({
     queryKey: ['inventory-stats'],
     queryFn: () => inventoryAPI.getStats(),
@@ -114,40 +114,40 @@ export default function InventoryPage() {
   }
 
   const inventoryStatsItems = [
-    { title: 'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£Ø¬Ù‡Ø²Ø©', value: stats.total ?? 0, icon: Boxes, color: 'primary' },
-    { title: 'Ø¬Ø§Ù‡Ø² Ù„Ù„Ø¨ÙŠØ¹', value: stats.ready_to_sell ?? 0, icon: CheckCircle2, color: 'success' },
-    { title: 'Ø¨Ø§Ù„ØµÙŠØ§Ù†Ø©', value: stats.in_repair ?? 0, icon: AlertTriangle, color: 'warning' },
-    { title: 'ØªÙ†Ø¨ÙŠÙ‡ Ù†Ù‚Øµ', value: stats.low_stock ?? 0, icon: AlertTriangle, color: 'danger' },
+    { title: 'إجمالي الأجهزة', value: stats.total ?? 0, icon: Boxes, color: 'primary' },
+    { title: 'جاهز للبيع', value: stats.ready_to_sell ?? 0, icon: CheckCircle2, color: 'success' },
+    { title: 'بالصيانة', value: stats.in_repair ?? 0, icon: AlertTriangle, color: 'warning' },
+    { title: 'تنبيه نقص', value: stats.low_stock ?? 0, icon: AlertTriangle, color: 'danger' },
   ]
   const warehouseOptions = warehouses.map((w) => ({ value: w.id, label: `${w.icon} ${w.name}` }))
   const statusOptions = Object.entries(deviceStatuses).map(([k, v]) => ({ value: k, label: v.label }))
   const deviceColumns = [
-    { key: 'serial_number', label: 'Ø§Ù„Ø³ÙŠØ±ÙŠØ§Ù„', render: (d) => <span className="font-mono font-medium">{d.serial_number}</span> },
-    { key: 'product_name', label: 'Ø§Ù„Ù…Ù†ØªØ¬', render: (d) => <><p className="font-medium">{d.product_name || 'Dell Latitude'}</p><p className="text-sm text-neutral-500">{d.brand} {d.model}</p></> },
-    { key: 'specs', label: 'Ø§Ù„Ù…ÙˆØ§ØµÙØ§Øª', render: (d) => `${d.processor || 'i7-11th'} | ${d.ram_size || '16'}GB | ${d.storage_size || '512'}GB` },
-    { key: 'warehouse_id', label: 'Ø§Ù„Ù…Ø®Ø²Ù†', render: (d) => warehouses.find((w) => w.id === d.warehouse_id)?.name || 'Ø§Ù„Ù…Ø®Ø²Ù† Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠ' },
-    { key: 'location', label: 'Ø§Ù„Ù…ÙˆÙ‚Ø¹', render: (d) => <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{d.location_shelf || 'A'}-{d.location_row || '1'}</span> },
-    { key: 'status', label: 'Ø§Ù„Ø­Ø§Ù„Ø©', render: (d) => { const s = deviceStatuses[d.status] || deviceStatuses.new; return <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${s.color}`}><s.icon className="w-3 h-3" />{s.label}</span> } },
-    { key: 'custody_employee', label: 'Ø§Ù„Ø°Ù…Ø©', render: (d) => d.custody_employee || 'â€”' },
-    { key: 'actions', label: 'Ø¥Ø¬Ø±Ø§Ø¡Ø§Øª', render: (d) => (
+    { key: 'serial_number', label: 'السيريال', render: (d) => <span className="font-mono font-medium">{d.serial_number}</span> },
+    { key: 'product_name', label: 'المنتج', render: (d) => <><p className="font-medium">{d.product_name || 'Dell Latitude'}</p><p className="text-sm text-neutral-500">{d.brand} {d.model}</p></> },
+    { key: 'specs', label: 'المواصفات', render: (d) => `${d.processor || 'i7-11th'} | ${d.ram_size || '16'}GB | ${d.storage_size || '512'}GB` },
+    { key: 'warehouse_id', label: 'المخزن', render: (d) => warehouses.find((w) => w.id === d.warehouse_id)?.name || 'المخزن الرئيسي' },
+    { key: 'location', label: 'الموقع', render: (d) => <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{d.location_shelf || 'A'}-{d.location_row || '1'}</span> },
+    { key: 'status', label: 'الحالة', render: (d) => { const s = deviceStatuses[d.status] || deviceStatuses.new; return <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${s.color}`}><s.icon className="w-3 h-3" />{s.label}</span> } },
+    { key: 'custody_employee', label: 'الذمة', render: (d) => d.custody_employee || '\u2014' },
+    { key: 'actions', label: 'إجراءات', render: (d) => (
       <div className="flex items-center gap-1">
-        <button type="button" onClick={() => handleViewDevice(d)} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="Ø¹Ø±Ø¶"><Eye className="w-4 h-4 text-neutral-500" /></button>
-        <button type="button" onClick={(e) => { e.stopPropagation(); handleEditDevice(d); }} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="ØªØ¹Ø¯ÙŠÙ„"><Edit className="w-4 h-4 text-neutral-500" /></button>
-        <button type="button" onClick={() => handleViewDevice(d)} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="Ø§Ù„Ø³Ø¬Ù„"><History className="w-4 h-4 text-neutral-500" /></button>
-        <button type="button" onClick={(e) => { e.stopPropagation(); handleDeleteDevice(d); }} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600" title="Ø­Ø°Ù"><Trash2 className="w-4 h-4" /></button>
+        <button type="button" onClick={() => handleViewDevice(d)} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="عرض"><Eye className="w-4 h-4 text-neutral-500" /></button>
+        <button type="button" onClick={(e) => { e.stopPropagation(); handleEditDevice(d); }} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="تعديل"><Edit className="w-4 h-4 text-neutral-500" /></button>
+        <button type="button" onClick={() => handleViewDevice(d)} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="السجل"><History className="w-4 h-4 text-neutral-500" /></button>
+        <button type="button" onClick={(e) => { e.stopPropagation(); handleDeleteDevice(d); }} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600" title="حذف"><Trash2 className="w-4 h-4" /></button>
       </div>
     ), className: 'max-w-[1%]' },
   ]
 
   return (
     <PageShell
-      title="Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø®Ø²ÙˆÙ†"
-      description="ØªØªØ¨Ø¹ Ø§Ù„Ø£Ø¬Ù‡Ø²Ø© ÙˆØ§Ù„Ø³ÙŠØ±ÙŠØ§Ù„Ø§Øª ÙˆØ§Ù„Ù…ÙˆØ§Ù‚Ø¹"
+      title="إدارة المخزون"
+      description="تتبع الأجهزة والسيريالات والمواقع"
       actions={
         <>
-          <Button variant="outline" onClick={() => {}}><Upload className="w-4 h-4 ml-2" /> Ø§Ø³ØªÙŠØ±Ø§Ø¯</Button>
-          <Button variant="outline" onClick={() => exportToCSV(devices, 'inventory-devices.csv')}><Download className="w-4 h-4 ml-2" /> ØªØµØ¯ÙŠØ± CSV</Button>
-          {tab === 'devices' && <Button onClick={() => setShowAddModal(true)}><Plus className="w-4 h-4 ml-2" /> Ø¥Ø¶Ø§ÙØ© Ø¬Ù‡Ø§Ø²</Button>}
+          <Button variant="outline" onClick={() => {}}><Upload className="w-4 h-4 ml-2" /> استيراد</Button>
+          <Button variant="outline" onClick={() => exportToCSV(devices, 'inventory-devices.csv')}><Download className="w-4 h-4 ml-2" /> تصدير CSV</Button>
+          {tab === 'devices' && <Button onClick={() => setShowAddModal(true)}><Plus className="w-4 h-4 ml-2" /> إضافة جهاز</Button>}
         </>
       }
     >
@@ -157,23 +157,23 @@ export default function InventoryPage() {
         <>
           <StatsGrid items={inventoryStatsItems} columns={4} />
           <PageShell.Toolbar>
-            <SearchInput placeholder="Ø¨Ø­Ø« Ø¨Ø§Ù„Ø³ÙŠØ±ÙŠØ§Ù„ØŒ Ø§Ù„Ø§Ø³Ù…ØŒ Ø£Ùˆ Ø§Ù„Ù…ÙˆØ¯ÙŠÙ„..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-            <FilterSelect options={warehouseOptions} value={selectedWarehouse === 'all' ? null : selectedWarehouse} onChange={(v) => setSelectedWarehouse(v ?? 'all')} placeholder="ÙƒÙ„ Ø§Ù„Ù…Ø®Ø§Ø²Ù†" />
-            <FilterSelect options={statusOptions} value={selectedStatus === 'all' ? null : selectedStatus} onChange={(v) => setSelectedStatus(v ?? 'all')} placeholder="ÙƒÙ„ Ø§Ù„Ø­Ø§Ù„Ø§Øª" />
+            <SearchInput placeholder="بحث بالسيريال، الاسم، أو الموديل..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <FilterSelect options={warehouseOptions} value={selectedWarehouse === 'all' ? null : selectedWarehouse} onChange={(v) => setSelectedWarehouse(v ?? 'all')} placeholder="كل المخازن" />
+            <FilterSelect options={statusOptions} value={selectedStatus === 'all' ? null : selectedStatus} onChange={(v) => setSelectedStatus(v ?? 'all')} placeholder="كل الحالات" />
             <div className="flex border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden">
               {['table', 'cards', 'warehouse'].map((mode) => (
-                <button key={mode} type="button" onClick={() => setViewMode(mode)} className={`px-3 py-2 ${viewMode === mode ? 'bg-primary-600 text-white' : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'}`} title={mode === 'table' ? 'Ø¬Ø¯ÙˆÙ„' : mode === 'cards' ? 'Ø¨Ø·Ø§Ù‚Ø§Øª' : 'Ù…Ø®Ø§Ø²Ù†'}>
+                <button key={mode} type="button" onClick={() => setViewMode(mode)} className={`px-3 py-2 ${viewMode === mode ? 'bg-primary-600 text-white' : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'}`} title={mode === 'table' ? 'جدول' : mode === 'cards' ? 'بطاقات' : 'مخازن'}>
                   {mode === 'table' && <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>}
                   {mode === 'cards' && <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>}
                   {mode === 'warehouse' && <WarehouseIcon className="w-5 h-5" />}
                 </button>
               ))}
             </div>
-            <Button variant="outline"><ScanLine className="w-4 h-4 ml-2" /> Ù…Ø³Ø­ Ø¨Ø§Ø±ÙƒÙˆØ¯</Button>
+            <Button variant="outline"><ScanLine className="w-4 h-4 ml-2" /> مسح باركود</Button>
           </PageShell.Toolbar>
           {viewMode === 'table' && (
             <PageShell.Content>
-              <DataTable columns={deviceColumns} data={devices} loading={isLoading} onRowClick={(row) => handleViewDevice(row)} emptyTitle="Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£Ø¬Ù‡Ø²Ø© Ù…Ø·Ø§Ø¨Ù‚Ø© Ù„Ù„Ø¨Ø­Ø«" />
+              <DataTable columns={deviceColumns} data={devices} loading={isLoading} onRowClick={(row) => handleViewDevice(row)} emptyTitle="لا توجد أجهزة مطابقة للبحث" />
             </PageShell.Content>
           )}
 
@@ -202,9 +202,9 @@ export default function InventoryPage() {
                   <p className="font-medium text-neutral-900 dark:text-white mt-1">{device.product_name || 'Dell Latitude 7410'}</p>
                 </div>
                 <div className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
-                  <p>ðŸ–¥ï¸ {device.processor || 'i7-11th'}</p>
-                  <p>ðŸ’¾ {device.ram_size || '16'}GB RAM | {device.storage_size || '512'}GB SSD</p>
-                  <p>ðŸ“ {warehouses.find(w => w.id === device.warehouse_id)?.icon || 'ðŸª'} {device.location_shelf || 'A'}-{device.location_row || '1'}</p>
+                  <p>{device.processor || 'i7-11th'}</p>
+                  <p>{device.ram_size || '16'}GB RAM | {device.storage_size || '512'}GB SSD</p>
+                  <p>{warehouses.find(w => w.id === device.warehouse_id)?.icon || ''} {device.location_shelf || 'A'}-{device.location_row || '1'}</p>
                 </div>
               </div>
             )
@@ -247,11 +247,11 @@ export default function InventoryPage() {
                   })}
                   {warehouseDevices.length > 5 && (
                     <button className="w-full text-center text-sm text-primary-600 dark:text-primary-400 hover:underline">
-                      Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„ ({warehouseDevices.length})
+                      عرض الكل ({warehouseDevices.length})
                     </button>
                   )}
                   {warehouseDevices.length === 0 && (
-                    <p className="text-center text-neutral-500 dark:text-neutral-400 py-4">Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£Ø¬Ù‡Ø²Ø©</p>
+                    <p className="text-center text-neutral-500 dark:text-neutral-400 py-4">لا توجد أجهزة</p>
                   )}
                 </div>
               </div>
@@ -267,78 +267,35 @@ export default function InventoryPage() {
       {tab === 'movements' && <InventoryMovementsTab />}
       {tab === 'count' && (
         <div className="bg-white dark:bg-neutral-800 rounded-card border border-neutral-200 dark:border-neutral-700 p-8">
-          <EmptyState title="Ø§Ù„Ø¬Ø±Ø¯" description="Ù‡Ø°Ø§ Ø§Ù„Ù‚Ø³Ù… Ù‚ÙŠØ¯ Ø§Ù„ØªØ·ÙˆÙŠØ± Ù‚Ø±ÙŠØ¨Ø§Ù‹." />
+          <EmptyState title="الجرد" description="هذا القسم قيد التطوير قريبا." />
         </div>
       )}
 
       {/* Add Device Modal */}
-      <Modal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        title="Ø¥Ø¶Ø§ÙØ© Ø¬Ù‡Ø§Ø² Ø¬Ø¯ÙŠØ¯"
-        size="lg"
-      >
+      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="إضافة جهاز جديد" size="lg">
         <AddDeviceForm onClose={() => setShowAddModal(false)} onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['inventory'] }); setShowAddModal(false) }} />
       </Modal>
 
       {/* Device Details Modal */}
-      <Modal
-        isOpen={showDeviceModal}
-        onClose={() => setShowDeviceModal(false)}
-        title={`ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ø¬Ù‡Ø§Ø²: ${selectedDevice?.serial_number || ''}`}
-        size="xl"
-      >
+      <Modal isOpen={showDeviceModal} onClose={() => setShowDeviceModal(false)} title={`تفاصيل الجهاز: ${selectedDevice?.serial_number || ''}`} size="xl">
         {selectedDevice && (
-          <DeviceDetails
-            device={selectedDevice}
-            onEdit={() => handleEditDevice(selectedDevice)}
-            onDelete={() => handleDeleteDevice(selectedDevice)}
-            onTransfer={() => handleTransferDevice(selectedDevice)}
-            onClose={() => setShowDeviceModal(false)}
-          />
+          <DeviceDetails device={selectedDevice} onEdit={() => handleEditDevice(selectedDevice)} onDelete={() => handleDeleteDevice(selectedDevice)} onTransfer={() => handleTransferDevice(selectedDevice)} onClose={() => setShowDeviceModal(false)} />
         )}
       </Modal>
 
       {/* Edit Device Modal */}
-      <Modal isOpen={showEditModal} onClose={handleCloseEdit} title="ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø¬Ù‡Ø§Ø²" size="md">
-        {deviceToEdit && (
-          <EditDeviceForm
-            device={deviceToEdit}
-            onClose={handleCloseEdit}
-            onSuccess={() => {
-              queryClient.invalidateQueries({ queryKey: ['inventory'] })
-              handleCloseEdit()
-            }}
-          />
-        )}
+      <Modal isOpen={showEditModal} onClose={handleCloseEdit} title="تعديل الجهاز" size="md">
+        {deviceToEdit && <EditDeviceForm device={deviceToEdit} onClose={handleCloseEdit} onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['inventory'] }); handleCloseEdit() }} />}
       </Modal>
 
       {/* Delete Device Confirm */}
-      <Modal isOpen={showDeleteConfirm} onClose={handleCloseDelete} title="ØªØ£ÙƒÙŠØ¯ Ø­Ø°Ù Ø§Ù„Ø¬Ù‡Ø§Ø²">
-        {deviceToDelete && (
-          <DeleteDeviceConfirm
-            device={deviceToDelete}
-            onClose={handleCloseDelete}
-            onSuccess={() => {
-              queryClient.invalidateQueries({ queryKey: ['inventory'] })
-              handleCloseDelete()
-            }}
-          />
-        )}
+      <Modal isOpen={showDeleteConfirm} onClose={handleCloseDelete} title="تأكيد حذف الجهاز">
+        {deviceToDelete && <DeleteDeviceConfirm device={deviceToDelete} onClose={handleCloseDelete} onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['inventory'] }); handleCloseDelete() }} />}
       </Modal>
 
       {/* Transfer Device Modal */}
-      <Modal isOpen={showTransferModal} onClose={handleCloseTransfer} title="Ù†Ù‚Ù„ Ø¬Ù‡Ø§Ø²" size="md">
-        {deviceToTransfer && (
-          <TransferDeviceForm
-            device={deviceToTransfer}
-            onClose={handleCloseTransfer}
-            onSuccess={() => {
-              queryClient.invalidateQueries({ queryKey: ['inventory'] })
-              handleCloseTransfer()
-            }}
-          />
-        )}
+      <Modal isOpen={showTransferModal} onClose={handleCloseTransfer} title="نقل جهاز" size="md">
+        {deviceToTransfer && <TransferDeviceForm device={deviceToTransfer} onClose={handleCloseTransfer} onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['inventory'] }); handleCloseTransfer() }} />}
       </Modal>
     </PageShell>
   )
@@ -351,20 +308,14 @@ function InventoryProductsTab() {
   })
   const products = data?.data || []
   const columns = [
-    { key: 'name', label: 'Ø§Ù„Ù…Ù†ØªØ¬' },
-    { key: 'quantity', label: 'Ø§Ù„ÙƒÙ…ÙŠØ©' },
-    { key: 'min_quantity', label: 'Ø§Ù„Ø­Ø¯ Ø§Ù„Ø£Ø¯Ù†Ù‰' },
-    { key: 'category_name', label: 'Ø§Ù„ÙØ¦Ø©' },
+    { key: 'name', label: 'المنتج' },
+    { key: 'quantity', label: 'الكمية' },
+    { key: 'min_quantity', label: 'الحد الأدنى' },
+    { key: 'category_name', label: 'الفئة' },
   ]
   return (
-    <div className="bg-white dark:bg-neutral-800 rounded-card border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-      <DataTable
-        columns={columns}
-        data={products}
-        loading={isLoading}
-        emptyTitle="Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ù†ØªØ¬Ø§Øª"
-        emptyDescription="Ø£Ø¶Ù Ù…Ù†ØªØ¬Ø§Øª Ù…Ù† Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø®Ø²ÙˆÙ†."
-      />
+    <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
+      <DataTable columns={columns} data={products} loading={isLoading} emptyTitle="لا توجد منتجات" emptyDescription="أضف منتجات من إدارة المخزون." />
     </div>
   )
 }
@@ -379,21 +330,15 @@ function InventoryMovementsTab() {
   })
   const movements = Array.isArray(data) ? data : []
   const columns = [
-    { key: 'product_name', label: 'Ø§Ù„Ù…Ù†ØªØ¬', render: (r) => r.product_name || r.product_id || 'â€”' },
-    { key: 'type', label: 'Ø§Ù„Ù†ÙˆØ¹' },
-    { key: 'quantity', label: 'Ø§Ù„ÙƒÙ…ÙŠØ©' },
-    { key: 'reason', label: 'Ø§Ù„Ø³Ø¨Ø¨' },
-    { key: 'created_at', label: 'Ø§Ù„ØªØ§Ø±ÙŠØ®', render: (r) => r.created_at ? new Date(r.created_at).toLocaleDateString('ar-IQ') : 'â€”' },
+    { key: 'product_name', label: 'المنتج', render: (r) => r.product_name || r.product_id || '\u2014' },
+    { key: 'type', label: 'النوع' },
+    { key: 'quantity', label: 'الكمية' },
+    { key: 'reason', label: 'السبب' },
+    { key: 'created_at', label: 'التاريخ', render: (r) => r.created_at ? new Date(r.created_at).toLocaleDateString('ar-IQ') : '\u2014' },
   ]
   return (
-    <div className="bg-white dark:bg-neutral-800 rounded-card border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-      <DataTable
-        columns={columns}
-        data={movements}
-        loading={isLoading}
-        emptyTitle="Ù„Ø§ ØªÙˆØ¬Ø¯ Ø­Ø±ÙƒØ§Øª"
-        emptyDescription="Ø­Ø±ÙƒØ§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ† Ø³ØªØ¸Ù‡Ø± Ù‡Ù†Ø§."
-      />
+    <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
+      <DataTable columns={columns} data={movements} loading={isLoading} emptyTitle="لا توجد حركات" emptyDescription="حركات المخزون ستظهر هنا." />
     </div>
   )
 }
