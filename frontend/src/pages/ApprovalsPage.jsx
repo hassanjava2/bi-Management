@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FileCheck, CheckCircle, XCircle, Filter } from 'lucide-react'
-import PageLayout from '../components/common/PageLayout'
+import PageShell from '../components/common/PageShell'
 import DataTable from '../components/common/DataTable'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
@@ -86,7 +86,7 @@ export default function ApprovalsPage() {
   const myRequestsList = Array.isArray(myRequests) ? myRequests : []
 
   return (
-    <PageLayout
+    <PageShell
       title="الموافقات"
       description="طلبات الموافقة المعلقة والمكتملة"
     >
@@ -171,6 +171,6 @@ export default function ApprovalsPage() {
           </div>
         </div>
       </Modal>
-    </PageLayout>
+    </PageShell>
   )
 }

@@ -4,24 +4,24 @@ import { TrendingUp, TrendingDown } from 'lucide-react'
 
 const colorStyles = {
   primary: {
-    border: 'border-s-primary-500',
-    icon: 'bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400',
+    icon: 'text-primary-500/25 dark:text-primary-400/20',
+    iconBox: 'bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400',
   },
   success: {
-    border: 'border-s-success-500',
-    icon: 'bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400',
+    icon: 'text-success-500/25 dark:text-success-400/20',
+    iconBox: 'bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400',
   },
   warning: {
-    border: 'border-s-warning-500',
-    icon: 'bg-warning-50 text-warning-600 dark:bg-warning-500/10 dark:text-warning-400',
+    icon: 'text-warning-500/25 dark:text-warning-400/20',
+    iconBox: 'bg-warning-50 text-warning-600 dark:bg-warning-500/10 dark:text-warning-400',
   },
   danger: {
-    border: 'border-s-error-500',
-    icon: 'bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400',
+    icon: 'text-error-500/25 dark:text-error-400/20',
+    iconBox: 'bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400',
   },
   info: {
-    border: 'border-s-info-500',
-    icon: 'bg-info-50 text-info-600 dark:bg-info-500/10 dark:text-info-400',
+    icon: 'text-info-500/25 dark:text-info-400/20',
+    iconBox: 'bg-info-50 text-info-600 dark:bg-info-500/10 dark:text-info-400',
   },
 }
 
@@ -53,19 +53,23 @@ export default function StatCard({
 
   return (
     <div className={clsx(
-      'bg-white dark:bg-neutral-900 rounded-xl p-5',
-      'border border-neutral-100 dark:border-neutral-800',
-      'border-s-[3px]', c.border,
-      'hover:shadow-lg hover:shadow-neutral-200/50 dark:hover:shadow-neutral-900/50',
+      'bg-white dark:bg-neutral-900 rounded-2xl p-6 relative overflow-hidden',
+      'border border-transparent dark:border-neutral-800 shadow-sm dark:shadow-none',
+      'hover:shadow-md hover:shadow-neutral-200/40 dark:hover:shadow-neutral-900/50',
       'transition-all duration-300',
       className
     )}>
-      <div className="flex items-start justify-between gap-3">
+      {Icon && (
+        <div className={clsx('absolute start-4 top-4 opacity-90', c.icon)} aria-hidden>
+          <Icon className="w-14 h-14" />
+        </div>
+      )}
+      <div className="relative flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
             {title}
           </p>
-          <p className="mt-3 text-3xl font-bold text-neutral-900 dark:text-white tabular-nums">
+          <p className="mt-3 text-4xl font-bold text-neutral-900 dark:text-white tabular-nums">
             {displayValue}
           </p>
           {trend && (
@@ -79,7 +83,7 @@ export default function StatCard({
           )}
         </div>
         {Icon && (
-          <div className={clsx('p-3 rounded-xl', c.icon)}>
+          <div className={clsx('p-3 rounded-xl shrink-0', c.iconBox)}>
             <Icon className="w-6 h-6" />
           </div>
         )}

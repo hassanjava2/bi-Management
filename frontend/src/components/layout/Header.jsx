@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Menu, Sun, Moon, Search, Command } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useAuth } from '../../context/AuthContext'
@@ -9,53 +9,17 @@ import CommandPalette from './CommandPalette'
 import Dropdown, { DropdownItem, DropdownDivider } from '../common/Dropdown'
 import { Settings, LogOut } from 'lucide-react'
 
-const pageTitles = {
-  '/dashboard': 'لوحة التحكم',
-  '/executive-dashboard': 'لوحة المدير التنفيذي',
-  '/sales': 'المبيعات',
-  '/sales/new': 'فاتورة جديدة',
-  '/sales/waiting': 'فواتير الانتظار',
-  '/purchases': 'المشتريات',
-  '/purchases/new': 'فاتورة مشتريات',
-  '/inventory': 'المخزون',
-  '/returns': 'المرتجعات',
-  '/customers': 'العملاء',
-  '/suppliers': 'الموردين',
-  '/delivery': 'التوصيل',
-  '/warranty': 'الضمان',
-  '/accounting': 'المحاسبة',
-  '/reports': 'التقارير',
-  '/calculator': 'الحاسبة',
-  '/employees': 'الموظفين',
-  '/attendance': 'الحضور والانصراف',
-  '/tasks': 'المهام',
-  '/training': 'التدريب',
-  '/goals': 'الأهداف',
-  '/approvals': 'الموافقات',
-  '/fixed-assets': 'المواد الثابتة',
-  '/shares': 'الأسهم والشراكة',
-  '/permissions': 'الصلاحيات',
-  '/audit': 'سجل العمليات',
-  '/settings': 'الإعدادات',
-  '/bot': 'البوت الذكي',
-  '/notifications': 'الإشعارات',
-  '/rep-dashboard': 'لوحة المندوب',
-}
-
 export default function Header({ onMenuClick }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [dark, toggleDark] = useDarkMode()
   const [commandOpen, setCommandOpen] = useState(false)
-  const location = useLocation()
-
-  const currentTitle = pageTitles[location.pathname] || 'لوحة التحكم'
 
   return (
     <>
-      <header className="h-14 bg-white dark:bg-neutral-900 border-b border-neutral-200/60 dark:border-neutral-800/60 px-4 lg:px-8 flex items-center justify-between sticky top-0 z-30">
-        {/* Right */}
-        <div className="flex items-center gap-4 min-w-0">
+      <header className="h-12 bg-white dark:bg-neutral-900 border-b border-neutral-200/60 dark:border-neutral-800/60 px-4 lg:px-8 flex items-center justify-between sticky top-0 z-30">
+        {/* Right: menu only */}
+        <div className="flex items-center min-w-0">
           <button
             type="button"
             onClick={onMenuClick}
@@ -64,19 +28,15 @@ export default function Header({ onMenuClick }) {
           >
             <Menu className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
           </button>
-
-          <h1 className="text-base font-semibold text-neutral-900 dark:text-white truncate">
-            {currentTitle}
-          </h1>
         </div>
 
         {/* Left */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Search bar */}
+          {/* Search bar - wider */}
           <button
             type="button"
             onClick={() => setCommandOpen(true)}
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors text-sm"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors text-sm min-w-[200px] sm:min-w-[240px]"
           >
             <Search className="w-4 h-4" />
             <span>بحث...</span>

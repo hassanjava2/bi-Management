@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Calculator, Send, Plus } from 'lucide-react'
 import Button from '../components/common/Button'
-import PageLayout from '../components/common/PageLayout'
+import PageShell from '../components/common/PageShell'
 import Tabs from '../components/common/Tabs'
 import api from '../services/api'
 import { useToast } from '../context/ToastContext'
@@ -79,7 +79,7 @@ export default function CalculatorPage() {
   ]
 
   return (
-    <PageLayout title="أونلاين حاسبة" icon={<Calculator className="w-6 h-6" />}>
+    <PageShell title="أونلاين حاسبة" icon={<Calculator className="w-6 h-6" />}>
       <Tabs tabs={tabs} activeId={activeTab} onChange={setActiveTab} />
 
       {activeTab === 'chat' && (
@@ -195,6 +195,6 @@ export default function CalculatorPage() {
           <Button variant="outline" className="mt-4" onClick={() => refetchRoutes()}>تحديث</Button>
         </div>
       )}
-    </PageLayout>
+    </PageShell>
   )
 }

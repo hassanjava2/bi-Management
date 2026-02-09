@@ -5,6 +5,7 @@ import Leaderboard from '../components/goals/Leaderboard'
 import PointsHistory from '../components/goals/PointsHistory'
 import BadgesGrid from '../components/goals/BadgesGrid'
 import RewardsShop from '../components/goals/RewardsShop'
+import PageShell from '../components/common/PageShell'
 
 const TABS = [
   { id: 'overview', label: 'نظرة عامة', icon: Trophy },
@@ -17,17 +18,7 @@ export default function GoalsPage() {
   const [activeTab, setActiveTab] = useState('overview')
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-          <Trophy className="w-7 h-7 text-amber-500" />
-          Bi Goals
-        </h1>
-        <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-          نظام الحوافز والمكافآت
-        </p>
-      </div>
+    <PageShell title="Bi Goals" description="نظام الحوافز والمكافآت">
 
       {/* Tabs */}
       <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-xl p-1 overflow-x-auto">
@@ -76,6 +67,6 @@ export default function GoalsPage() {
       {activeTab === 'badges' && (
         <BadgesGrid />
       )}
-    </div>
+    </PageShell>
   )
 }

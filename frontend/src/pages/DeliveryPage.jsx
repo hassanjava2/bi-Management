@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Truck, Package, MapPin, Phone, Plus } from 'lucide-react'
-import PageLayout from '../components/common/PageLayout'
+import PageShell from '../components/common/PageShell'
 import DataTable from '../components/common/DataTable'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
@@ -81,7 +81,7 @@ export default function DeliveryPage() {
   })
 
   return (
-    <PageLayout
+    <PageShell
       title="التوصيل"
       description="إدارة طلبات التوصيل وحالاتها"
     >
@@ -122,7 +122,7 @@ export default function DeliveryPage() {
           emptyDescription="طلبات التوصيل ستظهر هنا."
         />
       </div>
-    </PageLayout>
+    </PageShell>
   )
 }
 

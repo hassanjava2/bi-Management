@@ -14,6 +14,8 @@ import { exportToCSV } from '../utils/helpers'
 import Spinner from '../components/common/Spinner'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
+import PageShell from '../components/common/PageShell'
+import SearchInput from '../components/common/SearchInput'
 import { suppliersAPI } from '../services/api'
 
 export default function SuppliersPage() {
@@ -156,19 +158,11 @@ export default function SuppliersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            <Building2 className="w-8 h-8 text-primary-600" />
-            إدارة الموردين
-          </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-            إدارة الموردين ومراكز الصيانة
-          </p>
-        </div>
-        <div className="flex gap-2">
+    <PageShell
+      title="إدارة الموردين"
+      description="إدارة الموردين ومراكز الصيانة"
+      actions={
+        <>
           <Button variant="outline" onClick={() => exportToCSV(suppliers, 'suppliers.csv')}>
             <Download className="w-4 h-4 ml-2" />
             تصدير CSV
@@ -177,20 +171,12 @@ export default function SuppliersPage() {
             <Plus className="w-4 h-4 ml-2" />
             إضافة مورد
           </Button>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="بحث بالاسم أو الهاتف..."
-          className="w-full pr-10 pl-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
-        />
-      </div>
+        </>
+      }
+    >
+      <PageShell.Toolbar>
+        <SearchInput placeholder="بحث بالاسم أو الهاتف..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+      </PageShell.Toolbar>
 
       {/* Suppliers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -502,6 +488,6 @@ export default function SuppliersPage() {
           </div>
         )}
       </Modal>
-    </div>
+    </PageShell>
   )
 }

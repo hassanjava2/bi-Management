@@ -1,6 +1,6 @@
-/**
+﻿/**
  * Bi Management - Inventory Page
- * صفحة إدارة المخزون والأجهزة بالسيريالات
+ * ØµÙØ­Ø© Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø®Ø²ÙˆÙ† ÙˆØ§Ù„Ø£Ø¬Ù‡Ø²Ø© Ø¨Ø§Ù„Ø³ÙŠØ±ÙŠØ§Ù„Ø§Øª
  */
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -17,40 +17,21 @@ import Modal from '../components/common/Modal'
 import Tabs from '../components/common/Tabs'
 import EmptyState from '../components/common/EmptyState'
 import DataTable from '../components/common/DataTable'
+import PageShell from '../components/common/PageShell'
+import SearchInput from '../components/common/SearchInput'
+import FilterSelect from '../components/common/FilterSelect'
+import StatsGrid from '../components/common/StatsGrid'
+import { deviceStatuses, warehouses } from '../components/inventory/inventoryConstants'
+import { AddDeviceForm, EditDeviceForm, TransferDeviceForm, DeleteDeviceConfirm, DeviceDetails } from '../components/inventory/InventoryForms'
 import api from '../services/api'
-import { inventoryAPI, suppliersAPI } from '../services/api'
+import { inventoryAPI } from '../services/api'
 import { exportToCSV } from '../utils/helpers'
 
-// حالات الأجهزة
-const deviceStatuses = {
-  new: { label: 'جديد', color: 'bg-blue-100 text-blue-800', icon: Package },
-  inspecting: { label: 'قيد الفحص', color: 'bg-yellow-100 text-yellow-800', icon: Search },
-  ready_for_prep: { label: 'جاهز للتجهيز', color: 'bg-indigo-100 text-indigo-800', icon: Clock },
-  preparing: { label: 'قيد التجهيز', color: 'bg-purple-100 text-purple-800', icon: Clock },
-  ready_to_sell: { label: 'جاهز للبيع', color: 'bg-green-100 text-green-800', icon: CheckCircle2 },
-  reserved: { label: 'محجوز', color: 'bg-orange-100 text-orange-800', icon: Clock },
-  sold: { label: 'مباع', color: 'bg-neutral-100 text-neutral-800', icon: CheckCircle2 },
-  returned: { label: 'مرتجع', color: 'bg-red-100 text-red-800', icon: AlertTriangle },
-  in_repair: { label: 'بالصيانة', color: 'bg-amber-100 text-amber-800', icon: AlertTriangle },
-  scrapped: { label: 'تالف', color: 'bg-red-200 text-red-900', icon: Trash2 },
-}
-
-// المخازن
-const warehouses = [
-  { id: 'main', name: 'المخزن الرئيسي', icon: '🏪' },
-  { id: 'inspection', name: 'مخزن الفحص', icon: '🔍' },
-  { id: 'preparation', name: 'مخزن التجهيز', icon: '⚙️' },
-  { id: 'repair', name: 'مخزن الصيانة', icon: '🔧' },
-  { id: 'returns', name: 'مخزن المرتجعات', icon: '📦' },
-  { id: 'defective', name: 'مخزن التالف', icon: '⚠️' },
-  { id: 'accessories', name: 'مخزن الإكسسوارات', icon: '🎧' },
-]
-
 const INVENTORY_TABS = [
-  { id: 'devices', label: 'الأجهزة' },
-  { id: 'products', label: 'المنتجات' },
-  { id: 'movements', label: 'حركة المخزون' },
-  { id: 'count', label: 'الجرد' },
+  { id: 'devices', label: 'Ø§Ù„Ø£Ø¬Ù‡Ø²Ø©' },
+  { id: 'products', label: 'Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª' },
+  { id: 'movements', label: 'Ø­Ø±ÙƒØ© Ø§Ù„Ù…Ø®Ø²ÙˆÙ†' },
+  { id: 'count', label: 'Ø§Ù„Ø¬Ø±Ø¯' },
 ]
 
 export default function InventoryPage() {
@@ -73,7 +54,7 @@ export default function InventoryPage() {
   const [viewMode, setViewMode] = useState('table')
   const queryClient = useQueryClient()
 
-  // جلب بيانات المخزون
+  // Ø¬Ù„Ø¨ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ†
   const { data: inventoryData, isLoading } = useQuery({
     queryKey: ['inventory', searchTerm, selectedWarehouse, selectedStatus],
     queryFn: () => inventoryAPI.getDevices({ 
@@ -83,7 +64,7 @@ export default function InventoryPage() {
     }),
   })
 
-  // جلب إحصائيات المخزون
+  // Ø¬Ù„Ø¨ Ø¥Ø­ØµØ§Ø¦ÙŠØ§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ†
   const { data: statsData } = useQuery({
     queryKey: ['inventory-stats'],
     queryFn: () => inventoryAPI.getStats(),
@@ -132,267 +113,69 @@ export default function InventoryPage() {
     )
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            <Package className="w-8 h-8 text-primary-600" />
-            إدارة المخزون
-          </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-            تتبع الأجهزة والسيريالات والمواقع
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => {}}>
-            <Upload className="w-4 h-4 ml-2" />
-            استيراد
-          </Button>
-          <Button variant="outline" onClick={() => exportToCSV(devices, 'inventory-devices.csv')}>
-            <Download className="w-4 h-4 ml-2" />
-            تصدير CSV
-          </Button>
-          {tab === 'devices' && (
-            <Button onClick={() => setShowAddModal(true)}>
-              <Plus className="w-4 h-4 ml-2" />
-              إضافة جهاز
-            </Button>
-          )}
-        </div>
+  const inventoryStatsItems = [
+    { title: 'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø£Ø¬Ù‡Ø²Ø©', value: stats.total ?? 0, icon: Boxes, color: 'primary' },
+    { title: 'Ø¬Ø§Ù‡Ø² Ù„Ù„Ø¨ÙŠØ¹', value: stats.ready_to_sell ?? 0, icon: CheckCircle2, color: 'success' },
+    { title: 'Ø¨Ø§Ù„ØµÙŠØ§Ù†Ø©', value: stats.in_repair ?? 0, icon: AlertTriangle, color: 'warning' },
+    { title: 'ØªÙ†Ø¨ÙŠÙ‡ Ù†Ù‚Øµ', value: stats.low_stock ?? 0, icon: AlertTriangle, color: 'danger' },
+  ]
+  const warehouseOptions = warehouses.map((w) => ({ value: w.id, label: `${w.icon} ${w.name}` }))
+  const statusOptions = Object.entries(deviceStatuses).map(([k, v]) => ({ value: k, label: v.label }))
+  const deviceColumns = [
+    { key: 'serial_number', label: 'Ø§Ù„Ø³ÙŠØ±ÙŠØ§Ù„', render: (d) => <span className="font-mono font-medium">{d.serial_number}</span> },
+    { key: 'product_name', label: 'Ø§Ù„Ù…Ù†ØªØ¬', render: (d) => <><p className="font-medium">{d.product_name || 'Dell Latitude'}</p><p className="text-sm text-neutral-500">{d.brand} {d.model}</p></> },
+    { key: 'specs', label: 'Ø§Ù„Ù…ÙˆØ§ØµÙØ§Øª', render: (d) => `${d.processor || 'i7-11th'} | ${d.ram_size || '16'}GB | ${d.storage_size || '512'}GB` },
+    { key: 'warehouse_id', label: 'Ø§Ù„Ù…Ø®Ø²Ù†', render: (d) => warehouses.find((w) => w.id === d.warehouse_id)?.name || 'Ø§Ù„Ù…Ø®Ø²Ù† Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠ' },
+    { key: 'location', label: 'Ø§Ù„Ù…ÙˆÙ‚Ø¹', render: (d) => <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{d.location_shelf || 'A'}-{d.location_row || '1'}</span> },
+    { key: 'status', label: 'Ø§Ù„Ø­Ø§Ù„Ø©', render: (d) => { const s = deviceStatuses[d.status] || deviceStatuses.new; return <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${s.color}`}><s.icon className="w-3 h-3" />{s.label}</span> } },
+    { key: 'custody_employee', label: 'Ø§Ù„Ø°Ù…Ø©', render: (d) => d.custody_employee || 'â€”' },
+    { key: 'actions', label: 'Ø¥Ø¬Ø±Ø§Ø¡Ø§Øª', render: (d) => (
+      <div className="flex items-center gap-1">
+        <button type="button" onClick={() => handleViewDevice(d)} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="Ø¹Ø±Ø¶"><Eye className="w-4 h-4 text-neutral-500" /></button>
+        <button type="button" onClick={(e) => { e.stopPropagation(); handleEditDevice(d); }} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="ØªØ¹Ø¯ÙŠÙ„"><Edit className="w-4 h-4 text-neutral-500" /></button>
+        <button type="button" onClick={() => handleViewDevice(d)} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="Ø§Ù„Ø³Ø¬Ù„"><History className="w-4 h-4 text-neutral-500" /></button>
+        <button type="button" onClick={(e) => { e.stopPropagation(); handleDeleteDevice(d); }} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600" title="Ø­Ø°Ù"><Trash2 className="w-4 h-4" /></button>
       </div>
+    ), className: 'max-w-[1%]' },
+  ]
 
+  return (
+    <PageShell
+      title="Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø®Ø²ÙˆÙ†"
+      description="ØªØªØ¨Ø¹ Ø§Ù„Ø£Ø¬Ù‡Ø²Ø© ÙˆØ§Ù„Ø³ÙŠØ±ÙŠØ§Ù„Ø§Øª ÙˆØ§Ù„Ù…ÙˆØ§Ù‚Ø¹"
+      actions={
+        <>
+          <Button variant="outline" onClick={() => {}}><Upload className="w-4 h-4 ml-2" /> Ø§Ø³ØªÙŠØ±Ø§Ø¯</Button>
+          <Button variant="outline" onClick={() => exportToCSV(devices, 'inventory-devices.csv')}><Download className="w-4 h-4 ml-2" /> ØªØµØ¯ÙŠØ± CSV</Button>
+          {tab === 'devices' && <Button onClick={() => setShowAddModal(true)}><Plus className="w-4 h-4 ml-2" /> Ø¥Ø¶Ø§ÙØ© Ø¬Ù‡Ø§Ø²</Button>}
+        </>
+      }
+    >
       <Tabs tabs={INVENTORY_TABS} activeId={tab} onChange={setTab} />
 
       {tab === 'devices' && (
         <>
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">إجمالي الأجهزة</p>
-              <p className="text-2xl font-bold text-neutral-900 dark:text-white">{stats.total || 0}</p>
+          <StatsGrid items={inventoryStatsItems} columns={4} />
+          <PageShell.Toolbar>
+            <SearchInput placeholder="Ø¨Ø­Ø« Ø¨Ø§Ù„Ø³ÙŠØ±ÙŠØ§Ù„ØŒ Ø§Ù„Ø§Ø³Ù…ØŒ Ø£Ùˆ Ø§Ù„Ù…ÙˆØ¯ÙŠÙ„..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <FilterSelect options={warehouseOptions} value={selectedWarehouse === 'all' ? null : selectedWarehouse} onChange={(v) => setSelectedWarehouse(v ?? 'all')} placeholder="ÙƒÙ„ Ø§Ù„Ù…Ø®Ø§Ø²Ù†" />
+            <FilterSelect options={statusOptions} value={selectedStatus === 'all' ? null : selectedStatus} onChange={(v) => setSelectedStatus(v ?? 'all')} placeholder="ÙƒÙ„ Ø§Ù„Ø­Ø§Ù„Ø§Øª" />
+            <div className="flex border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden">
+              {['table', 'cards', 'warehouse'].map((mode) => (
+                <button key={mode} type="button" onClick={() => setViewMode(mode)} className={`px-3 py-2 ${viewMode === mode ? 'bg-primary-600 text-white' : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'}`} title={mode === 'table' ? 'Ø¬Ø¯ÙˆÙ„' : mode === 'cards' ? 'Ø¨Ø·Ø§Ù‚Ø§Øª' : 'Ù…Ø®Ø§Ø²Ù†'}>
+                  {mode === 'table' && <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>}
+                  {mode === 'cards' && <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>}
+                  {mode === 'warehouse' && <WarehouseIcon className="w-5 h-5" />}
+                </button>
+              ))}
             </div>
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-              <Boxes className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">جاهز للبيع</p>
-              <p className="text-2xl font-bold text-green-600">{stats.ready_to_sell || 0}</p>
-            </div>
-            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-              <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">بالصيانة</p>
-              <p className="text-2xl font-bold text-amber-600">{stats.in_repair || 0}</p>
-            </div>
-            <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
-              <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">تنبيه نقص</p>
-              <p className="text-2xl font-bold text-red-600">{stats.low_stock || 0}</p>
-            </div>
-            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
-              <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters & Search */}
-      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="بحث بالسيريال، الاسم، أو الموديل..."
-              className="w-full pr-10 pl-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          
-          {/* Warehouse Filter */}
-          <select
-            value={selectedWarehouse}
-            onChange={(e) => setSelectedWarehouse(e.target.value)}
-            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
-          >
-            <option value="all">كل المخازن</option>
-            {warehouses.map(w => (
-              <option key={w.id} value={w.id}>{w.icon} {w.name}</option>
-            ))}
-          </select>
-
-          {/* Status Filter */}
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white"
-          >
-            <option value="all">كل الحالات</option>
-            {Object.entries(deviceStatuses).map(([key, val]) => (
-              <option key={key} value={key}>{val.label}</option>
-            ))}
-          </select>
-
-          {/* View Mode */}
-          <div className="flex border border-neutral-300 dark:border-neutral-600 rounded-lg overflow-hidden">
-            <button
-              onClick={() => setViewMode('table')}
-              className={`px-3 py-2 ${viewMode === 'table' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'}`}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setViewMode('cards')}
-              className={`px-3 py-2 ${viewMode === 'cards' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'}`}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setViewMode('warehouse')}
-              className={`px-3 py-2 ${viewMode === 'warehouse' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'}`}
-            >
-              <WarehouseIcon className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Scan Button */}
-          <Button variant="outline">
-            <ScanLine className="w-4 h-4 ml-2" />
-            مسح باركود
-          </Button>
-        </div>
-      </div>
-
-      {/* Devices Table */}
-      {viewMode === 'table' && (
-        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-neutral-50 dark:bg-neutral-700/50">
-                <tr>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">السيريال</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">المنتج</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">المواصفات</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">المخزن</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">الموقع</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">الحالة</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">الذمة</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500 dark:text-neutral-400">إجراءات</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
-                {devices.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
-                      لا توجد أجهزة مطابقة للبحث
-                    </td>
-                  </tr>
-                ) : (
-                  devices.map((device) => {
-                    const status = deviceStatuses[device.status] || deviceStatuses.new
-                    return (
-                      <tr key={device.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <QrCode className="w-4 h-4 text-neutral-400" />
-                            <span className="font-mono text-sm font-medium text-neutral-900 dark:text-white">
-                              {device.serial_number}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div>
-                            <p className="font-medium text-neutral-900 dark:text-white">{device.product_name || 'Dell Latitude'}</p>
-                            <p className="text-sm text-neutral-500">{device.brand} {device.model}</p>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
-                          {device.processor || 'i7-11th'} | {device.ram_size || '16'}GB | {device.storage_size || '512'}GB
-                        </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
-                          {warehouses.find(w => w.id === device.warehouse_id)?.name || 'المخزن الرئيسي'}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-300">
-                            <MapPin className="w-3 h-3" />
-                            {device.location_shelf || 'A'}-{device.location_row || '1'}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${status.color}`}>
-                            <status.icon className="w-3 h-3" />
-                            {status.label}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
-                          {device.custody_employee || '-'}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleViewDevice(device)}
-                              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
-                              title="عرض"
-                            >
-                              <Eye className="w-4 h-4 text-neutral-500" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleEditDevice(device); }}
-                              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
-                              title="تعديل"
-                            >
-                              <Edit className="w-4 h-4 text-neutral-500" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleViewDevice(device); }}
-                              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
-                              title="السجل"
-                            >
-                              <History className="w-4 h-4 text-neutral-500" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleDeleteDevice(device); }}
-                              className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-red-600 dark:text-red-400"
-                              title="حذف"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+            <Button variant="outline"><ScanLine className="w-4 h-4 ml-2" /> Ù…Ø³Ø­ Ø¨Ø§Ø±ÙƒÙˆØ¯</Button>
+          </PageShell.Toolbar>
+          {viewMode === 'table' && (
+            <PageShell.Content>
+              <DataTable columns={deviceColumns} data={devices} loading={isLoading} onRowClick={(row) => handleViewDevice(row)} emptyTitle="Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£Ø¬Ù‡Ø²Ø© Ù…Ø·Ø§Ø¨Ù‚Ø© Ù„Ù„Ø¨Ø­Ø«" />
+            </PageShell.Content>
+          )}
 
       {/* Cards View */}
       {viewMode === 'cards' && (
@@ -419,9 +202,9 @@ export default function InventoryPage() {
                   <p className="font-medium text-neutral-900 dark:text-white mt-1">{device.product_name || 'Dell Latitude 7410'}</p>
                 </div>
                 <div className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
-                  <p>🖥️ {device.processor || 'i7-11th'}</p>
-                  <p>💾 {device.ram_size || '16'}GB RAM | {device.storage_size || '512'}GB SSD</p>
-                  <p>📍 {warehouses.find(w => w.id === device.warehouse_id)?.icon || '🏪'} {device.location_shelf || 'A'}-{device.location_row || '1'}</p>
+                  <p>ðŸ–¥ï¸ {device.processor || 'i7-11th'}</p>
+                  <p>ðŸ’¾ {device.ram_size || '16'}GB RAM | {device.storage_size || '512'}GB SSD</p>
+                  <p>ðŸ“ {warehouses.find(w => w.id === device.warehouse_id)?.icon || 'ðŸª'} {device.location_shelf || 'A'}-{device.location_row || '1'}</p>
                 </div>
               </div>
             )
@@ -464,11 +247,11 @@ export default function InventoryPage() {
                   })}
                   {warehouseDevices.length > 5 && (
                     <button className="w-full text-center text-sm text-primary-600 dark:text-primary-400 hover:underline">
-                      عرض الكل ({warehouseDevices.length})
+                      Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„ ({warehouseDevices.length})
                     </button>
                   )}
                   {warehouseDevices.length === 0 && (
-                    <p className="text-center text-neutral-500 dark:text-neutral-400 py-4">لا توجد أجهزة</p>
+                    <p className="text-center text-neutral-500 dark:text-neutral-400 py-4">Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£Ø¬Ù‡Ø²Ø©</p>
                   )}
                 </div>
               </div>
@@ -484,7 +267,7 @@ export default function InventoryPage() {
       {tab === 'movements' && <InventoryMovementsTab />}
       {tab === 'count' && (
         <div className="bg-white dark:bg-neutral-800 rounded-card border border-neutral-200 dark:border-neutral-700 p-8">
-          <EmptyState title="الجرد" description="هذا القسم قيد التطوير قريباً." />
+          <EmptyState title="Ø§Ù„Ø¬Ø±Ø¯" description="Ù‡Ø°Ø§ Ø§Ù„Ù‚Ø³Ù… Ù‚ÙŠØ¯ Ø§Ù„ØªØ·ÙˆÙŠØ± Ù‚Ø±ÙŠØ¨Ø§Ù‹." />
         </div>
       )}
 
@@ -492,7 +275,7 @@ export default function InventoryPage() {
       <Modal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
-        title="إضافة جهاز جديد"
+        title="Ø¥Ø¶Ø§ÙØ© Ø¬Ù‡Ø§Ø² Ø¬Ø¯ÙŠØ¯"
         size="lg"
       >
         <AddDeviceForm onClose={() => setShowAddModal(false)} onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['inventory'] }); setShowAddModal(false) }} />
@@ -502,7 +285,7 @@ export default function InventoryPage() {
       <Modal
         isOpen={showDeviceModal}
         onClose={() => setShowDeviceModal(false)}
-        title={`تفاصيل الجهاز: ${selectedDevice?.serial_number || ''}`}
+        title={`ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ø¬Ù‡Ø§Ø²: ${selectedDevice?.serial_number || ''}`}
         size="xl"
       >
         {selectedDevice && (
@@ -517,7 +300,7 @@ export default function InventoryPage() {
       </Modal>
 
       {/* Edit Device Modal */}
-      <Modal isOpen={showEditModal} onClose={handleCloseEdit} title="تعديل الجهاز" size="md">
+      <Modal isOpen={showEditModal} onClose={handleCloseEdit} title="ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ø¬Ù‡Ø§Ø²" size="md">
         {deviceToEdit && (
           <EditDeviceForm
             device={deviceToEdit}
@@ -531,7 +314,7 @@ export default function InventoryPage() {
       </Modal>
 
       {/* Delete Device Confirm */}
-      <Modal isOpen={showDeleteConfirm} onClose={handleCloseDelete} title="تأكيد حذف الجهاز">
+      <Modal isOpen={showDeleteConfirm} onClose={handleCloseDelete} title="ØªØ£ÙƒÙŠØ¯ Ø­Ø°Ù Ø§Ù„Ø¬Ù‡Ø§Ø²">
         {deviceToDelete && (
           <DeleteDeviceConfirm
             device={deviceToDelete}
@@ -545,7 +328,7 @@ export default function InventoryPage() {
       </Modal>
 
       {/* Transfer Device Modal */}
-      <Modal isOpen={showTransferModal} onClose={handleCloseTransfer} title="نقل جهاز" size="md">
+      <Modal isOpen={showTransferModal} onClose={handleCloseTransfer} title="Ù†Ù‚Ù„ Ø¬Ù‡Ø§Ø²" size="md">
         {deviceToTransfer && (
           <TransferDeviceForm
             device={deviceToTransfer}
@@ -557,7 +340,7 @@ export default function InventoryPage() {
           />
         )}
       </Modal>
-    </div>
+    </PageShell>
   )
 }
 
@@ -568,10 +351,10 @@ function InventoryProductsTab() {
   })
   const products = data?.data || []
   const columns = [
-    { key: 'name', label: 'المنتج' },
-    { key: 'quantity', label: 'الكمية' },
-    { key: 'min_quantity', label: 'الحد الأدنى' },
-    { key: 'category_name', label: 'الفئة' },
+    { key: 'name', label: 'Ø§Ù„Ù…Ù†ØªØ¬' },
+    { key: 'quantity', label: 'Ø§Ù„ÙƒÙ…ÙŠØ©' },
+    { key: 'min_quantity', label: 'Ø§Ù„Ø­Ø¯ Ø§Ù„Ø£Ø¯Ù†Ù‰' },
+    { key: 'category_name', label: 'Ø§Ù„ÙØ¦Ø©' },
   ]
   return (
     <div className="bg-white dark:bg-neutral-800 rounded-card border border-neutral-200 dark:border-neutral-700 overflow-hidden">
@@ -579,8 +362,8 @@ function InventoryProductsTab() {
         columns={columns}
         data={products}
         loading={isLoading}
-        emptyTitle="لا توجد منتجات"
-        emptyDescription="أضف منتجات من إدارة المخزون."
+        emptyTitle="Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ù†ØªØ¬Ø§Øª"
+        emptyDescription="Ø£Ø¶Ù Ù…Ù†ØªØ¬Ø§Øª Ù…Ù† Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø®Ø²ÙˆÙ†."
       />
     </div>
   )
@@ -596,11 +379,11 @@ function InventoryMovementsTab() {
   })
   const movements = Array.isArray(data) ? data : []
   const columns = [
-    { key: 'product_name', label: 'المنتج', render: (r) => r.product_name || r.product_id || '—' },
-    { key: 'type', label: 'النوع' },
-    { key: 'quantity', label: 'الكمية' },
-    { key: 'reason', label: 'السبب' },
-    { key: 'created_at', label: 'التاريخ', render: (r) => r.created_at ? new Date(r.created_at).toLocaleDateString('ar-IQ') : '—' },
+    { key: 'product_name', label: 'Ø§Ù„Ù…Ù†ØªØ¬', render: (r) => r.product_name || r.product_id || 'â€”' },
+    { key: 'type', label: 'Ø§Ù„Ù†ÙˆØ¹' },
+    { key: 'quantity', label: 'Ø§Ù„ÙƒÙ…ÙŠØ©' },
+    { key: 'reason', label: 'Ø§Ù„Ø³Ø¨Ø¨' },
+    { key: 'created_at', label: 'Ø§Ù„ØªØ§Ø±ÙŠØ®', render: (r) => r.created_at ? new Date(r.created_at).toLocaleDateString('ar-IQ') : 'â€”' },
   ]
   return (
     <div className="bg-white dark:bg-neutral-800 rounded-card border border-neutral-200 dark:border-neutral-700 overflow-hidden">
@@ -608,427 +391,9 @@ function InventoryMovementsTab() {
         columns={columns}
         data={movements}
         loading={isLoading}
-        emptyTitle="لا توجد حركات"
-        emptyDescription="حركات المخزون ستظهر هنا."
+        emptyTitle="Ù„Ø§ ØªÙˆØ¬Ø¯ Ø­Ø±ÙƒØ§Øª"
+        emptyDescription="Ø­Ø±ÙƒØ§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ† Ø³ØªØ¸Ù‡Ø± Ù‡Ù†Ø§."
       />
-    </div>
-  )
-}
-
-// فورم إضافة جهاز
-function AddDeviceForm({ onClose, onSuccess }) {
-  const [form, setForm] = useState({ product_id: '', serial_number: '', supplier_id: '', purchase_price: '', warehouse_id: 'main' })
-  const queryClient = useQueryClient()
-  const { data: productsRes } = useQuery({ queryKey: ['inventory-products'], queryFn: () => inventoryAPI.getProducts() })
-  const { data: suppliersRes } = useQuery({ queryKey: ['suppliers'], queryFn: () => suppliersAPI.getSuppliers() })
-  const products = productsRes?.data?.data || []
-  const suppliers = suppliersRes?.data?.data || []
-  const createMutation = useMutation({
-    mutationFn: (data) => inventoryAPI.createDevice(data),
-    onSuccess: () => { onSuccess?.() },
-  })
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!form.product_id) return
-    createMutation.mutate({
-      product_id: form.product_id,
-      serial_number: form.serial_number || undefined,
-      supplier_id: form.supplier_id || undefined,
-      purchase_price: form.purchase_price ? parseFloat(form.purchase_price) : undefined,
-      warehouse_id: form.warehouse_id || 'main',
-    })
-  }
-  return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      {createMutation.isError && (
-        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm">
-          {createMutation.error?.response?.data?.error || createMutation.error?.message || 'حدث خطأ'}
-        </div>
-      )}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">المنتج</label>
-          <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700" value={form.product_id} onChange={(e) => setForm(f => ({ ...f, product_id: e.target.value }))} required>
-            <option value="">اختر المنتج...</option>
-            {products.map(p => <option key={p.id} value={p.id}>{p.name || p.name_ar}</option>)}
-            {products.length === 0 && <><option value="1">Dell Latitude 7410</option><option value="2">HP EliteBook 840 G7</option></>}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">السيريال (اختياري)</label>
-          <input type="text" placeholder="BI-2025-XXXXXX" className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700" value={form.serial_number} onChange={(e) => setForm(f => ({ ...f, serial_number: e.target.value }))} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">المورد</label>
-          <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700" value={form.supplier_id} onChange={(e) => setForm(f => ({ ...f, supplier_id: e.target.value }))}>
-            <option value="">اختر المورد...</option>
-            {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">سعر الشراء</label>
-          <input type="number" placeholder="0" className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700" value={form.purchase_price} onChange={(e) => setForm(f => ({ ...f, purchase_price: e.target.value }))} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">المخزن</label>
-          <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700" value={form.warehouse_id} onChange={(e) => setForm(f => ({ ...f, warehouse_id: e.target.value }))}>
-            {warehouses.map(w => <option key={w.id} value={w.id}>{w.icon} {w.name}</option>)}
-          </select>
-        </div>
-      </div>
-      <div className="flex justify-end gap-2 pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onClose}>إلغاء</Button>
-        <Button type="submit" disabled={createMutation.isPending}>{createMutation.isPending ? 'جاري الحفظ...' : 'حفظ الجهاز'}</Button>
-      </div>
-    </form>
-  )
-}
-
-// فورم تعديل جهاز
-function EditDeviceForm({ device, onClose, onSuccess }) {
-  const [form, setForm] = useState({
-    serial_number: device?.serial_number ?? '',
-    status: device?.status ?? 'available',
-    warehouse_id: device?.warehouse_id ?? 'main',
-  })
-  const updateMutation = useMutation({
-    mutationFn: (data) => inventoryAPI.updateDevice(device.id, data),
-    onSuccess: () => onSuccess?.(),
-  })
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    updateMutation.mutate({
-      serial_number: form.serial_number?.trim() || undefined,
-      status: form.status,
-      warehouse_id: form.warehouse_id,
-    })
-  }
-  return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      {updateMutation.isError && (
-        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm">
-          {updateMutation.error?.response?.data?.error || updateMutation.error?.message || 'حدث خطأ'}
-        </div>
-      )}
-      <div className="grid grid-cols-1 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">السيريال</label>
-          <input
-            type="text"
-            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
-            value={form.serial_number}
-            onChange={(e) => setForm((f) => ({ ...f, serial_number: e.target.value }))}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">الحالة</label>
-          <select
-            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
-            value={form.status}
-            onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-          >
-            {Object.entries(deviceStatuses).map(([key, val]) => (
-              <option key={key} value={key}>{val.label}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">المخزن</label>
-          <select
-            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
-            value={form.warehouse_id}
-            onChange={(e) => setForm((f) => ({ ...f, warehouse_id: e.target.value }))}
-          >
-            {warehouses.map((w) => (
-              <option key={w.id} value={w.id}>{w.icon} {w.name}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="flex justify-end gap-2 pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onClose}>إلغاء</Button>
-        <Button type="submit" disabled={updateMutation.isPending}>
-          {updateMutation.isPending ? 'جاري الحفظ...' : 'حفظ'}
-        </Button>
-      </div>
-    </form>
-  )
-}
-
-// فورم نقل جهاز
-function TransferDeviceForm({ device, onClose, onSuccess }) {
-  const [form, setForm] = useState({ warehouse_id: device?.warehouse_id ?? 'main', reason: '' })
-  const transferMutation = useMutation({
-    mutationFn: (data) => inventoryAPI.transferDevice(device.id, data),
-    onSuccess: () => onSuccess?.(),
-  })
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!form.warehouse_id) return
-    transferMutation.mutate({ warehouse_id: form.warehouse_id, reason: form.reason || undefined })
-  }
-  return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      {transferMutation.isError && (
-        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm">
-          {transferMutation.error?.response?.data?.error || transferMutation.error?.message || 'حدث خطأ'}
-        </div>
-      )}
-      <p className="text-sm text-neutral-600 dark:text-neutral-400">
-        نقل الجهاز <strong className="text-neutral-900 dark:text-white">{device?.serial_number}</strong> إلى مخزن آخر.
-      </p>
-      <div>
-        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">المخزن الهدف</label>
-        <select
-          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
-          value={form.warehouse_id}
-          onChange={(e) => setForm((f) => ({ ...f, warehouse_id: e.target.value }))}
-          required
-        >
-          {warehouses.map((w) => (
-            <option key={w.id} value={w.id}>{w.icon} {w.name}</option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">السبب (اختياري)</label>
-        <input
-          type="text"
-          placeholder="مثال: نقل للتجهيز"
-          className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
-          value={form.reason}
-          onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
-        />
-      </div>
-      <div className="flex justify-end gap-2 pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onClose}>إلغاء</Button>
-        <Button type="submit" disabled={transferMutation.isPending}>
-          {transferMutation.isPending ? 'جاري النقل...' : 'نقل'}
-        </Button>
-      </div>
-    </form>
-  )
-}
-
-// تأكيد حذف جهاز
-function DeleteDeviceConfirm({ device, onClose, onSuccess }) {
-  const deleteMutation = useMutation({
-    mutationFn: () => inventoryAPI.deleteDevice(device.id),
-    onSuccess: () => onSuccess?.(),
-  })
-  const handleConfirm = () => deleteMutation.mutate()
-  return (
-    <div className="space-y-4">
-      <p className="text-neutral-600 dark:text-neutral-400">
-        هل أنت متأكد من حذف الجهاز <strong className="text-neutral-900 dark:text-white">{device.serial_number}</strong> ({device.product_name})؟ لا يمكن التراجع.
-      </p>
-      {deleteMutation.isError && (
-        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm">
-          {deleteMutation.error?.response?.data?.error || deleteMutation.error?.message || 'حدث خطأ'}
-        </div>
-      )}
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onClose} disabled={deleteMutation.isPending}>إلغاء</Button>
-        <Button variant="danger" onClick={handleConfirm} disabled={deleteMutation.isPending}>
-          {deleteMutation.isPending ? 'جاري الحذف...' : 'حذف'}
-        </Button>
-      </div>
-    </div>
-  )
-}
-
-// تفاصيل الجهاز
-function DeviceDetails({ device, onEdit, onDelete, onTransfer, onClose }) {
-  const [activeTab, setActiveTab] = useState('info')
-  const status = deviceStatuses[device.status] || deviceStatuses.new
-
-  const { data: historyRes, isLoading: historyLoading } = useQuery({
-    queryKey: ['device-history', device.id],
-    queryFn: () => inventoryAPI.getDeviceHistory(device.id),
-    enabled: activeTab === 'history' && !!device.id,
-  })
-  const historyList = historyRes?.data?.data ?? []
-
-  const tabs = [
-    { id: 'info', label: 'المعلومات' },
-    { id: 'history', label: 'السجل' },
-    { id: 'photos', label: 'الصور' },
-    { id: 'maintenance', label: 'الصيانة' },
-  ]
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-700 rounded-xl flex items-center justify-center">
-            <Package className="w-8 h-8 text-neutral-400" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-neutral-900 dark:text-white">{device.product_name || 'Dell Latitude 7410'}</h3>
-            <p className="font-mono text-primary-600 dark:text-primary-400">{device.serial_number}</p>
-          </div>
-        </div>
-        <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${status.color}`}>
-          <status.icon className="w-4 h-4" />
-          {status.label}
-        </span>
-      </div>
-
-      {/* Tabs */}
-      <div className="border-b border-neutral-200 dark:border-neutral-700">
-        <nav className="flex gap-4">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setActiveTab(t.id)}
-              className={`px-4 py-2 border-b-2 font-medium ${activeTab === t.id ? 'border-primary-600 text-primary-600' : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'}`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Tab: السجل */}
-      {activeTab === 'history' && (
-        <div className="min-h-[120px]">
-          {historyLoading ? (
-            <div className="flex justify-center py-8"><Spinner size="md" /></div>
-          ) : historyList.length === 0 ? (
-            <p className="text-center text-neutral-500 dark:text-neutral-400 py-6">لا توجد سجلات لهذا الجهاز.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-neutral-50 dark:bg-neutral-700/50">
-                  <tr>
-                    <th className="px-3 py-2 text-right text-neutral-500">التاريخ</th>
-                    <th className="px-3 py-2 text-right text-neutral-500">الإجراء</th>
-                    <th className="px-3 py-2 text-right text-neutral-500">ملاحظات</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
-                  {historyList.map((h, i) => (
-                    <tr key={h.id || i}>
-                      <td className="px-3 py-2">{h.created_at ? new Date(h.created_at).toLocaleString('ar-IQ') : '—'}</td>
-                      <td className="px-3 py-2">{h.action || h.type || '—'}</td>
-                      <td className="px-3 py-2">{h.notes || '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Tab: المعلومات */}
-      {activeTab === 'info' && (
-      <div className="grid grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h4 className="font-semibold text-neutral-900 dark:text-white">المواصفات</h4>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-neutral-500">المعالج:</span>
-              <span className="font-medium">{device.processor || 'i7-1165G7'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-500">الرام:</span>
-              <span className="font-medium">{device.ram_size || '16'} GB {device.ram_type || 'DDR4'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-500">التخزين:</span>
-              <span className="font-medium">{device.storage_size || '512'} GB {device.storage_type || 'SSD'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-500">الشاشة:</span>
-              <span className="font-medium">{device.screen_size || '14'}" {device.screen_type || 'FHD'}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="font-semibold text-neutral-900 dark:text-white">الموقع</h4>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-neutral-500">المخزن:</span>
-              <span className="font-medium">{warehouses.find(w => w.id === device.warehouse_id)?.name || 'الرئيسي'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-500">الرف:</span>
-              <span className="font-medium">{device.location_shelf || 'A'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-500">الصف:</span>
-              <span className="font-medium">{device.location_row || '1'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-500">الذمة:</span>
-              <span className="font-medium">{device.custody_employee || 'لا يوجد'}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="font-semibold text-neutral-900 dark:text-white">المالية</h4>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-neutral-500">سعر الشراء:</span>
-              <span className="font-medium">{(device.purchase_cost || 0).toLocaleString()} د.ع</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-500">تكاليف إضافية:</span>
-              <span className="font-medium">{(device.additional_costs || 0).toLocaleString()} د.ع</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-500">سعر البيع:</span>
-              <span className="font-medium text-green-600">{(device.selling_price || 0).toLocaleString()} د.ع</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="font-semibold text-neutral-900 dark:text-white">المصدر</h4>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-neutral-500">المورد:</span>
-              <span className="font-medium">{device.supplier_name || '-'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-500">تاريخ الشراء:</span>
-              <span className="font-medium">{device.purchase_date || '-'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-neutral-500">رقم الفاتورة:</span>
-              <span className="font-medium">{device.purchase_invoice_id || '-'}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      )}
-
-      {activeTab === 'photos' && (
-        <p className="text-center text-neutral-500 dark:text-neutral-400 py-6">قسم الصور قيد التطوير.</p>
-      )}
-      {activeTab === 'maintenance' && (
-        <p className="text-center text-neutral-500 dark:text-neutral-400 py-6">قسم الصيانة قيد التطوير.</p>
-      )}
-
-      {/* Actions */}
-      <div className="flex flex-wrap gap-2 pt-4 border-t">
-        <Button variant="outline" onClick={onEdit}>
-          <Edit className="w-4 h-4 ml-2" />
-          تعديل
-        </Button>
-        <Button variant="outline" onClick={onTransfer}>
-          <ScanLine className="w-4 h-4 ml-2" />
-          نقل
-        </Button>
-        <Button variant="danger" onClick={onDelete}>
-          <Trash2 className="w-4 h-4 ml-2" />
-          حذف
-        </Button>
-      </div>
     </div>
   )
 }

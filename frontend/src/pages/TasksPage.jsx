@@ -9,6 +9,7 @@ import Spinner from '../components/common/Spinner'
 import Modal from '../components/common/Modal'
 import { tasksAPI } from '../services/api'
 import { translateStatus, translatePriority, getStatusColor, getPriorityColor, formatDate } from '../utils/helpers'
+import PageShell from '../components/common/PageShell'
 
 export default function TasksPage() {
   const [search, setSearch] = useState('')
@@ -64,18 +65,16 @@ export default function TasksPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">المهام</h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">إدارة مهام الموظفين</p>
-        </div>
+    <PageShell
+      title="المهام"
+      description="إدارة مهام الموظفين"
+      actions={
         <Button onClick={() => setShowModal(true)}>
           <Plus className="w-4 h-4" />
           إضافة مهمة
         </Button>
-      </div>
+      }
+    >
 
       {/* Filters */}
       <Card padding={false} className="p-4">
@@ -200,7 +199,7 @@ export default function TasksPage() {
           </div>
         )}
       </Modal>
-    </div>
+    </PageShell>
   )
 }
 

@@ -18,6 +18,7 @@ import {
 import StatCard from '../components/dashboard/StatCard'
 import Spinner from '../components/common/Spinner'
 import { reportsAPI } from '../services/api'
+import PageShell from '../components/common/PageShell'
 
 // تنسيق المبلغ
 function formatMoney(n) {
@@ -76,16 +77,7 @@ export default function ExecutiveDashboardPage() {
   ].filter((a) => Number(a.count) > 0)
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-          لوحة المدير التنفيذية
-        </h1>
-        <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-          إيرادات، تدفق نقدي، أفضل البائعين، تنبيهات وروابط سريعة
-        </p>
-      </div>
+    <PageShell title="لوحة المدير التنفيذية" description="إيرادات، تدفق نقدي، أفضل البائعين، تنبيهات وروابط سريعة">
 
       {/* إيرادات اليوم والشهر */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -305,6 +297,6 @@ export default function ExecutiveDashboardPage() {
           </div>
         </div>
       </div>
-    </div>
+    </PageShell>
   )
 }

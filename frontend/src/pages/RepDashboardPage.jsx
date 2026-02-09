@@ -5,7 +5,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { UserCircle, DollarSign, Clock, FileText } from 'lucide-react'
 import Spinner from '../components/common/Spinner'
-import PageLayout from '../components/common/PageLayout'
+import PageShell from '../components/common/PageShell'
 import DataTable from '../components/common/DataTable'
 import EmptyState from '../components/common/EmptyState'
 import api from '../services/api'
@@ -22,17 +22,17 @@ export default function RepDashboardPage() {
 
   if (isLoading) {
     return (
-      <PageLayout title="لوحة المندوب" icon={<UserCircle className="w-6 h-6" />}>
+      <PageShell title="لوحة المندوب" icon={<UserCircle className="w-6 h-6" />}>
         <div className="flex justify-center py-12"><Spinner size="lg" /></div>
-      </PageLayout>
+      </PageShell>
     )
   }
 
   if (error) {
     return (
-      <PageLayout title="لوحة المندوب" icon={<UserCircle className="w-6 h-6" />}>
+      <PageShell title="لوحة المندوب" icon={<UserCircle className="w-6 h-6" />}>
         <EmptyState icon={FileText} title="خطأ في التحميل" message={error.message} />
-      </PageLayout>
+      </PageShell>
     )
   }
 
@@ -41,7 +41,7 @@ export default function RepDashboardPage() {
   const overdue = data?.overdue_invoices ?? []
 
   return (
-    <PageLayout title="لوحة المندوب" icon={<UserCircle className="w-6 h-6" />}>
+    <PageShell title="لوحة المندوب" icon={<UserCircle className="w-6 h-6" />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
@@ -77,6 +77,6 @@ export default function RepDashboardPage() {
           />
         </div>
       )}
-    </PageLayout>
+    </PageShell>
   )
 }

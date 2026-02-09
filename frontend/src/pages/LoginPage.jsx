@@ -37,69 +37,28 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-neutral-950">
-      {/* Left branding */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-600 via-primary-700 to-neutral-900" />
-        <div className="absolute inset-0">
-          <div className="absolute top-[15%] right-[10%] w-80 h-80 rounded-full bg-white/5 blur-3xl" />
-          <div className="absolute bottom-[10%] left-[15%] w-96 h-96 rounded-full bg-primary-400/10 blur-3xl" />
-          {/* Decorative grid */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-            backgroundSize: '30px 30px'
-          }} />
-        </div>
-        <div className="relative z-10 flex flex-col justify-center px-16 xl:px-24">
-          <div className="flex items-center gap-4 mb-12">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10">
-              <Building2 className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <span className="text-3xl font-bold text-white">BI</span>
-              <span className="text-3xl font-light text-white/60 ms-2">Management</span>
-            </div>
-          </div>
-          <h2 className="text-5xl font-bold text-white leading-tight mb-6">
-            نظام إدارة
-            <br />
-            <span className="text-primary-300">الشركات الذكي</span>
-          </h2>
-          <p className="text-lg text-white/50 max-w-md leading-relaxed">
-            إدارة المبيعات، المخزون، المحاسبة، والموارد البشرية
-            <br />من مكان واحد
-          </p>
-
-          {/* Stats decoration */}
-          <div className="flex gap-8 mt-16">
-            {[
-              { label: 'المبيعات', value: '+12%' },
-              { label: 'الكفاءة', value: '98%' },
-              { label: 'الموظفين', value: '+50' },
-            ].map((s) => (
-              <div key={s.label}>
-                <p className="text-2xl font-bold text-white">{s.value}</p>
-                <p className="text-sm text-white/30 mt-1">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Full-screen gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-700 via-primary-800 to-neutral-950" />
+      <div className="absolute inset-0">
+        <div className="absolute top-[20%] right-[20%] w-[400px] h-[400px] rounded-full bg-primary-500/20 blur-[100px]" />
+        <div className="absolute bottom-[20%] left-[20%] w-[300px] h-[300px] rounded-full bg-primary-400/10 blur-[80px]" />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
       </div>
 
-      {/* Right form */}
-      <div className="w-full lg:w-[45%] flex items-center justify-center p-8">
-        <div className="w-full max-w-[380px]">
-          {/* Mobile logo */}
-          <div className="text-center mb-10 lg:hidden">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 mb-4">
+      {/* Centered glass form */}
+      <div className="relative z-10 w-full max-w-[420px] animate-scale-in">
+        <div className="rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-8 md:p-10">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/15 backdrop-blur border border-white/20 mb-4">
               <Building2 className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-white">BI Management</h1>
+            <p className="text-white/60 text-sm mt-1">نظام إدارة الشركات الذكي</p>
           </div>
 
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-2">مرحباً</h2>
-            <p className="text-neutral-500 mb-8">سجّل دخولك للمتابعة</p>
+          <h2 className="text-xl font-bold text-white mb-1">مرحباً</h2>
+          <p className="text-white/50 text-sm mb-6">سجّل دخولك للمتابعة</p>
 
             {error && (
               <Alert variant="error" className="mb-6">{error}</Alert>
@@ -149,7 +108,7 @@ export default function LoginPage() {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="rounded border-neutral-700 bg-white/5 text-primary-500 focus:ring-primary-500/40"
                 />
-                <span className="text-sm text-neutral-500">تذكرني</span>
+                <span className="text-sm text-white/60">تذكرني</span>
               </label>
 
               <Button
@@ -162,13 +121,12 @@ export default function LoginPage() {
                 <ArrowLeft className="w-5 h-5 ms-2" />
               </Button>
             </form>
-          </div>
 
           {import.meta.env.DEV && (
-            <div className="mt-8 p-3 bg-white/5 rounded-xl text-center">
-              <p className="text-xs text-neutral-500">
-                <strong className="text-neutral-400">Dev:</strong>{' '}
-                <code className="text-primary-400">admin@bi-company.com / Admin@123</code>
+            <div className="mt-6 p-3 bg-white/5 rounded-xl text-center">
+              <p className="text-xs text-white/50">
+                <strong className="text-white/70">Dev:</strong>{' '}
+                <code className="text-primary-300">admin@bi-company.com / Admin@123</code>
               </p>
             </div>
           )}

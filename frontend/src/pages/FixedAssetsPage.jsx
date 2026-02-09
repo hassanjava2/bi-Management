@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Boxes, Plus, UserPlus } from 'lucide-react'
 import Spinner from '../components/common/Spinner'
-import PageLayout from '../components/common/PageLayout'
+import PageShell from '../components/common/PageShell'
 import DataTable from '../components/common/DataTable'
 import EmptyState from '../components/common/EmptyState'
 import Button from '../components/common/Button'
@@ -79,17 +79,17 @@ export default function FixedAssetsPage() {
 
   if (isLoading) {
     return (
-      <PageLayout title="المواد الثابتة" icon={<Boxes className="w-6 h-6" />}>
+      <PageShell title="المواد الثابتة" icon={<Boxes className="w-6 h-6" />}>
         <div className="flex justify-center py-12"><Spinner size="lg" /></div>
-      </PageLayout>
+      </PageShell>
     )
   }
 
   if (error) {
     return (
-      <PageLayout title="المواد الثابتة" icon={<Boxes className="w-6 h-6" />}>
+      <PageShell title="المواد الثابتة" icon={<Boxes className="w-6 h-6" />}>
         <EmptyState icon={Boxes} title="خطأ في التحميل" message={error.message} />
-      </PageLayout>
+      </PageShell>
     )
   }
 
@@ -118,7 +118,7 @@ export default function FixedAssetsPage() {
   ]
 
   return (
-    <PageLayout
+    <PageShell
       title="المواد الثابتة"
       icon={<Boxes className="w-6 h-6" />}
       actions={
@@ -229,6 +229,6 @@ export default function FixedAssetsPage() {
           </form>
         )}
       </Modal>
-    </PageLayout>
+    </PageShell>
   )
 }

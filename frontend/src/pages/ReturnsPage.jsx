@@ -16,6 +16,7 @@ import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
 import { returnsAPI, suppliersAPI } from '../services/api'
 import { exportToCSV } from '../utils/helpers'
+import PageShell from '../components/common/PageShell'
 
 // حالات المرتجع
 const returnStatuses = {
@@ -113,20 +114,11 @@ export default function ReturnsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            <Package className="w-8 h-8 text-primary-600" />
-            تتبع المرتجعات
-            <span className="text-sm bg-red-100 text-red-800 px-2 py-1 rounded-full">أولوية قصوى</span>
-          </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-            متابعة المرتجعات للموردين ومراكز الصيانة
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+    <PageShell
+      title="تتبع المرتجعات"
+      description="متابعة المرتجعات للموردين ومراكز الصيانة"
+      actions={
+        <>
           <Button variant="outline" onClick={() => bulkReminderMutation.mutate({})} disabled={bulkReminderMutation.isPending}>
             <Phone className="w-4 h-4 ml-2" />
             تذكير جماعي
@@ -143,8 +135,9 @@ export default function ReturnsPage() {
             <Plus className="w-4 h-4 ml-2" />
             إرسال مرتجع جديد
           </Button>
-        </div>
-      </div>
+        </>
+      }
+    >
 
       {/* Alert Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -407,7 +400,7 @@ export default function ReturnsPage() {
           />
         )}
       </Modal>
-    </div>
+    </PageShell>
   )
 }
 

@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ShoppingCart, Plus, Search, Eye, Package, Building2 } from 'lucide-react'
-import PageLayout from '../components/common/PageLayout'
+import PageShell from '../components/common/PageShell'
 import DataTable from '../components/common/DataTable'
 import Button from '../components/common/Button'
 import { salesAPI } from '../services/api'
@@ -46,7 +46,7 @@ export default function PurchasesPage() {
   ]
 
   return (
-    <PageLayout
+    <PageShell
       title="فواتير الشراء"
       description="عرض وإدارة فواتير الشراء من الموردين"
       actions={
@@ -101,6 +101,6 @@ export default function PurchasesPage() {
           }
         />
       </div>
-    </PageLayout>
+    </PageShell>
   )
 }

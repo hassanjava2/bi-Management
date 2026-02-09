@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import CheckInOutWidget from '../components/attendance/CheckInOutWidget'
 import AttendanceCalendar from '../components/attendance/AttendanceCalendar'
 import AttendanceReport from '../components/attendance/AttendanceReport'
+import PageShell from '../components/common/PageShell'
 
 export default function AttendancePage() {
   const { isAdmin, isHR, isManager } = useAuth()
@@ -11,15 +12,11 @@ export default function AttendancePage() {
   const canViewReport = isAdmin || isHR || isManager
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">الحضور والانصراف</h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">سجل حضورك وتابع حالتك</p>
-        </div>
-
-        {canViewReport && (
+    <PageShell
+      title="الحضور والانصراف"
+      description="سجل حضورك وتابع حالتك"
+      actions={
+        canViewReport && (
           <div className="flex bg-neutral-100 dark:bg-neutral-700 rounded-lg p-1">
             <button
               onClick={() => setActiveTab('my')}
@@ -42,8 +39,9 @@ export default function AttendancePage() {
               تقرير الحضور
             </button>
           </div>
-        )}
-      </div>
+        )
+      }
+    >
 
       {activeTab === 'my' ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -60,6 +58,6 @@ export default function AttendancePage() {
       ) : (
         <AttendanceReport />
       )}
-    </div>
+    </PageShell>
   )
 }

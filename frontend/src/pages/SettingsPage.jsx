@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Settings, Save, Loader2 } from 'lucide-react'
-import PageLayout from '../components/common/PageLayout'
+import PageShell from '../components/common/PageShell'
 import Button from '../components/common/Button'
 import FormField from '../components/common/FormField'
 import Card from '../components/common/Card'
@@ -44,16 +44,16 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <PageLayout title="الإعدادات" description="إعدادات النظام">
+      <PageShell title="الإعدادات" description="إعدادات النظام">
         <div className="flex justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
         </div>
-      </PageLayout>
+      </PageShell>
     )
   }
 
   return (
-    <PageLayout
+    <PageShell
       title="الإعدادات"
       description="إعدادات النظام حسب الفئة"
     >
@@ -100,6 +100,6 @@ export default function SettingsPage() {
           ))
         )}
       </div>
-    </PageLayout>
+    </PageShell>
   )
 }

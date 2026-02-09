@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Wrench, Package, Building2, User, Plus, Eye, CheckCircle2 } from 'lucide-react'
-import PageLayout from '../components/common/PageLayout'
+import PageShell from '../components/common/PageShell'
 import DataTable from '../components/common/DataTable'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
@@ -46,7 +46,7 @@ export default function WarrantyPage() {
   ]
 
   return (
-    <PageLayout title="الضمان" description="مطالبات الضمان وإرسالها للموردين">
+    <PageShell title="الضمان" description="مطالبات الضمان وإرسالها للموردين">
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2 items-center justify-between">
           <div className="flex gap-2">
@@ -92,7 +92,7 @@ export default function WarrantyPage() {
           />
         </Modal>
       )}
-    </PageLayout>
+    </PageShell>
   )
 }
 

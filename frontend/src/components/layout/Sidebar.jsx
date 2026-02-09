@@ -81,18 +81,18 @@ function NavItem({ item, onClose }) {
       to={item.href}
       onClick={onClose}
       className={clsx(
-        'group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200',
+        'group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200',
         isActive
-          ? 'bg-white/10 text-white'
-          : 'text-neutral-400 hover:text-white hover:bg-white/5'
+          ? 'bg-primary-500/20 text-white'
+          : 'text-neutral-400 hover:text-white hover:bg-white/[0.08]'
       )}
     >
+      {isActive && <div className="absolute end-0 top-2 bottom-2 w-1 rounded-s-full bg-primary-400" aria-hidden />}
       <item.icon className={clsx(
-        'w-[18px] h-[18px] flex-shrink-0 transition-colors',
+        'w-5 h-5 flex-shrink-0 transition-colors',
         isActive ? 'text-primary-400' : 'text-neutral-500 group-hover:text-neutral-300'
       )} />
       <span className="flex-1 truncate">{item.name}</span>
-      {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary-400" />}
       {item.secure && !isActive && <Shield className="w-3 h-3 text-amber-400/60 shrink-0" />}
     </NavLink>
   )
@@ -126,7 +126,7 @@ function NavSection({ section, onClose, user, isAdmin, isHR, isManager, filterQu
   if (visibleItems.length === 0) return null
 
   return (
-    <div className="mb-2">
+    <div className="mb-2 pt-2 first:pt-0 border-t border-white/5 first:border-t-0">
       <button
         type="button"
         onClick={() => setCollapsed(!collapsed)}
@@ -233,9 +233,9 @@ export default function Sidebar({ isOpen, onClose }) {
           <NavLink
             to="/notifications"
             onClick={onClose}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-neutral-400 hover:text-white hover:bg-white/[0.08] transition-colors"
           >
-            <Bell className="w-[18px] h-[18px] text-neutral-500" />
+            <Bell className="w-5 h-5 text-neutral-500" />
             <span className="flex-1">الإشعارات</span>
             {unreadCount > 0 && (
               <span className="min-w-[20px] h-5 flex items-center justify-center px-1.5 text-[10px] font-bold rounded-full bg-primary-500 text-white">

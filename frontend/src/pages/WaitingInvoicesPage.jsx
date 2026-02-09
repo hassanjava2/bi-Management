@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Clock, RefreshCw, CheckCircle2, FileText } from 'lucide-react'
 import Spinner from '../components/common/Spinner'
 import Button from '../components/common/Button'
-import PageLayout from '../components/common/PageLayout'
+import PageShell from '../components/common/PageShell'
 import DataTable from '../components/common/DataTable'
 import EmptyState from '../components/common/EmptyState'
 import { useToast } from '../context/ToastContext'
@@ -65,7 +65,7 @@ export default function WaitingInvoicesPage() {
   ]
 
   return (
-    <PageLayout
+    <PageShell
       title="قوائم الانتظار"
       icon={<Clock className="w-6 h-6" />}
       actions={
@@ -108,6 +108,6 @@ export default function WaitingInvoicesPage() {
       {!isLoading && !error && list.length > 0 && (
         <DataTable columns={columns} data={list} keyField="id" />
       )}
-    </PageLayout>
+    </PageShell>
   )
 }

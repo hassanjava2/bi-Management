@@ -14,6 +14,10 @@ import { exportToCSV } from '../utils/helpers'
 import Spinner from '../components/common/Spinner'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
+import PageShell from '../components/common/PageShell'
+import SearchInput from '../components/common/SearchInput'
+import FilterSelect from '../components/common/FilterSelect'
+import StatsGrid from '../components/common/StatsGrid'
 import { customersAPI } from '../services/api'
 
 // مستويات العملاء
@@ -189,92 +193,31 @@ export default function CustomersPage() {
     )
   }
 
+  const customerStatsItems = [
+    { title: 'إجمالي العملاء', value: stats.total ?? 0, icon: Users, color: 'primary' },
+    { title: 'عملاء بذمم', value: stats.with_balance ?? 0, icon: AlertTriangle, color: 'warning' },
+    { title: 'إجمالي الذمم', value: `${(stats.total_receivables / 1000000 || 0).toFixed(1)}M`, icon: DollarSign, color: 'danger' },
+    { title: 'VIP', value: stats.vip_count ?? 0, icon: Crown, color: 'info' },
+  ]
+  const tierOptions = Object.entries(customerTiers).map(([k, v]) => ({ value: k, label: v.label }))
+
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            <Users className="w-8 h-8 text-primary-600" />
-            إدارة العملاء
-          </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-            إدارة العملاء والذمم والولاء
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => exportToCSV(customers, 'customers.csv')}>
-          <Download className="w-4 h-4 ml-2" />
-          تصدير CSV
-        </Button>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="w-4 h-4 ml-2" />
-          إضافة عميل
-        </Button>
-      </div>
+    <PageShell
+      title="إدارة العملاء"
+      description="إدارة العملاء والذمم والولاء"
+      actions={
+        <>
+          <Button variant="outline" onClick={() => exportToCSV(customers, 'customers.csv')}><Download className="w-4 h-4 ml-2" /> تصدير CSV</Button>
+          <Button onClick={() => setShowAddModal(true)}><Plus className="w-4 h-4 ml-2" /> إضافة عميل</Button>
+        </>
+      }
+    >
+      <StatsGrid items={customerStatsItems} columns={4} />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-neutral-500">إجمالي العملاء</p>
-              <p className="text-2xl font-bold">{stats.total || 0}</p>
-            </div>
-            <Users className="w-8 h-8 text-blue-500" />
-          </div>
-        </div>
-        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-neutral-500">عملاء بذمم</p>
-              <p className="text-2xl font-bold text-amber-600">{stats.with_balance || 0}</p>
-            </div>
-            <AlertTriangle className="w-8 h-8 text-amber-500" />
-          </div>
-        </div>
-        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-neutral-500">إجمالي الذمم</p>
-              <p className="text-2xl font-bold text-red-600">{(stats.total_receivables / 1000000 || 0).toFixed(1)}M</p>
-            </div>
-            <DollarSign className="w-8 h-8 text-red-500" />
-          </div>
-        </div>
-        <div className="bg-white dark:bg-neutral-800 rounded-xl p-4 border border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-neutral-500">VIP</p>
-              <p className="text-2xl font-bold text-purple-600">{stats.vip_count || 0}</p>
-            </div>
-            <Crown className="w-8 h-8 text-purple-500" />
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="بحث بالاسم أو الهاتف..."
-            className="w-full pr-10 pl-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
-          />
-        </div>
-        <select
-          value={selectedTier}
-          onChange={(e) => setSelectedTier(e.target.value)}
-          className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
-        >
-          <option value="all">كل المستويات</option>
-          {Object.entries(customerTiers).map(([key, val]) => (
-            <option key={key} value={key}>{val.label}</option>
-          ))}
-        </select>
-      </div>
+      <PageShell.Toolbar>
+        <SearchInput placeholder="بحث بالاسم أو الهاتف..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+        <FilterSelect options={tierOptions} value={selectedTier === 'all' ? null : selectedTier} onChange={(v) => setSelectedTier(v ?? 'all')} placeholder="كل المستويات" />
+      </PageShell.Toolbar>
 
       {/* Customers Table */}
       <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
@@ -693,6 +636,6 @@ export default function CustomersPage() {
           </div>
         )}
       </Modal>
-    </div>
+    </PageShell>
   )
 }

@@ -4,9 +4,10 @@ export default function Card({ children, className, padding = true, hover = fals
   return (
     <div
       className={clsx(
-        'bg-white dark:bg-neutral-900 rounded-xl',
-        'border border-neutral-100 dark:border-neutral-800',
-        hover && 'hover:shadow-lg hover:shadow-neutral-200/50 dark:hover:shadow-neutral-900/50 transition-all duration-300',
+        'bg-white dark:bg-neutral-900 rounded-2xl',
+        'border border-transparent dark:border-neutral-800',
+        'shadow-sm dark:shadow-none',
+        hover && 'hover:shadow-md hover:shadow-neutral-200/40 dark:hover:shadow-neutral-900/50 transition-all duration-300',
         padding && 'p-6',
         className
       )}

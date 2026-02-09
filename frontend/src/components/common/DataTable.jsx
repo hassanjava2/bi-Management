@@ -33,7 +33,7 @@ export default function DataTable({
   const setFilter = onGlobalFilterChange ?? setLocalFilter
 
   const cellPadding = compact ? 'px-4 py-2.5' : 'px-5 py-4'
-  const headerPadding = compact ? 'px-4 py-3' : 'px-5 py-3.5'
+  const headerPadding = compact ? 'px-4 py-3' : 'px-5 py-4'
 
   const filteredData = useMemo(() => {
     if (!filterable || !filterValue?.trim()) return data
@@ -66,12 +66,12 @@ export default function DataTable({
 
   if (loading) {
     return (
-      <div className={clsx('bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden', className)}>
+      <div className={clsx('bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden', className)}>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-neutral-100 dark:border-neutral-800">
+            <tr className="border-b border-neutral-200 dark:border-neutral-700">
               {columns.map((col) => (
-                <th key={col.key} className={clsx(headerPadding, 'text-end text-[11px] font-semibold text-neutral-400 uppercase tracking-wider', col.headerClassName)}>
+                <th key={col.key} className={clsx(headerPadding, 'text-end text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider', col.headerClassName)}>
                   {col.label}
                 </th>
               ))}
@@ -95,7 +95,7 @@ export default function DataTable({
 
   if (!filteredData || filteredData.length === 0) {
     return (
-      <div className={clsx('bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 p-8', className)}>
+      <div className={clsx('bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 p-8', className)}>
         <EmptyState title={emptyTitle} description={emptyDescription} actionLabel={emptyActionLabel} onAction={onEmptyAction} />
       </div>
     )
@@ -110,10 +110,10 @@ export default function DataTable({
   const showPagination = pagination && paginationTotal > pagination.perPage
 
   return (
-    <div className={clsx('bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden', className)}>
+    <div className={clsx('bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden', className)}>
       {/* Toolbar */}
       {(filterable || (selectable && selectedRows.length > 0)) && (
-        <div className="flex items-center gap-3 px-5 py-3 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-center gap-3 px-5 py-3 border-b border-neutral-200 dark:border-neutral-700">
           {filterable && (
             <div className="relative flex-1 max-w-xs">
               <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -138,7 +138,7 @@ export default function DataTable({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-neutral-100 dark:border-neutral-800">
+            <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-transparent">
               {selectable && (
                 <th className={clsx(headerPadding, 'w-10')}>
                   <input type="checkbox" checked={selectedRows.length === filteredData.length && filteredData.length > 0} onChange={toggleSelectAll} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
@@ -180,7 +180,7 @@ export default function DataTable({
                     'border-b border-neutral-50 dark:border-neutral-800/40 last:border-0',
                     'transition-colors duration-100',
                     onRowClick && 'cursor-pointer',
-                    onRowClick ? 'hover:bg-primary-50/40 dark:hover:bg-primary-900/10' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/30',
+                    onRowClick ? 'hover:bg-primary-50/60 dark:hover:bg-primary-900/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/40',
                     striped && rowIndex % 2 === 1 && 'bg-neutral-50/40 dark:bg-neutral-800/15',
                     isSelected && 'bg-primary-50/50 dark:bg-primary-900/15'
                   )}
@@ -192,7 +192,9 @@ export default function DataTable({
                   )}
                   {columns.map((col) => (
                     <td key={col.key} className={clsx(cellPadding, 'text-sm text-neutral-700 dark:text-neutral-300', col.className)}>
-                      {col.render ? col.render(row) : (row[col.key] ?? '—')}
+                      {col.render ? col.render(row) : (
+                        <span className="block truncate">{row[col.key] ?? '—'}</span>
+                      )}
                     </td>
                   ))}
                 </tr>
@@ -203,7 +205,7 @@ export default function DataTable({
       </div>
 
       {showPagination && (
-        <div className="px-5 py-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+        <div className="px-5 py-3 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
           <span className="text-xs text-neutral-400">
             عرض {(pagination.page - 1) * pagination.perPage + 1} - {Math.min(pagination.page * pagination.perPage, paginationTotal)} من {paginationTotal}
           </span>

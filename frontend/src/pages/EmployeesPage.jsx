@@ -7,6 +7,8 @@ import Input from '../components/common/Input'
 import Badge from '../components/common/Badge'
 import Spinner from '../components/common/Spinner'
 import Modal from '../components/common/Modal'
+import PageShell from '../components/common/PageShell'
+import SearchInput from '../components/common/SearchInput'
 import { usersAPI, aiAPI } from '../services/api'
 import { translateRole } from '../utils/helpers'
 
@@ -69,28 +71,14 @@ export default function EmployeesPage() {
   const users = data?.data?.data || []
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">الموظفين</h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">إدارة موظفي الشركة</p>
-        </div>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="w-4 h-4" />
-          إضافة موظف
-        </Button>
-      </div>
-
-      {/* Search */}
-      <Card padding={false} className="p-4">
-        <Input
-          placeholder="البحث عن موظف..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          icon={Search}
-        />
-      </Card>
+    <PageShell
+      title="الموظفين"
+      description="إدارة موظفي الشركة"
+      actions={<Button onClick={() => setShowAddModal(true)}><Plus className="w-4 h-4" /> إضافة موظف</Button>}
+    >
+      <PageShell.Toolbar>
+        <SearchInput placeholder="البحث عن موظف..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      </PageShell.Toolbar>
 
       {/* Employees Grid */}
       {isLoading ? (
@@ -229,7 +217,7 @@ export default function EmployeesPage() {
           </div>
         )}
       </Modal>
-    </div>
+    </PageShell>
   )
 }
 

@@ -14,6 +14,7 @@ import {
 import Spinner from '../components/common/Spinner'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
+import PageShell from '../components/common/PageShell'
 import { accountingAPI, customersAPI, suppliersAPI } from '../services/api'
 import { exportToCSV } from '../utils/helpers'
 import { useAuth } from '../context/AuthContext'
@@ -78,20 +79,11 @@ export default function AccountingPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            <DollarSign className="w-8 h-8 text-primary-600" />
-            المحاسبة والمالية
-            <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">🔒 سري</span>
-          </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-            إدارة الحسابات والتقارير المالية
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+    <PageShell
+      title="المحاسبة والمالية"
+      description="إدارة الحسابات والتقارير المالية"
+      actions={
+        <>
           <Button variant="outline" onClick={() => handleNewVoucher('receipt')}>
             <ArrowDownRight className="w-4 h-4 ml-2 text-green-500" />
             سند قبض
@@ -104,8 +96,9 @@ export default function AccountingPage() {
             <Download className="w-4 h-4 ml-2" />
             تصدير
           </Button>
-        </div>
-      </div>
+        </>
+      }
+    >
 
       {/* Main Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -342,7 +335,7 @@ export default function AccountingPage() {
       >
         <VoucherForm type={voucherType} onClose={() => setShowVoucherModal(false)} onSuccess={() => setShowVoucherModal(false)} />
       </Modal>
-    </div>
+    </PageShell>
   )
 }
 

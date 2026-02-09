@@ -7,6 +7,7 @@ import Spinner from '../components/common/Spinner'
 import { notificationsAPI } from '../services/api'
 import { formatRelativeTime } from '../utils/helpers'
 import { clsx } from 'clsx'
+import PageShell from '../components/common/PageShell'
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient()
@@ -56,16 +57,11 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">الإشعارات</h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-            {unreadCount > 0 ? `لديك ${unreadCount} إشعارات غير مقروءة` : 'لا توجد إشعارات جديدة'}
-          </p>
-        </div>
-        {unreadCount > 0 && (
+    <PageShell
+      title="الإشعارات"
+      description={unreadCount > 0 ? `لديك ${unreadCount} إشعارات غير مقروءة` : 'لا توجد إشعارات جديدة'}
+      actions={
+        unreadCount > 0 && (
           <Button 
             variant="secondary"
             onClick={() => markAllAsReadMutation.mutate()}
@@ -74,8 +70,9 @@ export default function NotificationsPage() {
             <CheckCheck className="w-4 h-4" />
             تحديد الكل كمقروء
           </Button>
-        )}
-      </div>
+        )
+      }
+    >
 
       {/* Notifications List */}
       {isLoading ? (
@@ -146,6 +143,6 @@ export default function NotificationsPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageShell>
   )
 }

@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { BarChart3, Download, Calendar } from 'lucide-react'
-import PageLayout from '../components/common/PageLayout'
+import PageShell from '../components/common/PageShell'
 import Card from '../components/common/Card'
 import Button from '../components/common/Button'
 import DataTable from '../components/common/DataTable'
@@ -69,7 +69,7 @@ export default function ReportsPage() {
   const isLoading = loadingProfit || loadingCash || loadingHR
 
   return (
-    <PageLayout
+    <PageShell
       title="التقارير"
       description="تقارير المبيعات والربحية والتدفق النقدي وأداء الموظفين مع إمكانية التصدير"
     >
@@ -191,6 +191,6 @@ export default function ReportsPage() {
           )}
         </Card>
       </div>
-    </PageLayout>
+    </PageShell>
   )
 }

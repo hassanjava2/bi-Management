@@ -3,6 +3,7 @@ import { GraduationCap, BarChart3 } from 'lucide-react'
 import TrainingDashboard from '../components/training/TrainingDashboard'
 import TrainingReport from '../components/training/TrainingReport'
 import { useAuth } from '../context/AuthContext'
+import PageShell from '../components/common/PageShell'
 
 export default function TrainingPage() {
   const { isAdmin, isHR, isManager } = useAuth()
@@ -10,17 +11,7 @@ export default function TrainingPage() {
   const [activeTab, setActiveTab] = useState('my-training')
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-          <GraduationCap className="w-7 h-7 text-primary-500" />
-          التدريب
-        </h1>
-        <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-          برنامج التدريب والتطوير
-        </p>
-      </div>
+    <PageShell title="التدريب" description="برنامج التدريب والتطوير">
 
       {/* Tabs (for HR/Admin) */}
       {canViewReport && (
@@ -59,6 +50,6 @@ export default function TrainingPage() {
       {/* Content */}
       {activeTab === 'my-training' && <TrainingDashboard />}
       {activeTab === 'report' && canViewReport && <TrainingReport />}
-    </div>
+    </PageShell>
   )
 }

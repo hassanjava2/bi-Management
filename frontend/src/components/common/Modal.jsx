@@ -2,11 +2,20 @@ import { clsx } from 'clsx'
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
 
+const SIZES = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+  full: 'max-w-[90vw]',
+}
+
 export default function Modal({
   isOpen,
   onClose,
   title,
   children,
+  footer,
   size = 'md',
   className,
 }) {
@@ -25,19 +34,10 @@ export default function Modal({
 
   if (!isOpen) return null
 
-  const sizes = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-[90vw]',
-  }
-
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop - stronger blur */}
       <div
-        className="fixed inset-0 bg-neutral-900/50 backdrop-blur-md animate-fade-in"
+        className="fixed inset-0 bg-neutral-900/50 backdrop-blur-md transition-opacity duration-300 ease-out animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -48,16 +48,16 @@ export default function Modal({
           aria-modal="true"
           aria-labelledby={title ? 'modal-title' : undefined}
           className={clsx(
-            'relative w-full bg-white dark:bg-neutral-900',
-            'rounded-2xl shadow-modal',
+            'relative w-full flex flex-col max-h-[90vh]',
+            'bg-white dark:bg-neutral-900 rounded-2xl shadow-modal',
             'border border-neutral-200/50 dark:border-neutral-800',
-            'animate-scale-in',
-            sizes[size],
+            'transition-transform duration-300 ease-out animate-scale-in',
+            SIZES[size],
             className
           )}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-between flex-shrink-0 px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
             {title && (
               <h3 id="modal-title" className="text-base font-semibold text-neutral-900 dark:text-white">
                 {title}
@@ -73,9 +73,15 @@ export default function Modal({
             </button>
           </div>
 
-          <div className="px-6 py-5 max-h-[70vh] overflow-y-auto">
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5">
             {children}
           </div>
+
+          {footer != null && (
+            <div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 rounded-b-2xl">
+              {footer}
+            </div>
+          )}
         </div>
       </div>
     </div>

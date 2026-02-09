@@ -13,6 +13,7 @@ import {
 import api from '../services/api';
 import { exportToCSV } from '../utils/helpers';
 import Button from '../components/common/Button';
+import PageShell from '../components/common/PageShell';
 
 // ========== API Functions ==========
 const auditAPI = {
@@ -38,19 +39,7 @@ export default function AuditPage() {
     ];
 
     return (
-        <div className="p-6 space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                        <Shield className="w-7 h-7 text-blue-500" />
-                        Audit Dashboard
-                    </h1>
-                    <p className="text-neutral-600 dark:text-neutral-400 mt-1">
-                        مراقبة العمليات وأحداث الأمان
-                    </p>
-                </div>
-            </div>
+        <PageShell title="Audit Dashboard" description="مراقبة العمليات وأحداث الأمان" className="p-6">
 
             {/* Tabs */}
             <div className="border-b border-neutral-200 dark:border-neutral-700">
@@ -77,7 +66,7 @@ export default function AuditPage() {
             {activeTab === 'logs' && <LogsTab />}
             {activeTab === 'security' && <SecurityTab />}
             {activeTab === 'reports' && <ReportsTab />}
-        </div>
+        </PageShell>
     );
 }
 

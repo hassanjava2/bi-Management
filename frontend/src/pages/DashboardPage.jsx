@@ -2,10 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
   Users, CheckSquare, Clock, AlertTriangle, Receipt, Package,
-  DollarSign, TrendingUp, PlusCircle, ShoppingCart, FileText, ArrowLeft
+  DollarSign, TrendingUp, PlusCircle, ShoppingCart, FileText
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import StatCard from '../components/dashboard/StatCard'
+import StatsGrid from '../components/common/StatsGrid'
 import TasksOverview from '../components/dashboard/TasksOverview'
 import AttendanceOverview from '../components/dashboard/AttendanceOverview'
 import RecentTasks from '../components/dashboard/RecentTasks'
@@ -24,14 +25,14 @@ function formatNumber(n) {
 }
 
 const quickActions = [
-  { label: 'فاتورة مبيعات', href: '/sales/new', icon: PlusCircle, color: 'bg-primary-500 text-white' },
-  { label: 'مشتريات', href: '/purchases/new', icon: ShoppingCart, color: 'bg-neutral-800 dark:bg-neutral-700 text-white' },
-  { label: 'المخزون', href: '/inventory', icon: Package, color: 'bg-neutral-800 dark:bg-neutral-700 text-white' },
-  { label: 'المهام', href: '/tasks', icon: FileText, color: 'bg-neutral-800 dark:bg-neutral-700 text-white' },
+  { label: 'فاتورة مبيعات', href: '/sales/new', icon: PlusCircle },
+  { label: 'مشتريات', href: '/purchases/new', icon: ShoppingCart },
+  { label: 'المخزون', href: '/inventory', icon: Package },
+  { label: 'المهام', href: '/tasks', icon: FileText },
 ]
 
 export default function DashboardPage() {
-  const { user, isAdmin, isManager, isHR } = useAuth()
+  const { user, isAdmin } = useAuth()
 
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard'],
@@ -61,27 +62,36 @@ export default function DashboardPage() {
     { name: 'جملة', value: accounting.wholesale_sales || 0 },
   ].filter(d => d.value > 0) : []
 
+  const taskStats = [
+    { title: 'إجمالي المهام', value: stats?.tasks?.total ?? 0, icon: CheckSquare, color: 'primary', animate: true },
+    { title: 'مهام اليوم', value: stats?.tasks?.today ?? 0, icon: Clock, color: 'info', animate: true },
+    { title: 'مهام متأخرة', value: stats?.tasks?.overdue ?? 0, icon: AlertTriangle, color: 'danger', animate: true },
+    { title: 'الحضور اليوم', value: `${stats?.attendance?.checked_in || 0}/${stats?.attendance?.total_employees || 0}`, icon: Users, color: 'success' },
+  ]
+
   return (
     <div className="space-y-8">
-      {/* Welcome + Quick Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      {/* Welcome + Quick Actions grid */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">
             مرحباً، {user?.full_name?.split(' ')[0]}
           </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">
-            هذه نظرة عامة على النظام اليوم
+          <p className="text-neutral-500 dark:text-neutral-400 mt-1 text-base">
+            {new Date().toLocaleDateString('ar-IQ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-4 gap-3">
           {quickActions.map((a) => (
             <Link
               key={a.href}
               to={a.href}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${a.color} hover:opacity-90 transition-opacity`}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-transparent dark:border-neutral-800 shadow-sm hover:shadow-md hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-all duration-200"
             >
-              <a.icon className="w-4 h-4" />
-              <span className="hidden sm:inline">{a.label}</span>
+              <span className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                <a.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+              </span>
+              <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 text-center leading-tight">{a.label}</span>
             </Link>
           ))}
         </div>
@@ -91,22 +101,20 @@ export default function DashboardPage() {
       {isLoading ? (
         <CardSkeleton count={4} />
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="إجمالي المهام" value={stats?.tasks?.total || 0} icon={CheckSquare} color="primary" animate />
-          <StatCard title="مهام اليوم" value={stats?.tasks?.today || 0} icon={Clock} color="info" animate />
-          <StatCard title="مهام متأخرة" value={stats?.tasks?.overdue || 0} icon={AlertTriangle} color="danger" animate />
-          <StatCard title="الحضور اليوم" value={`${stats?.attendance?.checked_in || 0}/${stats?.attendance?.total_employees || 0}`} icon={Users} color="success" />
-        </div>
+        <StatsGrid items={taskStats} columns={4} />
       )}
 
       {/* Financial */}
       {accounting && (isAdmin || user?.role === 'owner') && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="مبيعات الشهر" value={formatNumber(accounting.month_sales)} icon={Receipt} color="success" trend="up" trendValue="هذا الشهر" />
-          <StatCard title="مشتريات الشهر" value={formatNumber(accounting.month_purchases)} icon={Package} color="warning" />
-          <StatCard title="صافي الربح" value={formatNumber(accounting.month_profit)} icon={TrendingUp} color="primary" />
-          <StatCard title="النقد المتاح" value={formatNumber(accounting.cash_balance)} icon={DollarSign} color="info" />
-        </div>
+        <StatsGrid
+          items={[
+            { title: 'مبيعات الشهر', value: formatNumber(accounting.month_sales), icon: Receipt, color: 'success', trend: 'up', trendValue: 'هذا الشهر' },
+            { title: 'مشتريات الشهر', value: formatNumber(accounting.month_purchases), icon: Package, color: 'warning' },
+            { title: 'صافي الربح', value: formatNumber(accounting.month_profit), icon: TrendingUp, color: 'primary' },
+            { title: 'النقد المتاح', value: formatNumber(accounting.cash_balance), icon: DollarSign, color: 'info' },
+          ]}
+          columns={4}
+        />
       )}
 
       {/* Charts */}
