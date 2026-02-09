@@ -35,16 +35,20 @@ export default function DataTable({
   const cellPadding = compact ? 'px-4 py-2.5' : 'px-5 py-4'
   const headerPadding = compact ? 'px-4 py-3' : 'px-5 py-4'
 
+  // Safety: ensure data is always an array
+  const safeData = Array.isArray(data) ? data : []
+  const safeColumns = Array.isArray(columns) ? columns : []
+
   const filteredData = useMemo(() => {
-    if (!filterable || !filterValue?.trim()) return data
+    if (!filterable || !filterValue?.trim()) return safeData
     const q = filterValue.trim().toLowerCase()
-    return data.filter((row) =>
-      columns.some((col) => {
+    return safeData.filter((row) =>
+      safeColumns.some((col) => {
         const val = col.render ? col.render(row) : row[col.key]
         return String(val ?? '').toLowerCase().includes(q)
       })
     )
-  }, [data, columns, filterable, filterValue])
+  }, [safeData, safeColumns, filterable, filterValue])
 
   const handleSort = (key) => {
     if (!onSort) return
@@ -53,7 +57,8 @@ export default function DataTable({
 
   const toggleSelectAll = () => {
     if (!onSelectionChange) return
-    onSelectionChange(selectedRows.length >= filteredData.length ? [] : filteredData.map((r) => r.id ?? r))
+    const items = Array.isArray(filteredData) ? filteredData : []
+    onSelectionChange(selectedRows.length >= items.length ? [] : items.map((r) => r.id ?? r))
   }
 
   const toggleRow = (row) => {
@@ -70,7 +75,7 @@ export default function DataTable({
         <table className="w-full">
           <thead>
             <tr className="border-b border-neutral-200 dark:border-neutral-700">
-              {columns.map((col) => (
+              {safeColumns.map((col) => (
                 <th key={col.key} className={clsx(headerPadding, 'text-end text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider', col.headerClassName)}>
                   {col.label}
                 </th>
@@ -80,7 +85,7 @@ export default function DataTable({
           <tbody>
             {Array.from({ length: 5 }).map((_, i) => (
               <tr key={i} className="border-b border-neutral-50 dark:border-neutral-800/50">
-                {columns.map((col) => (
+                {safeColumns.map((col) => (
                   <td key={col.key} className={cellPadding}>
                     <div className="skeleton h-4 w-full max-w-[140px]">&nbsp;</div>
                   </td>
@@ -144,7 +149,7 @@ export default function DataTable({
                   <input type="checkbox" checked={selectedRows.length === filteredData.length && filteredData.length > 0} onChange={toggleSelectAll} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
                 </th>
               )}
-              {columns.map((col) => {
+              {safeColumns.map((col) => {
                 const sortable = onSort && col.sortable !== false && col.key
                 const isActive = sortKey === col.key
                 return (
@@ -190,7 +195,7 @@ export default function DataTable({
                       <input type="checkbox" checked={isSelected} onChange={() => toggleRow(row)} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
                     </td>
                   )}
-                  {columns.map((col) => (
+                  {safeColumns.map((col) => (
                     <td key={col.key} className={clsx(cellPadding, 'text-sm text-neutral-700 dark:text-neutral-300', col.className)}>
                       {col.render ? col.render(row) : (
                         <span className="block truncate">{row[col.key] ?? '—'}</span>

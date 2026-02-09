@@ -6,7 +6,8 @@ import StatCard from '../dashboard/StatCard'
  * Renders a responsive grid of StatCards.
  */
 export default function StatsGrid({ items = [], columns = 4, className }) {
-  if (!items.length) return null
+  const safeItems = Array.isArray(items) ? items : []
+  if (!safeItems.length) return null
   return (
     <div
       className={clsx(
@@ -17,7 +18,7 @@ export default function StatsGrid({ items = [], columns = 4, className }) {
         className
       )}
     >
-      {items.map((item, i) => (
+      {safeItems.map((item, i) => (
         <StatCard
           key={i}
           title={item.title}
