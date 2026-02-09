@@ -1,0 +1,70 @@
+{
+  "expo": {
+    "name": "Bi Management",
+    "slug": "bi-management-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a2e"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bi.management",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "نحتاج موقعك لتسجيل الحضور",
+        "NSLocationAlwaysUsageDescription": "نحتاج موقعك لتسجيل الحضور",
+        "NSFaceIDUsageDescription": "استخدم Face ID لتسجيل الدخول بسرعة"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a1a2e"
+      },
+      "package": "com.bi.management",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#4f46e5"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "السماح لـ Bi Management باستخدام موقعك لتسجيل الحضور."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "السماح لـ Bi Management باستخدام Face ID للمصادقة."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "bi-management-mobile"
+      }
+    }
+  }
+}

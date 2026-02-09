@@ -1,0 +1,215 @@
+version: '3.8'
+
+# Bi Management - Docker Compose Configuration
+# نظام إدارة الشركة - تكوين Docker
+
+services:
+  # ========================================
+  # قاعدة البيانات - PostgreSQL
+  # ========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: bi-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bi_management
+      POSTGRES_USER: ${DB_USER:-bi_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-BiSecure2024!}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql:ro
+      - ./database/indexes.sql:/docker-entrypoint-initdb.d/2-indexes.sql:ro
+      - ./database/seeds.sql:/docker-entrypoint-initdb.d/3-seeds.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-bi_admin} -d bi_management"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bi-network
+
+  # ========================================
+  # Redis - Cache & Sessions
+  # ========================================
+  redis:
+    image: redis:7-alpine
+    container_name: bi-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-BiRedis2024!}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bi-network
+
+  # ========================================
+  # Backend API - Node.js
+  # ========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bi-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${DB_USER:-bi_admin}:${DB_PASSWORD:-BiSecure2024!}@postgres:5432/bi_management
+      REDIS_URL: redis://:${REDIS_PASSWORD:-BiRedis2024!}@redis:6379
+      AI_ENGINE_URL: http://ai-engine:8000
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRES_IN: 7d
+      MASTER_ENCRYPTION_KEY: ${MASTER_KEY:-your-32-char-encryption-key-here}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - bi-network
+
+  # ========================================
+  # Frontend Dashboard - Vite/React
+  # ========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bi-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://backend:3000/api
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - bi-network
+
+  # ========================================
+  # AI Engine - Python/FastAPI
+  # ========================================
+  ai-engine:
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile
+    container_name: bi-ai-engine
+    restart: unless-stopped
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+    ports:
+      - "8000:8000"
+    depends_on:
+      - ollama
+    volumes:
+      - ai_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - bi-network
+
+  # ========================================
+  # Ollama - Local LLM
+  # ========================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: bi-ollama
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    # GPU support (uncomment if you have NVIDIA GPU)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    networks:
+      - bi-network
+
+  # ========================================
+  # Camera AI - Computer Vision
+  # ========================================
+  camera-ai:
+    build:
+      context: ./camera-ai
+      dockerfile: Dockerfile
+    container_name: bi-camera-ai
+    restart: unless-stopped
+    environment:
+      AI_ENGINE_URL: http://ai-engine:8000
+      BACKEND_URL: http://backend:3000
+    ports:
+      - "8001:8001"
+    volumes:
+      - camera_data:/app/data
+    depends_on:
+      - ai-engine
+    networks:
+      - bi-network
+
+  # ========================================
+  # Nginx - Reverse Proxy (Production)
+  # ========================================
+  nginx:
+    image: nginx:alpine
+    container_name: bi-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - bi-network
+    profiles:
+      - production
+
+# ========================================
+# Networks
+# ========================================
+networks:
+  bi-network:
+    driver: bridge
+
+# ========================================
+# Volumes
+# ========================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  ollama_data:
+    driver: local
+  ai_data:
+    driver: local
+  camera_data:
+    driver: local

@@ -1,0 +1,26 @@
+# BI Management v3 - PostgreSQL فقط (للتطوير والنقل)
+# تشغيل: docker compose up -d
+# ثم: npm run db:generate && npm run db:migrate && npm run db:seed
+# Set DB_PASSWORD in .env (e.g. copy from .env.example)
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bi-v3-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bi_management_v3
+      POSTGRES_USER: bi_v3
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-BiV3Secure2024}
+    ports:
+      - "5433:5432"
+    volumes:
+      - bi_v3_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bi_v3 -d bi_management_v3"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  bi_v3_pg_data:

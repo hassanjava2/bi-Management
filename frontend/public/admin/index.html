@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BI Management - لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --sidebar-width: 260px;
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--gray-100);
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--gray-900);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-700);
+        }
+        
+        .sidebar-header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .sidebar-header p {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 0.25rem;
+        }
+        
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+        
+        .nav-section {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--gray-500);
+            letter-spacing: 1px;
+            margin-top: 1rem;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--gray-300);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            gap: 0.75rem;
+        }
+        
+        .nav-item:hover {
+            background: var(--gray-800);
+            color: white;
+        }
+        
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .nav-item .icon {
+            font-size: 1.1rem;
+        }
+        
+        .nav-item .badge {
+            margin-right: auto;
+            background: var(--danger);
+            color: white;
+            padding: 0.1rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+        
+        /* Main Content */
+        .main {
+            margin-right: var(--sidebar-width);
+            flex: 1;
+            min-height: 100vh;
+        }
+        
+        .topbar {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .topbar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .topbar-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .stat-card .label {
+            color: var(--gray-500);
+            font-size: 0.9rem;
+        }
+        
+        .stat-card.primary { border-right: 4px solid var(--primary); }
+        .stat-card.success { border-right: 4px solid var(--success); }
+        .stat-card.warning { border-right: 4px solid var(--warning); }
+        .stat-card.danger { border-right: 4px solid var(--danger); }
+        
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: right;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        th {
+            background: var(--gray-50);
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.85rem;
+        }
+        
+        tr:hover {
+            background: var(--gray-50);
+        }
+        
+        /* Badges */
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+        .badge-gray { background: var(--gray-200); color: var(--gray-700); }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: white; border: 1px solid var(--gray-300); color: var(--gray-700); }
+        .btn-outline:hover { background: var(--gray-50); }
+        .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.8rem; }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.9rem;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        /* Filters */
+        .filters {
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+        
+        .filters .form-group {
+            margin-bottom: 0;
+            min-width: 150px;
+        }
+        
+        /* Tab content */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-right: 2rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            right: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--gray-200);
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            right: -1.65rem;
+            top: 0.25rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 2px solid white;
+        }
+        
+        .timeline-item.success::before { background: var(--success); }
+        .timeline-item.warning::before { background: var(--warning); }
+        .timeline-item.danger::before { background: var(--danger); }
+        
+        .timeline-date {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+        
+        .timeline-content {
+            margin-top: 0.25rem;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-500);
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main {
+                margin-right: 0;
+            }
+        }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-500);
+        }
+        
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>BI Management</h1>
+            <p>نظام إدارة الشركات الذكي</p>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">الرئيسية</div>
+            <a class="nav-item active" data-page="dashboard">
+                <span class="icon">📊</span>
+                لوحة التحكم
+            </a>
+            
+            <div class="nav-section">المخزون</div>
+            <a class="nav-item" data-page="devices">
+                <span class="icon">💻</span>
+                الأجهزة
+            </a>
+            <a class="nav-item" data-page="inventory-entry" onclick="window.open('/inventory-entry/', '_blank')">
+                <span class="icon">➕</span>
+                إدخال المواد
+            </a>
+            
+            <div class="nav-section">المبيعات</div>
+            <a class="nav-item" data-page="invoices">
+                <span class="icon">📄</span>
+                الفواتير
+            </a>
+            <a class="nav-item" data-page="customers">
+                <span class="icon">👥</span>
+                العملاء
+            </a>
+            
+            <div class="nav-section">الدعم</div>
+            <a class="nav-item" data-page="warranty">
+                <span class="icon">🛡️</span>
+                الضمان
+                <span class="badge" id="warrantyBadge" style="display:none;">0</span>
+            </a>
+            
+            <div class="nav-section">الإدارة</div>
+            <a class="nav-item" data-page="approvals">
+                <span class="icon">✅</span>
+                الموافقات
+                <span class="badge" id="approvalsBadge" style="display:none;">0</span>
+            </a>
+            <a class="nav-item" data-page="audit">
+                <span class="icon">📋</span>
+                سجل التدقيق
+            </a>
+            <a class="nav-item" data-page="employees">
+                <span class="icon">👤</span>
+                الموظفين
+            </a>
+            
+            <div class="nav-section">النظام</div>
+            <a class="nav-item" data-page="settings">
+                <span class="icon">⚙️</span>
+                الإعدادات
+            </a>
+        </nav>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main">
+        <header class="topbar">
+            <h2 class="topbar-title" id="pageTitle">لوحة التحكم</h2>
+            <div class="topbar-actions">
+                <button class="btn btn-outline" onclick="refreshData()">🔄 تحديث</button>
+                <div class="user-info">
+                    <div class="user-avatar">م</div>
+                    <span>المالك</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="content">
+            <!-- Dashboard Page -->
+            <div class="tab-content active" id="page-dashboard">
+                <div class="stats-grid">
+                    <div class="stat-card primary">
+                        <div class="icon">💻</div>
+                        <div class="value" id="statDevices">0</div>
+                        <div class="label">الأجهزة الجاهزة</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="icon">📄</div>
+                        <div class="value" id="statInvoices">0</div>
+                        <div class="label">فواتير اليوم</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="icon">✅</div>
+                        <div class="value" id="statApprovals">0</div>
+                        <div class="label">بانتظار الموافقة</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <div class="icon">🛡️</div>
+                        <div class="value" id="statWarranty">0</div>
+                        <div class="label">طلبات ضمان نشطة</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">آخر الأحداث</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="recentEvents" class="timeline">
+                            <div class="loading"><div class="spinner"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Audit Page -->
+            <div class="tab-content" id="page-audit">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📋 سجل التدقيق</span>
+                        <button class="btn btn-outline btn-sm" onclick="exportAudit()">📥 تصدير</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="filters">
+                            <div class="form-group">
+                                <label class="form-label">من تاريخ</label>
+                                <input type="date" class="form-input" id="auditStartDate">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">إلى تاريخ</label>
+                                <input type="date" class="form-input" id="auditEndDate">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">النوع</label>
+                                <select class="form-select" id="auditEventType">
+                                    <option value="">الكل</option>
+                                    <option value="login">تسجيل دخول</option>
+                                    <option value="device_created">إنشاء جهاز</option>
+                                    <option value="device_updated">تحديث جهاز</option>
+                                    <option value="invoice_created">إنشاء فاتورة</option>
+                                    <option value="delete_requested">طلب حذف</option>
+                                    <option value="permission_denied">رفض صلاحية</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">الخطورة</label>
+                                <select class="form-select" id="auditSeverity">
+                                    <option value="">الكل</option>
+                                    <option value="info">عادي</option>
+                                    <option value="warning">تحذير</option>
+                                    <option value="critical">حرج</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">بحث</label>
+                                <input type="text" class="form-input" id="auditSearch" placeholder="بحث...">
+                            </div>
+                            <button class="btn btn-primary" onclick="loadAuditLogs()">🔍 بحث</button>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>النوع</th>
+                                        <th>المستخدم</th>
+                                        <th>الكيان</th>
+                                        <th>الإجراء</th>
+                                        <th>IP</th>
+                                        <th>الخطورة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="auditTableBody">
+                                    <tr>
+                                        <td colspan="7" class="loading"><div class="spinner"></div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Approvals Page -->
+            <div class="tab-content" id="page-approvals">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">✅ طلبات الموافقة</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="filters">
+                            <div class="form-group">
+                                <label class="form-label">الحالة</label>
+                                <select class="form-select" id="approvalStatus" onchange="loadApprovals()">
+                                    <option value="pending">معلقة</option>
+                                    <option value="approved">موافق عليها</option>
+                                    <option value="rejected">مرفوضة</option>
+                                    <option value="all">الكل</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="approvalsContainer">
+                            <div class="loading"><div class="spinner"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Warranty Page -->
+            <div class="tab-content" id="page-warranty">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🛡️ طلبات الضمان</span>
+                        <button class="btn btn-primary" onclick="showNewWarrantyModal()">➕ طلب جديد</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="filters">
+                            <div class="form-group">
+                                <label class="form-label">الحالة</label>
+                                <select class="form-select" id="warrantyStatus" onchange="loadWarrantyClaims()">
+                                    <option value="pending">معلقة</option>
+                                    <option value="sent_to_supplier">مرسلة للمورد</option>
+                                    <option value="at_supplier">عند المورد</option>
+                                    <option value="all">الكل</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>رقم الطلب</th>
+                                        <th>الجهاز</th>
+                                        <th>المورد</th>
+                                        <th>الزبون</th>
+                                        <th>المشكلة</th>
+                                        <th>الحالة</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="warrantyTableBody">
+                                    <tr>
+                                        <td colspan="7" class="loading"><div class="spinner"></div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Devices Page -->
+            <div class="tab-content" id="page-devices">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">💻 الأجهزة</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="filters">
+                            <div class="form-group">
+                                <label class="form-label">الحالة</label>
+                                <select class="form-select" id="deviceStatus" onchange="loadDevices()">
+                                    <option value="">الكل</option>
+                                    <option value="new">جديد</option>
+                                    <option value="ready_to_sell">جاهز للبيع</option>
+                                    <option value="sold">مباع</option>
+                                    <option value="in_warranty">بالضمان</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">بحث</label>
+                                <input type="text" class="form-input" id="deviceSearch" placeholder="سيريال أو موديل...">
+                            </div>
+                            <button class="btn btn-primary" onclick="loadDevices()">🔍 بحث</button>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>السيريال</th>
+                                        <th>المنتج</th>
+                                        <th>المخزن</th>
+                                        <th>الحالة</th>
+                                        <th>السعر</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="devicesTableBody">
+                                    <tr>
+                                        <td colspan="6" class="loading"><div class="spinner"></div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Invoices Page -->
+            <div class="tab-content" id="page-invoices">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">📄 الفواتير</span>
+                        <button class="btn btn-primary" onclick="showNewInvoiceModal()">➕ فاتورة جديدة</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="filters">
+                            <div class="form-group">
+                                <label class="form-label">النوع</label>
+                                <select class="form-select" id="invoiceType" onchange="loadInvoices()">
+                                    <option value="">الكل</option>
+                                    <option value="sale">بيع</option>
+                                    <option value="purchase">شراء</option>
+                                    <option value="installment">أقساط</option>
+                                    <option value="sale_return">مرتجع بيع</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">من تاريخ</label>
+                                <input type="date" class="form-input" id="invoiceStartDate">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">إلى تاريخ</label>
+                                <input type="date" class="form-input" id="invoiceEndDate">
+                            </div>
+                            <button class="btn btn-primary" onclick="loadInvoices()">🔍 بحث</button>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>رقم الفاتورة</th>
+                                        <th>النوع</th>
+                                        <th>الطرف</th>
+                                        <th>المبلغ</th>
+                                        <th>الحالة</th>
+                                        <th>التاريخ</th>
+                                        <th>إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoicesTableBody">
+                                    <tr>
+                                        <td colspan="7" class="loading"><div class="spinner"></div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Approval Modal -->
+    <div class="modal-overlay" id="approvalModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>طلب موافقة</h3>
+                <button class="modal-close" onclick="closeModal('approvalModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="approvalModalBody">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('approvalModal')">إلغاء</button>
+                <button class="btn btn-danger" onclick="rejectApproval()">❌ رفض</button>
+                <button class="btn btn-success" onclick="approveApproval()">✅ موافقة</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Warranty Modal -->
+    <div class="modal-overlay" id="warrantyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>تفاصيل طلب الضمان</h3>
+                <button class="modal-close" onclick="closeModal('warrantyModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="warrantyModalBody">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL
+        const API_URL = 'http://localhost:3000/api';
+        let currentApprovalId = null;
+        let currentWarrantyId = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavigation();
+            loadDashboard();
+        });
+        
+        // Navigation
+        function setupNavigation() {
+            document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+                item.addEventListener('click', () => {
+                    const page = item.dataset.page;
+                    
+                    // Update active nav
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // Update page title
+                    document.getElementById('pageTitle').textContent = item.textContent.trim();
+                    
+                    // Show page
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    const pageEl = document.getElementById(`page-${page}`);
+                    if (pageEl) {
+                        pageEl.classList.add('active');
+                        loadPageData(page);
+                    }
+                });
+            });
+        }
+        
+        // Load page data
+        function loadPageData(page) {
+            switch(page) {
+                case 'dashboard': loadDashboard(); break;
+                case 'audit': loadAuditLogs(); break;
+                case 'approvals': loadApprovals(); break;
+                case 'warranty': loadWarrantyClaims(); break;
+                case 'devices': loadDevices(); break;
+                case 'invoices': loadInvoices(); break;
+            }
+        }
+        
+        // Dashboard
+        async function loadDashboard() {
+            try {
+                // Load stats (mock for now)
+                document.getElementById('statDevices').textContent = '145';
+                document.getElementById('statInvoices').textContent = '12';
+                document.getElementById('statApprovals').textContent = '3';
+                document.getElementById('statWarranty').textContent = '5';
+                
+                // Update badges
+                document.getElementById('approvalsBadge').textContent = '3';
+                document.getElementById('approvalsBadge').style.display = 'inline';
+                document.getElementById('warrantyBadge').textContent = '5';
+                document.getElementById('warrantyBadge').style.display = 'inline';
+                
+                // Load recent events
+                document.getElementById('recentEvents').innerHTML = `
+                    <div class="timeline-item success">
+                        <div class="timeline-date">10:45 - اليوم</div>
+                        <div class="timeline-content">
+                            <strong>أحمد</strong> أضاف جهاز جديد <code>BI-2025-000150</code>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">10:42 - اليوم</div>
+                        <div class="timeline-content">
+                            <strong>محمد</strong> أنشأ فاتورة بيع <code>SAL-2025-000089</code>
+                        </div>
+                    </div>
+                    <div class="timeline-item warning">
+                        <div class="timeline-date">10:38 - اليوم</div>
+                        <div class="timeline-content">
+                            <strong>علي</strong> طلب حذف جهاز - بانتظار الموافقة
+                        </div>
+                    </div>
+                    <div class="timeline-item danger">
+                        <div class="timeline-date">10:30 - اليوم</div>
+                        <div class="timeline-content">
+                            <strong>سارة</strong> محاولة وصول مرفوضة لسعر الشراء
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Dashboard error:', error);
+            }
+        }
+        
+        // Audit Logs
+        async function loadAuditLogs() {
+            try {
+                const tbody = document.getElementById('auditTableBody');
+                
+                // Mock data
+                const logs = [
+                    { created_at: '2025-02-01 10:45', event_type: 'device_created', user_name: 'أحمد', entity_name: 'BI-2025-000150', action: 'إنشاء جهاز جديد', ip_address: '192.168.1.10', severity: 'info' },
+                    { created_at: '2025-02-01 10:42', event_type: 'invoice_created', user_name: 'محمد', entity_name: 'SAL-2025-000089', action: 'إنشاء فاتورة بيع', ip_address: '192.168.1.11', severity: 'info' },
+                    { created_at: '2025-02-01 10:38', event_type: 'delete_requested', user_name: 'علي', entity_name: 'BI-2025-000123', action: 'طلب حذف جهاز', ip_address: '192.168.1.12', severity: 'warning' },
+                    { created_at: '2025-02-01 10:30', event_type: 'permission_denied', user_name: 'سارة', entity_name: 'cost_price', action: 'محاولة وصول لسعر الشراء', ip_address: '192.168.1.13', severity: 'critical' },
+                ];
+                
+                tbody.innerHTML = logs.map(log => `
+                    <tr>
+                        <td>${log.created_at}</td>
+                        <td>${log.event_type}</td>
+                        <td>${log.user_name}</td>
+                        <td><code>${log.entity_name}</code></td>
+                        <td>${log.action}</td>
+                        <td><code>${log.ip_address}</code></td>
+                        <td>
+                            <span class="badge badge-${getSeverityClass(log.severity)}">
+                                ${getSeverityText(log.severity)}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Audit error:', error);
+            }
+        }
+        
+        function getSeverityClass(severity) {
+            const classes = { info: 'info', warning: 'warning', critical: 'danger' };
+            return classes[severity] || 'gray';
+        }
+        
+        function getSeverityText(severity) {
+            const texts = { info: 'عادي', warning: 'تحذير', critical: 'حرج' };
+            return texts[severity] || severity;
+        }
+        
+        // Approvals
+        async function loadApprovals() {
+            try {
+                const container = document.getElementById('approvalsContainer');
+                
+                // Mock data
+                const approvals = [
+                    { id: '1', approval_number: 'APR-202502-0001', approval_type: 'deletion', entity_name: 'BI-2025-000123', requester_name: 'علي', request_reason: 'الجهاز تالف بالكامل', status: 'pending', created_at: '2025-02-01 10:38' },
+                    { id: '2', approval_number: 'APR-202502-0002', approval_type: 'quantity_correction', entity_name: 'رام 8GB DDR4', requester_name: 'أحمد', request_reason: 'خطأ في العد', status: 'pending', request_data: { old_quantity: 13, new_quantity: 12 }, created_at: '2025-02-01 10:30' },
+                ];
+                
+                if (approvals.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">✅</div><p>لا توجد طلبات معلقة</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = approvals.map(a => `
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <div class="card-body">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">
+                                        ${a.approval_type === 'deletion' ? '🗑️ طلب حذف' : '📝 تعديل كمية'}
+                                    </h4>
+                                    <p><strong>الكيان:</strong> <code>${a.entity_name}</code></p>
+                                    <p><strong>السبب:</strong> ${a.request_reason}</p>
+                                    ${a.request_data ? `<p><strong>التغيير:</strong> من ${a.request_data.old_quantity} إلى ${a.request_data.new_quantity}</p>` : ''}
+                                    <p style="color: var(--gray-500); font-size: 0.85rem;">
+                                        طلب بواسطة: ${a.requester_name} - ${a.created_at}
+                                    </p>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-danger btn-sm" onclick="rejectApprovalDirect('${a.id}')">❌ رفض</button>
+                                    <button class="btn btn-success btn-sm" onclick="approveApprovalDirect('${a.id}')">✅ موافقة</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Approvals error:', error);
+            }
+        }
+        
+        async function approveApprovalDirect(id) {
+            if (confirm('هل أنت متأكد من الموافقة؟')) {
+                alert('تمت الموافقة بنجاح!');
+                loadApprovals();
+            }
+        }
+        
+        async function rejectApprovalDirect(id) {
+            const reason = prompt('سبب الرفض:');
+            if (reason) {
+                alert('تم الرفض!');
+                loadApprovals();
+            }
+        }
+        
+        // Warranty
+        async function loadWarrantyClaims() {
+            try {
+                const tbody = document.getElementById('warrantyTableBody');
+                
+                // Mock data
+                const claims = [
+                    { claim_number: 'WC-202502-0001', device_serial: 'BI-2025-000089', supplier_name: 'عين الفهد', customer_name: 'أحمد محمد', issue_description: 'الشاشة لا تعمل', status: 'sent_to_supplier' },
+                    { claim_number: 'WC-202502-0002', device_serial: 'BI-2025-000076', supplier_name: 'عين الفهد', customer_name: 'محمد علي', issue_description: 'مشكلة في الكيبورد', status: 'pending' },
+                ];
+                
+                tbody.innerHTML = claims.map(c => `
+                    <tr>
+                        <td><code>${c.claim_number}</code></td>
+                        <td><code>${c.device_serial}</code></td>
+                        <td>${c.supplier_name}</td>
+                        <td>${c.customer_name}</td>
+                        <td>${c.issue_description.substring(0, 30)}...</td>
+                        <td><span class="badge badge-${getWarrantyStatusClass(c.status)}">${getWarrantyStatusText(c.status)}</span></td>
+                        <td>
+                            <button class="btn btn-outline btn-sm" onclick="showWarrantyDetails('${c.claim_number}')">عرض</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Warranty error:', error);
+            }
+        }
+        
+        function getWarrantyStatusClass(status) {
+            const classes = {
+                pending: 'warning',
+                sent_to_supplier: 'info',
+                at_supplier: 'info',
+                returned_approved: 'success',
+                returned_rejected: 'danger',
+                closed: 'gray'
+            };
+            return classes[status] || 'gray';
+        }
+        
+        function getWarrantyStatusText(status) {
+            const texts = {
+                pending: 'معلق',
+                sent_to_supplier: 'مرسل للمورد',
+                at_supplier: 'عند المورد',
+                returned_approved: 'مقبول',
+                returned_rejected: 'مرفوض',
+                closed: 'مغلق'
+            };
+            return texts[status] || status;
+        }
+        
+        function showWarrantyDetails(claimNumber) {
+            document.getElementById('warrantyModalBody').innerHTML = `
+                <p><strong>رقم الطلب:</strong> ${claimNumber}</p>
+                <p><strong>الحالة:</strong> مرسل للمورد</p>
+                <hr>
+                <h4>سجل التتبع:</h4>
+                <div class="timeline">
+                    <div class="timeline-item success">
+                        <div class="timeline-date">01/02/2025 10:00</div>
+                        <div class="timeline-content">تم إنشاء الطلب</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">01/02/2025 11:30</div>
+                        <div class="timeline-content">تم إرسال الجهاز للمورد</div>
+                    </div>
+                </div>
+                <hr>
+                <h4>بيانات الزبون (للإرسال للمورد):</h4>
+                <p>الاسم: أحمد محمد</p>
+                <p>الهاتف: 07xxxxxxxxx</p>
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-primary btn-sm">📞 إشعار الزبون</button>
+                    <button class="btn btn-success btn-sm">✅ تسجيل رد المورد</button>
+                </div>
+            `;
+            document.getElementById('warrantyModal').classList.add('active');
+        }
+        
+        // Devices
+        async function loadDevices() {
+            try {
+                const tbody = document.getElementById('devicesTableBody');
+                
+                const devices = [
+                    { serial_number: 'BI-2025-000150', product_name: 'Dell Latitude 7410', warehouse_name: 'المخزن الرئيسي', status: 'ready_to_sell', selling_price: 450000 },
+                    { serial_number: 'BI-2025-000149', product_name: 'HP EliteBook 840 G5', warehouse_name: 'المخزن الرئيسي', status: 'ready_to_sell', selling_price: 380000 },
+                    { serial_number: 'BI-2025-000148', product_name: 'Lenovo ThinkPad T480', warehouse_name: 'مخزن الفحص', status: 'new', selling_price: 350000 },
+                ];
+                
+                tbody.innerHTML = devices.map(d => `
+                    <tr>
+                        <td><code>${d.serial_number}</code></td>
+                        <td>${d.product_name}</td>
+                        <td>${d.warehouse_name}</td>
+                        <td><span class="badge badge-${d.status === 'ready_to_sell' ? 'success' : 'warning'}">${d.status === 'ready_to_sell' ? 'جاهز' : 'جديد'}</span></td>
+                        <td>${formatNumber(d.selling_price)}</td>
+                        <td>
+                            <button class="btn btn-outline btn-sm">عرض</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Devices error:', error);
+            }
+        }
+        
+        // Invoices
+        async function loadInvoices() {
+            try {
+                const tbody = document.getElementById('invoicesTableBody');
+                
+                const invoices = [
+                    { invoice_number: 'SAL-2025-000089', type: 'sale', party_name: 'أحمد محمد', total: 450000, status: 'completed', created_at: '2025-02-01' },
+                    { invoice_number: 'INS-2025-000012', type: 'installment', party_name: 'محمد علي', total: 520000, status: 'completed', created_at: '2025-02-01' },
+                    { invoice_number: 'PUR-2025-000045', type: 'purchase', party_name: 'عين الفهد', total: 5500000, status: 'completed', created_at: '2025-01-30' },
+                ];
+                
+                tbody.innerHTML = invoices.map(i => `
+                    <tr>
+                        <td><code>${i.invoice_number}</code></td>
+                        <td>${getInvoiceTypeText(i.type)}</td>
+                        <td>${i.party_name}</td>
+                        <td>${formatNumber(i.total)}</td>
+                        <td><span class="badge badge-success">مكتملة</span></td>
+                        <td>${i.created_at}</td>
+                        <td>
+                            <button class="btn btn-outline btn-sm">عرض</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Invoices error:', error);
+            }
+        }
+        
+        function getInvoiceTypeText(type) {
+            const types = { sale: 'بيع', purchase: 'شراء', installment: 'أقساط', sale_return: 'مرتجع' };
+            return types[type] || type;
+        }
+        
+        // Utilities
+        function formatNumber(num) {
+            return new Intl.NumberFormat('ar-IQ').format(num);
+        }
+        
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+        
+        function refreshData() {
+            const activePage = document.querySelector('.nav-item.active')?.dataset.page || 'dashboard';
+            loadPageData(activePage);
+        }
+        
+        function exportAudit() {
+            alert('جاري تصدير سجل التدقيق...');
+        }
+        
+        function showNewWarrantyModal() {
+            alert('نموذج طلب ضمان جديد');
+        }
+        
+        function showNewInvoiceModal() {
+            alert('نموذج فاتورة جديدة');
+        }
+    </script>
+</body>
+</html>

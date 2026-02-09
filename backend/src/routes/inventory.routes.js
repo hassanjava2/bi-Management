@@ -1,0 +1,284 @@
+/**
+ * BI Management - Inventory Routes
+ * مسارات المخزون
+ */
+
+const router = require('express').Router();
+const { run, get, all } = require('../config/database');
+const { auth } = require('../middleware/auth');
+const { generateId } = require('../utils/helpers');
+
+router.use(auth);
+
+/**
+ * GET /api/inventory
+ * عرض المخزون
+ */
+router.get('/', async (req, res) => {
+    try {
+        const { warehouse_id, low_stock } = req.query;
+        
+        let query = `
+            SELECT p.*, c.name as category_name
+            FROM products p
+            LEFT JOIN categories c ON p.category_id = c.id
+            WHERE 1=1
+        `;
+        const params = [];
+        
+        if (low_stock === 'true') {
+            query += ` AND p.quantity < p.min_quantity`;
+        }
+        
+        query += ` ORDER BY p.name LIMIT 100`;
+        
+        const products = all(query, params);
+        
+        res.json({
+            success: true,
+            data: products
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/inventory/movements
+ * حركات المخزون
+ */
+router.get('/movements', async (req, res) => {
+    try {
+        const movements = all(`
+            SELECT im.*, p.name as product_name
+            FROM inventory_movements im
+            LEFT JOIN products p ON im.product_id = p.id
+            ORDER BY im.created_at DESC
+            LIMIT 50
+        `);
+        
+        res.json({
+            success: true,
+            data: movements
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/inventory/movements
+ * إضافة حركة مخزون
+ */
+router.post('/movements', async (req, res) => {
+    try {
+        const { product_id, type, quantity, reason, notes } = req.body;
+        const id = generateId();
+        
+        run(`
+            INSERT INTO inventory_movements (id, product_id, type, quantity, reason, notes, created_by, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        `, [id, product_id, type, quantity, reason, notes, req.user?.id]);
+        
+        // تحديث كمية المنتج
+        const multiplier = type === 'in' ? 1 : -1;
+        run(`UPDATE products SET quantity = quantity + ? WHERE id = ?`, [quantity * multiplier, product_id]);
+        
+        res.status(201).json({
+            success: true,
+            data: { id }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/inventory/stats
+ * إحصائيات المخزون
+ */
+router.get('/stats', async (req, res) => {
+    try {
+        const totalProducts = get(`SELECT COUNT(*) as count FROM products`);
+        const lowStock = get(`SELECT COUNT(*) as count FROM products WHERE quantity < min_quantity`);
+        const outOfStock = get(`SELECT COUNT(*) as count FROM products WHERE quantity = 0`);
+        const totalValue = get(`SELECT SUM(quantity * cost_price) as value FROM products`);
+        
+        res.json({
+            success: true,
+            data: {
+                totalProducts: totalProducts?.count || 0,
+                lowStock: lowStock?.count || 0,
+                outOfStock: outOfStock?.count || 0,
+                totalValue: totalValue?.value || 0
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/inventory/warehouses
+ * المستودعات
+ */
+router.get('/warehouses', async (req, res) => {
+    try {
+        const warehouses = all(`SELECT * FROM warehouses ORDER BY name`);
+        res.json({
+            success: true,
+            data: warehouses.length ? warehouses : [{ id: 'main', name: 'المخزن الرئيسي', code: 'MAIN', type: 'main' }]
+        });
+    } catch (error) {
+        res.json({ success: true, data: [{ id: 'main', name: 'المخزن الرئيسي', code: 'MAIN', type: 'main' }] });
+    }
+});
+
+/**
+ * GET /api/inventory/products
+ * قائمة المنتجات (للفورمات)
+ */
+router.get('/products', async (req, res) => {
+    try {
+        const products = all(`SELECT id, name, name_ar, code, cost_price, selling_price, category_id FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) ORDER BY name LIMIT 500`);
+        res.json({ success: true, data: products });
+    } catch (error) {
+        res.json({ success: true, data: [] });
+    }
+});
+
+/**
+ * GET /api/inventory/devices
+ * قائمة الأجهزة/السيريالات
+ */
+router.get('/devices', async (req, res) => {
+    try {
+        const rows = all(`
+            SELECT sn.*, p.name as product_name
+            FROM serial_numbers sn
+            LEFT JOIN products p ON sn.product_id = p.id
+            ORDER BY sn.created_at DESC
+            LIMIT 200
+        `);
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        res.json({ success: true, data: [] });
+    }
+});
+
+/**
+ * POST /api/inventory/devices
+ * إضافة جهاز/سيريال جديد
+ */
+router.post('/devices', async (req, res) => {
+    try {
+        const { product_id, serial_number, supplier_id, purchase_price, warehouse_id, location_shelf, location_row } = req.body;
+        if (!product_id) {
+            return res.status(400).json({ success: false, error: 'product_id مطلوب' });
+        }
+        const id = generateId();
+        const serial = serial_number && String(serial_number).trim() ? String(serial_number).trim() : `BI-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+        run(`
+            INSERT INTO serial_numbers (id, serial_number, product_id, purchase_cost, supplier_id, status, warehouse_id, created_at, created_by)
+            VALUES (?, ?, ?, ?, ?, 'available', ?, datetime('now'), ?)
+        `, [id, serial, product_id, purchase_price ? parseFloat(purchase_price) : null, supplier_id || null, warehouse_id || 'main', req.user?.id]);
+        res.status(201).json({
+            success: true,
+            data: { id, serial_number: serial }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/inventory/devices/:id
+ */
+router.get('/devices/:id', async (req, res) => {
+    try {
+        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        if (!row) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
+        res.json({ success: true, data: row });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * PUT /api/inventory/devices/:id
+ */
+router.put('/devices/:id', async (req, res) => {
+    try {
+        const existing = get(`SELECT id FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
+        const { status, warehouse_id, serial_number } = req.body;
+        const updates = [];
+        const params = [];
+        if (status !== undefined) { updates.push('status = ?'); params.push(status); }
+        if (warehouse_id !== undefined) { updates.push('warehouse_id = ?'); params.push(warehouse_id); }
+        if (serial_number !== undefined) { updates.push('serial_number = ?'); params.push(String(serial_number).trim()); }
+        if (updates.length === 0) {
+            const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+            return res.json({ success: true, data: row });
+        }
+        params.push(req.params.id);
+        run(`UPDATE serial_numbers SET ${updates.join(', ')} WHERE id = ?`, params);
+        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        res.json({ success: true, data: row });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * DELETE /api/inventory/devices/:id
+ */
+router.delete('/devices/:id', async (req, res) => {
+    try {
+        const existing = get(`SELECT id FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
+        run(`DELETE FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/inventory/devices/:id/history
+ */
+router.get('/devices/:id/history', async (req, res) => {
+    try {
+        const existing = get(`SELECT id FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
+        let history = [];
+        try {
+            const rows = all(`SELECT * FROM serial_number_history WHERE device_id = ? ORDER BY created_at DESC LIMIT 50`, [req.params.id]);
+            history = Array.isArray(rows) ? rows : [];
+        } catch (_) {
+            // جدول السجل قد يكون غير موجود
+        }
+        res.json({ success: true, data: history });
+    } catch (error) {
+        res.json({ success: true, data: [] });
+    }
+});
+
+/**
+ * POST /api/inventory/devices/:id/transfer
+ */
+router.post('/devices/:id/transfer', async (req, res) => {
+    try {
+        const existing = get(`SELECT id, warehouse_id FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
+        const { warehouse_id, reason } = req.body;
+        if (!warehouse_id) return res.status(400).json({ success: false, error: 'warehouse_id مطلوب' });
+        run(`UPDATE serial_numbers SET warehouse_id = ? WHERE id = ?`, [warehouse_id, req.params.id]);
+        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        res.json({ success: true, data: row });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+module.exports = router;
