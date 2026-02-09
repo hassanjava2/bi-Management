@@ -845,7 +845,7 @@ function InvoiceDetailsContent({ invoiceId, onClose, onCancel, onPrinted }) {
         </div>
         <div className="flex gap-2 flex-wrap">
           <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${type?.color}`}>
-            <type?.icon className="w-3 h-3" />
+            {type?.icon && <type.icon className="w-3 h-3" />}
             {type?.label}
           </span>
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${status?.color}`}>{status?.label}</span>
