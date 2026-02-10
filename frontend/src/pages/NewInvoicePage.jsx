@@ -10,7 +10,7 @@ import {
   Receipt, Search, Plus, Minus, Trash2, User, Phone, MapPin,
   CreditCard, Wallet, Calculator, ArrowLeftRight, Save, Printer,
   X, Check, AlertCircle, Package, ChevronDown, Loader2, ShoppingCart, Building2,
-  Clock
+  Clock, ScanLine, Wrench
 } from 'lucide-react'
 import api from '../services/api'
 import { customersAPI, suppliersAPI } from '../services/api'
@@ -36,6 +36,94 @@ const installmentPlatforms = [
 // تنسيق الأرقام
 const formatNumber = (num) => {
   return new Intl.NumberFormat('ar-IQ').format(Math.round(num || 0))
+}
+
+// مكون البحث عن الأجهزة بالسيريال
+function DeviceSearch({ onSelect }) {
+  const [query, setQuery] = useState('')
+  const [isOpen, setIsOpen] = useState(false)
+  const inputRef = useRef(null)
+  const dropdownRef = useRef(null)
+
+  const { data: searchResults, isLoading } = useQuery({
+    queryKey: ['devices-search', query],
+    queryFn: async () => {
+      if (query.length < 2) return []
+      const res = await api.get(`/inventory/devices?search=${encodeURIComponent(query)}`)
+      const devices = res.data?.data || []
+      // فقط الأجهزة الجاهزة للبيع
+      return devices.filter(d => ['available', 'ready_to_sell', 'ready_for_prep'].includes(d.status))
+    },
+    enabled: query.length >= 2,
+  })
+
+  const results = searchResults || []
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setIsOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleSelect = (device) => {
+    onSelect({
+      id: device.product_id || device.id,
+      product_id: device.product_id,
+      device_id: device.id,
+      serial_number: device.serial_number,
+      name: device.product_name || device.serial_number,
+      group_name: `سيريال: ${device.serial_number}`,
+      buy_price: device.purchase_cost || 0,
+      sale_price: device.selling_price || device.sale_price || 0,
+    })
+    setQuery('')
+    setIsOpen(false)
+    inputRef.current?.focus()
+  }
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <div className="relative">
+        <ScanLine className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500" />
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setIsOpen(true) }}
+          onFocus={() => setIsOpen(true)}
+          placeholder="ابحث بالسيريال (BI-2025-...)"
+          className="w-full pr-10 pl-4 py-3 border-2 border-orange-300 dark:border-orange-600 rounded-xl focus:ring-2 focus:ring-orange-500 text-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+        />
+        {isLoading && <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500 animate-spin" />}
+      </div>
+      {isOpen && results.length > 0 && (
+        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-600 max-h-72 overflow-y-auto">
+          {results.map((device) => (
+            <button key={device.id} type="button" onClick={() => handleSelect(device)}
+              className="w-full px-4 py-3 text-right border-b border-neutral-100 dark:border-neutral-700 last:border-0 flex items-center gap-3 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
+              <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center flex-shrink-0">
+                <ScanLine className="w-5 h-5 text-orange-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-mono font-bold text-neutral-900 dark:text-white">{device.serial_number}</p>
+                <p className="text-sm text-neutral-500">{device.product_name || '—'}</p>
+              </div>
+              <div className="text-left flex-shrink-0">
+                <span className="text-xs px-2 py-1 rounded bg-emerald-100 text-emerald-700">{device.status === 'ready_to_sell' ? 'جاهز' : 'متاح'}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+      {isOpen && query.length >= 2 && results.length === 0 && !isLoading && (
+        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border p-4 text-center">
+          <p className="text-neutral-500 text-sm">لا توجد أجهزة متاحة بهذا السيريال</p>
+        </div>
+      )}
+    </div>
+  )
 }
 
 // مكون البحث عن المنتجات (مع اختصارات لوحة المفاتيح)
@@ -373,18 +461,70 @@ function SupplierSearch({ onSelect }) {
 }
 
 // مكون بند الفاتورة
-function InvoiceItem({ item, index, onUpdate, onRemove, showBuyPrice }) {
+function InvoiceItem({ item, index, onUpdate, onRemove, onAddUpgrade, onRemoveUpgrade, showBuyPrice }) {
   const [isEditing, setIsEditing] = useState(false)
+  const [showUpgradeMenu, setShowUpgradeMenu] = useState(false)
+
+  const upgradeOptions = [
+    { type: 'ram', label: 'ترقية رام', options: [
+      { from: 8, to: 16, cost: 25000, desc: '8GB → 16GB' },
+      { from: 16, to: 32, cost: 40000, desc: '16GB → 32GB' },
+      { from: 8, to: 32, cost: 55000, desc: '8GB → 32GB' },
+    ]},
+    { type: 'ssd', label: 'تغيير هارد', options: [
+      { from: 256, to: 512, cost: 35000, desc: '256GB → 512GB SSD' },
+      { from: 512, to: 1024, cost: 50000, desc: '512GB → 1TB SSD' },
+    ]},
+  ]
 
   return (
+    <>
     <tr className="hover:bg-neutral-50 transition-colors">
       <td className="px-4 py-3 text-center font-medium text-neutral-500">
         {index + 1}
       </td>
       <td className="px-4 py-3">
         <div>
-          <p className="font-medium text-neutral-900">{item.name}</p>
+          <p className="font-medium text-neutral-900 dark:text-white">{item.name}</p>
           <p className="text-sm text-neutral-500">{item.group_name}</p>
+          {item.serial_number && <p className="text-xs font-mono text-orange-600">{item.serial_number}</p>}
+          {/* ترقيات مضافة */}
+          {item.upgrades && item.upgrades.length > 0 && (
+            <div className="mt-1 space-y-1">
+              {item.upgrades.map((u, ui) => (
+                <span key={ui} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs mr-1">
+                  <Wrench className="w-3 h-3" /> {u.desc}
+                  <button type="button" onClick={() => onRemoveUpgrade(index, ui)} className="ml-1 text-purple-500 hover:text-red-500">×</button>
+                </span>
+              ))}
+            </div>
+          )}
+          {/* زر إضافة ترقية */}
+          {!item.is_accessory && (
+            <div className="relative mt-1">
+              <button type="button" onClick={() => setShowUpgradeMenu(!showUpgradeMenu)}
+                className="text-xs text-purple-600 hover:text-purple-800 flex items-center gap-1">
+                <Wrench className="w-3 h-3" /> + ترقية
+              </button>
+              {showUpgradeMenu && (
+                <div className="absolute z-30 top-full right-0 mt-1 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-600 p-2 min-w-[200px]">
+                  {upgradeOptions.map(cat => (
+                    <div key={cat.type}>
+                      <p className="text-xs font-bold text-neutral-500 px-2 py-1">{cat.label}</p>
+                      {cat.options.map((opt, oi) => (
+                        <button key={oi} type="button"
+                          onClick={() => { onAddUpgrade(index, { type: cat.type, ...opt }); setShowUpgradeMenu(false) }}
+                          className="w-full text-right px-3 py-2 text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg flex justify-between">
+                          <span>{opt.desc}</span>
+                          <span className="text-purple-600 font-medium">+{formatNumber(opt.cost)}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </td>
       <td className="px-4 py-3">
@@ -456,6 +596,7 @@ function InvoiceItem({ item, index, onUpdate, onRemove, showBuyPrice }) {
         </button>
       </td>
     </tr>
+    </>
   )
 }
 
@@ -828,6 +969,14 @@ export default function NewInvoicePage() {
                 <Package className="w-5 h-5 text-primary-600" />
                 إضافة منتجات
               </h3>
+              {/* بحث بالسيريال (للأجهزة الفردية) */}
+              <DeviceSearch onSelect={addProduct} />
+              <div className="my-3 flex items-center gap-3">
+                <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+                <span className="text-xs text-neutral-400">أو بحث بالمنتج</span>
+                <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+              </div>
+              {/* بحث بالمنتج (للأصناف) */}
               <ProductSearch onSelect={addProduct} productSearchInputRef={productSearchInputRef} />
             </div>
 
@@ -860,6 +1009,8 @@ export default function NewInvoicePage() {
                           index={index}
                           onUpdate={updateItem}
                           onRemove={removeItem}
+                          onAddUpgrade={addUpgrade}
+                          onRemoveUpgrade={removeUpgrade}
                           showBuyPrice={showBuyPrice}
                         />
                       ))}

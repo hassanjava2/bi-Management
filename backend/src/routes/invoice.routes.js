@@ -378,21 +378,53 @@ router.post('/', (req, res, next) => {
             req.user?.id || null
         ]);
 
-        // Insert items
+        // Insert items + auto-generate serials for purchase invoices
         for (const item of items) {
             const itemId = generateId();
             run(`
                 INSERT INTO invoice_items (
-                    id, invoice_id, product_id, quantity, unit_price, total
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                    id, invoice_id, product_id, quantity, unit_price, total, serial_number
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
             `, [
                 itemId,
                 id,
                 item.product_id,
                 item.quantity || 1,
                 item.price || item.unit_price || 0,
-                item.total || (item.quantity * (item.price || item.unit_price || 0))
+                item.total || (item.quantity * (item.price || item.unit_price || 0)),
+                item.serial_number || null
             ]);
+
+            // Auto-generate serials for purchase invoices
+            if (type === 'purchase') {
+                const qty = item.quantity || 1;
+                for (let s = 0; s < qty; s++) {
+                    try {
+                        const serialId = generateId();
+                        const year = new Date().getFullYear();
+                        const lastSerial = get(`SELECT serial_number FROM serial_numbers WHERE serial_number LIKE ? ORDER BY serial_number DESC LIMIT 1`, [`BI-${year}-%`]);
+                        let nextNum = 1;
+                        if (lastSerial && lastSerial.serial_number) {
+                            const parts = lastSerial.serial_number.split('-');
+                            const lastNum = parseInt(parts[parts.length - 1]);
+                            if (!isNaN(lastNum)) nextNum = lastNum + 1;
+                        }
+                        const serial = `BI-${year}-${String(nextNum).padStart(6, '0')}`;
+                        run(`INSERT INTO serial_numbers (id, serial_number, product_id, purchase_cost, supplier_id, status, warehouse_id, created_at, created_by)
+                             VALUES (?, ?, ?, ?, ?, 'new', 'inspection', datetime('now'), ?)`,
+                            [serialId, serial, item.product_id, item.price || item.unit_price || 0, supplier_id || null, req.user?.id]);
+                    } catch (serialErr) {
+                        console.error('[Invoices] Auto-serial error:', serialErr.message);
+                    }
+                }
+            }
+
+            // Mark device as sold if device_id provided (sale invoices)
+            if (item.device_id && (type === 'sale' || type === 'sale_credit' || type === 'sale_installment')) {
+                try {
+                    run(`UPDATE serial_numbers SET status = 'sold', sale_invoice_id = ?, sale_date = date('now') WHERE id = ?`, [id, item.device_id]);
+                } catch (e) { /* device might not exist */ }
+            }
         }
 
         // Get created invoice
