@@ -24,6 +24,7 @@ const invoiceTypes = {
   exchange: { name: 'استبدال', icon: ArrowLeftRight, color: 'amber' },
   purchase: { name: 'شراء', icon: ShoppingCart, color: 'amber' },
   quote: { name: 'عرض أسعار', icon: Receipt, color: 'cyan' },
+  scrap: { name: 'تالف/مستهلك', icon: Package, color: 'red' },
 }
 
 // منصات الأقساط
@@ -476,6 +477,10 @@ export default function NewInvoicePage() {
   const [notes, setNotes] = useState('')
   const [platform, setPlatform] = useState('aqsaty')
   const [showBuyPrice, setShowBuyPrice] = useState(false)
+  
+  // تعدد العملات
+  const [currency, setCurrency] = useState('IQD')
+  const [exchangeRate, setExchangeRate] = useState(1480) // سعر صرف الدولار
 
   // الإكسسوارات القياسية (تُضاف تلقائياً مع كل لابتوب)
   const standardAccessories = [
@@ -627,6 +632,7 @@ export default function NewInvoicePage() {
       installment: 'sale',
       exchange: 'exchange',
       quote: 'sale',
+      scrap: 'scrap',
     }
     return {
       type: typeMap[invoiceType] || 'sale',
@@ -646,6 +652,8 @@ export default function NewInvoicePage() {
       platform_fee: platformFee,
       down_payment: downPayment,
       notes,
+      currency,
+      exchange_rate: currency === 'USD' ? exchangeRate : null,
       sub_type: invoiceType === 'quote' ? 'quotation' : undefined,
       ...overrides,
     }
@@ -918,6 +926,27 @@ export default function NewInvoicePage() {
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center">
                     ابحث واختر عميلاً من القائمة، أو اترك فارغاً للعميل النقدي
                   </p>
+                </div>
+              )}
+            </div>
+
+            {/* العملة */}
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-bold text-neutral-900 dark:text-white mb-4">العملة</h3>
+              <div className="flex gap-2 mb-3">
+                {[{ id: 'IQD', label: 'د.ع', name: 'دينار عراقي' }, { id: 'USD', label: '$', name: 'دولار أمريكي' }].map(c => (
+                  <button key={c.id} type="button" onClick={() => setCurrency(c.id)}
+                    className={`flex-1 p-3 rounded-xl border-2 text-center transition-all ${currency === c.id ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-neutral-200 dark:border-neutral-600'}`}>
+                    <span className="text-lg font-bold">{c.label}</span>
+                    <p className="text-xs text-neutral-500">{c.name}</p>
+                  </button>
+                ))}
+              </div>
+              {currency === 'USD' && (
+                <div>
+                  <label className="block text-xs text-neutral-500 mb-1">سعر الصرف (1$ = ؟ د.ع)</label>
+                  <input type="number" value={exchangeRate} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl text-center font-medium" />
                 </div>
               )}
             </div>

@@ -4,7 +4,7 @@
  */
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Settings, Save, Loader2 } from 'lucide-react'
+import { Settings, Save, Loader2, Printer, Building2, DollarSign } from 'lucide-react'
 import PageShell from '../components/common/PageShell'
 import Button from '../components/common/Button'
 import FormField from '../components/common/FormField'
@@ -58,6 +58,10 @@ export default function SettingsPage() {
       description="إعدادات النظام حسب الفئة"
     >
       <div className="space-y-6">
+        {/* إعدادات الطباعة */}
+        <PrintSettings />
+
+        {/* إعدادات النظام */}
         {categories.length === 0 ? (
           <Card>
             <p className="text-neutral-500 dark:text-neutral-400 text-center py-8">لا توجد إعدادات مسجلة</p>
@@ -101,5 +105,84 @@ export default function SettingsPage() {
         )}
       </div>
     </PageShell>
+  )
+}
+
+// إعدادات الطباعة
+function PrintSettings() {
+  const toast = useToast()
+  const [printConfig, setPrintConfig] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('bi-print-config') || '{}')
+    } catch { return {} }
+  })
+
+  const updateConfig = (key, value) => {
+    const newConfig = { ...printConfig, [key]: value }
+    setPrintConfig(newConfig)
+    localStorage.setItem('bi-print-config', JSON.stringify(newConfig))
+  }
+
+  const handleSave = () => {
+    localStorage.setItem('bi-print-config', JSON.stringify(printConfig))
+    toast.success('تم حفظ إعدادات الطباعة')
+  }
+
+  const field = (label, key, placeholder = '', type = 'text') => (
+    <div>
+      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">{label}</label>
+      <input
+        type={type}
+        value={printConfig[key] || ''}
+        onChange={(e) => updateConfig(key, e.target.value)}
+        placeholder={placeholder}
+        className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
+      />
+    </div>
+  )
+
+  return (
+    <Card padding>
+      <div className="flex items-center gap-2 mb-4">
+        <Printer className="w-5 h-5 text-primary-600" />
+        <h3 className="font-bold text-lg">إعدادات الطباعة</h3>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          <h4 className="font-medium text-sm text-neutral-500 flex items-center gap-2">
+            <Building2 className="w-4 h-4" /> معلومات الشركة
+          </h4>
+          {field('اسم الشركة', 'company_name', 'BI Company')}
+          {field('العنوان', 'company_address', 'بغداد، العراق')}
+          {field('رقم الهاتف', 'company_phone', '+964 XXX XXX XXXX')}
+          {field('البريد الإلكتروني', 'company_email', 'info@bicompany.com')}
+        </div>
+        <div className="space-y-4">
+          <h4 className="font-medium text-sm text-neutral-500 flex items-center gap-2">
+            <DollarSign className="w-4 h-4" /> إعدادات مالية
+          </h4>
+          {field('العملة الافتراضية', 'default_currency', 'IQD')}
+          {field('سعر صرف الدولار', 'usd_exchange_rate', '1480', 'number')}
+          {field('نسبة الضريبة %', 'tax_rate', '0', 'number')}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">قالب الطباعة الافتراضي</label>
+            <select
+              value={printConfig.default_template || 'a4'}
+              onChange={(e) => updateConfig('default_template', e.target.value)}
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
+            >
+              <option value="a4">A4 كامل</option>
+              <option value="thermal">حراري (80mm)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div className="flex justify-end mt-4 pt-4 border-t">
+        <Button onClick={handleSave}>
+          <Save className="w-4 h-4 ml-2" />
+          حفظ الإعدادات
+        </Button>
+      </div>
+    </Card>
   )
 }
