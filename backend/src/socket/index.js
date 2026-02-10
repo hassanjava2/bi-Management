@@ -9,10 +9,12 @@ const { get } = require('../config/database');
 const notificationService = require('../services/notification.service');
 
 function initSocket(httpServer) {
+    const corsOrigin = process.env.CORS_ORIGIN === '*' ? true : (process.env.CORS_ORIGIN || 'http://localhost:5173');
     const io = new Server(httpServer, {
         cors: {
-            origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-            methods: ['GET', 'POST']
+            origin: corsOrigin,
+            methods: ['GET', 'POST'],
+            credentials: true
         }
     });
 
