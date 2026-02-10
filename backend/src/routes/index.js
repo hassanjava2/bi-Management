@@ -38,6 +38,7 @@ const companiesRoutes = require('./companies.routes');
 const fixedAssetsRoutes = require('./fixed-assets.routes');
 const calculatorRoutes = require('./calculator.routes');
 const sharesRoutes = require('./shares.routes');
+const mediaRoutes = require('./media.routes');
 
 // API Info (root route)
 router.get('/', (req, res) => {
@@ -103,6 +104,7 @@ router.use('/companies', companiesRoutes);
 router.use('/fixed-assets', fixedAssetsRoutes);
 router.use('/calculator', calculatorRoutes);
 router.use('/shares', sharesRoutes);
+router.use('/media', mediaRoutes);
 
 // Sales route (alias for invoices)
 router.use('/sales', invoiceRoutes);

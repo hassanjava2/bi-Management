@@ -11,6 +11,7 @@ import Button from '../components/common/Button'
 import DataTable from '../components/common/DataTable'
 import Spinner from '../components/common/Spinner'
 import { reportsAPI } from '../services/api'
+import api from '../services/api'
 
 const REPORT_TYPES = [
   { id: 'sales', label: 'تقرير المبيعات', exportType: 'sales' },
@@ -18,6 +19,9 @@ const REPORT_TYPES = [
   { id: 'top-sellers', label: 'أفضل البائعين', exportType: null },
   { id: 'profitability', label: 'الربحية', exportType: null },
   { id: 'cash-flow', label: 'التدفق النقدي', exportType: null },
+  { id: 'profit-by-product', label: 'ربح بالمنتج', exportType: null },
+  { id: 'aging-report', label: 'أعمار الديون', exportType: null },
+  { id: 'employee-performance', label: 'أداء الموظفين', exportType: null },
   { id: 'hr-summary', label: 'أداء HR', exportType: null },
   { id: 'customers', label: 'العملاء', exportType: 'customers' },
   { id: 'inventory', label: 'المخزون', exportType: 'inventory' },
@@ -186,11 +190,150 @@ export default function ReportsPage() {
               </div>
             </div>
           )}
-          {!isLoading && !['profitability', 'cash-flow', 'hr-summary'].includes(selectedReport) && (
+          {!isLoading && selectedReport === 'profit-by-product' && <ProfitByProductReport params={params} />}
+          {!isLoading && selectedReport === 'aging-report' && <AgingReport />}
+          {!isLoading && selectedReport === 'employee-performance' && <EmployeePerformanceReport month={month} />}
+          {!isLoading && !['profitability', 'cash-flow', 'hr-summary', 'profit-by-product', 'aging-report', 'employee-performance'].includes(selectedReport) && (
             <p className="text-neutral-500 dark:text-neutral-400 py-4">اختر التقرير والفترة ثم استخدم «تصدير CSV» لتحميل البيانات.</p>
           )}
         </Card>
       </div>
     </PageShell>
+  )
+}
+
+// تقرير الربح حسب المنتج
+function ProfitByProductReport({ params }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ['report-profit-product', params],
+    queryFn: () => api.get('/reports/profit-by-product', { params }).then(r => r.data?.data || []),
+  })
+  const products = Array.isArray(data) ? data : []
+  const fmt = (n) => new Intl.NumberFormat('ar-IQ').format(Math.round(n || 0))
+
+  if (isLoading) return <div className="flex justify-center py-8"><Spinner size="md" /></div>
+  if (products.length === 0) return <p className="text-neutral-500 py-4">لا توجد بيانات</p>
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="bg-neutral-50 dark:bg-neutral-700">
+          <tr>
+            <th className="px-3 py-2 text-right">المنتج</th>
+            <th className="px-3 py-2 text-center">المباع</th>
+            <th className="px-3 py-2 text-center">الإيرادات</th>
+            <th className="px-3 py-2 text-center">التكلفة</th>
+            <th className="px-3 py-2 text-center">الربح</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {products.map((p, i) => (
+            <tr key={p.id || i} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/30">
+              <td className="px-3 py-2 font-medium">{p.name || '—'}</td>
+              <td className="px-3 py-2 text-center">{p.total_sold || 0}</td>
+              <td className="px-3 py-2 text-center">{fmt(p.total_revenue)}</td>
+              <td className="px-3 py-2 text-center">{fmt(p.total_cost)}</td>
+              <td className={`px-3 py-2 text-center font-bold ${(p.profit || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{fmt(p.profit)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// تقرير أعمار الديون
+function AgingReport() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['report-aging'],
+    queryFn: () => api.get('/reports/aging-report').then(r => r.data?.data || {}),
+  })
+  const customers = data?.customers || []
+  const totals = data?.totals || {}
+  const fmt = (n) => new Intl.NumberFormat('ar-IQ').format(Math.round(n || 0))
+
+  if (isLoading) return <div className="flex justify-center py-8"><Spinner size="md" /></div>
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg text-center">
+          <p className="text-xs text-neutral-500">إجمالي المستحق</p><p className="font-bold text-lg">{fmt(totals.total_receivable)}</p>
+        </div>
+        <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
+          <p className="text-xs text-red-600">متأخر</p><p className="font-bold text-lg text-red-600">{fmt(totals.total_overdue)}</p>
+        </div>
+        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-center">
+          <p className="text-xs text-amber-600">يستحق خلال 30 يوم</p><p className="font-bold text-lg text-amber-600">{fmt(totals.total_due_30)}</p>
+        </div>
+        <div className="p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg text-center">
+          <p className="text-xs text-neutral-500">عدد العملاء</p><p className="font-bold text-lg">{totals.customers_count || 0}</p>
+        </div>
+      </div>
+      {customers.length > 0 && (
+        <table className="w-full text-sm">
+          <thead className="bg-neutral-50 dark:bg-neutral-700">
+            <tr>
+              <th className="px-3 py-2 text-right">العميل</th>
+              <th className="px-3 py-2 text-center">فواتير</th>
+              <th className="px-3 py-2 text-center">المتبقي</th>
+              <th className="px-3 py-2 text-center text-red-600">متأخر</th>
+              <th className="px-3 py-2 text-center text-amber-600">30 يوم</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {customers.map((c, i) => (
+              <tr key={c.id || i}>
+                <td className="px-3 py-2 font-medium">{c.name}</td>
+                <td className="px-3 py-2 text-center">{c.pending_invoices}</td>
+                <td className="px-3 py-2 text-center font-bold">{fmt(c.total_remaining)}</td>
+                <td className="px-3 py-2 text-center text-red-600">{fmt(c.overdue_amount)}</td>
+                <td className="px-3 py-2 text-center text-amber-600">{fmt(c.due_30_days)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+
+// تقرير أداء الموظفين
+function EmployeePerformanceReport({ month }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ['report-performance', month],
+    queryFn: () => api.get(`/reports/employee-performance?month=${month}`).then(r => r.data?.data || {}),
+  })
+  const employees = data?.employees || []
+  const fmt = (n) => new Intl.NumberFormat('ar-IQ').format(Math.round(n || 0))
+
+  if (isLoading) return <div className="flex justify-center py-8"><Spinner size="md" /></div>
+  if (employees.length === 0) return <p className="text-neutral-500 py-4">لا توجد بيانات</p>
+
+  return (
+    <table className="w-full text-sm">
+      <thead className="bg-neutral-50 dark:bg-neutral-700">
+        <tr>
+          <th className="px-3 py-2 text-right">الموظف</th>
+          <th className="px-3 py-2 text-center">مبيعات</th>
+          <th className="px-3 py-2 text-center">فواتير</th>
+          <th className="px-3 py-2 text-center">مهام مكتملة</th>
+          <th className="px-3 py-2 text-center">حضور</th>
+          <th className="px-3 py-2 text-center">تأخر</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y">
+        {employees.map((e, i) => (
+          <tr key={e.id || i}>
+            <td className="px-3 py-2 font-medium">{e.full_name}</td>
+            <td className="px-3 py-2 text-center font-bold text-emerald-600">{fmt(e.sales_total)}</td>
+            <td className="px-3 py-2 text-center">{e.invoices_created || 0}</td>
+            <td className="px-3 py-2 text-center">{e.tasks_completed || 0}/{e.tasks_total || 0}</td>
+            <td className="px-3 py-2 text-center text-emerald-600">{e.present_days || 0}</td>
+            <td className="px-3 py-2 text-center text-amber-600">{e.late_days || 0}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   )
 }
