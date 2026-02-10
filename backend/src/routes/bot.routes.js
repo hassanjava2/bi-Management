@@ -436,7 +436,7 @@ router.get('/worker/stats', auth, async (req, res) => {
  */
 router.get('/feature-report', auth, async (req, res) => {
     try {
-        const report = get(`
+        const report = await get(`
             SELECT * FROM bot_logs 
             WHERE action = 'feature_test' 
             ORDER BY created_at DESC 
@@ -464,7 +464,7 @@ router.get('/logs', auth, async (req, res) => {
         const { all } = require('../config/database');
         const limit = parseInt(req.query.limit) || 100;
         
-        const logs = all(`
+        const logs = await all(`
             SELECT * FROM bot_logs 
             ORDER BY created_at DESC 
             LIMIT ?

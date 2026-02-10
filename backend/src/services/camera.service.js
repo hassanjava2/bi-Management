@@ -18,7 +18,7 @@ class CameraService {
     async addCamera(data) {
         const id = generateId();
 
-        run(`
+        await run(`
             INSERT INTO cameras (id, name, rtsp_url, location, detection_config, is_active)
             VALUES (?, ?, ?, ?, ?, 1)
         `, [
@@ -47,21 +47,21 @@ class CameraService {
     /**
      * Get camera by ID
      */
-    getCamera(id) {
-        return get(`SELECT * FROM cameras WHERE id = ?`, [id]);
+    async getCamera(id) {
+        return await get(`SELECT * FROM cameras WHERE id = ?`, [id]);
     }
 
     /**
      * List all cameras
      */
-    listCameras() {
-        return all(`SELECT * FROM cameras ORDER BY created_at DESC`);
+    async listCameras() {
+        return await all(`SELECT * FROM cameras ORDER BY created_at DESC`);
     }
 
     /**
      * Update camera
      */
-    updateCamera(id, data) {
+    async updateCamera(id, data) {
         const updates = [];
         const params = [];
 
@@ -89,7 +89,7 @@ class CameraService {
         params.push(id);
 
         if (updates.length > 0) {
-            run(`UPDATE cameras SET ${updates.join(', ')} WHERE id = ?`, params);
+            await run(`UPDATE cameras SET ${updates.join(', ')} WHERE id = ?`, params);
         }
 
         return this.getCamera(id);
@@ -98,8 +98,8 @@ class CameraService {
     /**
      * Delete camera
      */
-    deleteCamera(id) {
-        run(`DELETE FROM cameras WHERE id = ?`, [id]);
+    async deleteCamera(id) {
+        await run(`DELETE FROM cameras WHERE id = ?`, [id]);
         
         // Stop analysis on Camera AI
         try {
@@ -160,10 +160,10 @@ class CameraService {
     /**
      * Save detection from Camera AI (webhook)
      */
-    saveDetection(data) {
+    async saveDetection(data) {
         const id = generateId();
 
-        run(`
+        await run(`
             INSERT INTO camera_detections (
                 id, camera_id, detection_type, severity, location,
                 image_path, task_created, task_id
@@ -179,14 +179,14 @@ class CameraService {
             data.task_id
         ]);
 
-        return get(`SELECT * FROM camera_detections WHERE id = ?`, [id]);
+        return await get(`SELECT * FROM camera_detections WHERE id = ?`, [id]);
     }
 
     /**
      * Get detections for camera
      */
-    getDetections(cameraId, limit = 50) {
-        return all(`
+    async getDetections(cameraId, limit = 50) {
+        return await all(`
             SELECT * FROM camera_detections 
             WHERE camera_id = ?
             ORDER BY created_at DESC
@@ -197,8 +197,8 @@ class CameraService {
     /**
      * Get all recent detections
      */
-    getAllDetections(limit = 100) {
-        return all(`
+    async getAllDetections(limit = 100) {
+        return await all(`
             SELECT cd.*, c.name as camera_name, c.location as camera_location
             FROM camera_detections cd
             JOIN cameras c ON cd.camera_id = c.id
@@ -210,22 +210,22 @@ class CameraService {
     /**
      * Get detection statistics
      */
-    getStatistics() {
-        const stats = get(`
+    async getStatistics() {
+        const stats = await get(`
             SELECT 
                 COUNT(*) as total_detections,
                 SUM(CASE WHEN detection_type = 'mess' THEN 1 ELSE 0 END) as mess_detections,
                 SUM(CASE WHEN detection_type = 'idle' THEN 1 ELSE 0 END) as idle_detections,
                 SUM(CASE WHEN task_created = 1 THEN 1 ELSE 0 END) as tasks_created
             FROM camera_detections
-            WHERE created_at >= datetime('now', '-7 days')
+            WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'
         `);
 
-        const byCamera = all(`
+        const byCamera = await all(`
             SELECT c.id, c.name, COUNT(cd.id) as detection_count
             FROM cameras c
             LEFT JOIN camera_detections cd ON c.id = cd.camera_id
-            WHERE cd.created_at >= datetime('now', '-7 days') OR cd.id IS NULL
+            WHERE cd.created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days' OR cd.id IS NULL
             GROUP BY c.id
         `);
 

@@ -61,10 +61,10 @@ class SecurityReportService {
             });
         }
 
-        const securityEvents = all(`
+        const securityEvents = await all(`
             SELECT event_type, severity, COUNT(*) as count
             FROM security_events
-            WHERE created_at >= datetime('now', '-7 days')
+            WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'
             GROUP BY event_type, severity
             ORDER BY count DESC
         `);
@@ -85,8 +85,8 @@ class SecurityReportService {
     /**
      * عدد العمليات
      */
-    _countOperations(date) {
-        const result = get(`
+    async _countOperations(date) {
+        const result = await get(`
             SELECT COUNT(*) as count FROM audit_logs
             WHERE date(created_at) = ?
         `, [date]);
@@ -96,8 +96,8 @@ class SecurityReportService {
     /**
      * محاولات الدخول الفاشلة
      */
-    _countFailedLogins(date) {
-        const result = get(`
+    async _countFailedLogins(date) {
+        const result = await get(`
             SELECT COUNT(*) as count FROM audit_logs
             WHERE action = 'LOGIN_FAILED'
             AND date(created_at) = ?
@@ -108,8 +108,8 @@ class SecurityReportService {
     /**
      * تسجيلات الدخول الناجحة
      */
-    _countSuccessLogins(date) {
-        const result = get(`
+    async _countSuccessLogins(date) {
+        const result = await get(`
             SELECT COUNT(*) as count FROM audit_logs
             WHERE action = 'LOGIN_SUCCESS'
             AND date(created_at) = ?
@@ -120,8 +120,8 @@ class SecurityReportService {
     /**
      * الوصول للبيانات الحساسة
      */
-    _countSensitiveAccess(date) {
-        const result = get(`
+    async _countSensitiveAccess(date) {
+        const result = await get(`
             SELECT COUNT(*) as count FROM audit_logs
             WHERE action = 'VIEW_SENSITIVE'
             AND date(created_at) = ?
@@ -132,8 +132,8 @@ class SecurityReportService {
     /**
      * أحداث الأمان
      */
-    _getSecurityEvents(date) {
-        return all(`
+    async _getSecurityEvents(date) {
+        return await all(`
             SELECT se.*, u.full_name as user_name
             FROM security_events se
             LEFT JOIN users u ON se.user_id = u.id
@@ -145,8 +145,8 @@ class SecurityReportService {
     /**
      * أكثر المستخدمين نشاطاً
      */
-    _getTopActiveUsers(date, limit = 10) {
-        return all(`
+    async _getTopActiveUsers(date, limit = 10) {
+        return await all(`
             SELECT al.user_id, u.full_name, u.email, COUNT(*) as operations
             FROM audit_logs al
             LEFT JOIN users u ON al.user_id = u.id
@@ -161,8 +161,8 @@ class SecurityReportService {
     /**
      * العمليات حسب النوع
      */
-    _getOperationsByType(date) {
-        return all(`
+    async _getOperationsByType(date) {
+        return await all(`
             SELECT action, COUNT(*) as count
             FROM audit_logs
             WHERE date(created_at) = ?
@@ -174,18 +174,18 @@ class SecurityReportService {
     /**
      * المستخدمين المشبوهين
      */
-    _getSuspiciousUsers(days = 7) {
-        return all(`
+    async _getSuspiciousUsers(days = 7) {
+        return await all(`
             SELECT se.user_id, u.full_name, u.email, 
                    COUNT(*) as event_count,
-                   GROUP_CONCAT(DISTINCT se.event_type) as event_types
+                   string_agg(DISTINCT se.event_type, ', ') as event_types
             FROM security_events se
             LEFT JOIN users u ON se.user_id = u.id
-            WHERE se.created_at >= datetime('now', '-' || ? || ' days')
+            WHERE se.created_at >= CURRENT_TIMESTAMP - (? * INTERVAL '1 day')
             AND se.severity IN ('warning', 'high', 'critical')
-            GROUP BY se.user_id
-            HAVING event_count >= 3
-            ORDER BY event_count DESC
+            GROUP BY se.user_id, u.full_name, u.email
+            HAVING COUNT(*) >= 3
+            ORDER BY COUNT(*) DESC
         `, [days]);
     }
 
@@ -238,7 +238,7 @@ class SecurityReportService {
     /**
      * ملخص سريع للوحة التحكم
      */
-    getDashboardStats() {
+    async getDashboardStats() {
         const today = new Date().toISOString().split('T')[0];
 
         return {
@@ -247,11 +247,11 @@ class SecurityReportService {
                 logins: this._countSuccessLogins(today),
                 failed_logins: this._countFailedLogins(today)
             },
-            unresolved_events: get(`
+            unresolved_events: await get(`
                 SELECT COUNT(*) as count FROM security_events
                 WHERE resolved = 0
             `)?.count || 0,
-            critical_events: get(`
+            critical_events: await get(`
                 SELECT COUNT(*) as count FROM security_events
                 WHERE severity = 'critical' AND resolved = 0
             `)?.count || 0

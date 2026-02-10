@@ -18,14 +18,14 @@ const { generateId } = require('../utils/helpers');
 /**
  * Register device token
  */
-function registerDevice(userId, token, deviceType = 'android') {
+async function registerDevice(userId, token, deviceType = 'android') {
     const id = generateId();
     
     // Remove existing token for this device
-    run(`DELETE FROM device_tokens WHERE token = ?`, [token]);
+    await run(`DELETE FROM device_tokens WHERE token = ?`, [token]);
     
     // Insert new token
-    run(`
+    await run(`
         INSERT INTO device_tokens (id, user_id, token, device_type)
         VALUES (?, ?, ?, ?)
     `, [id, userId, token, deviceType]);
@@ -36,16 +36,16 @@ function registerDevice(userId, token, deviceType = 'android') {
 /**
  * Unregister device token
  */
-function unregisterDevice(token) {
-    run(`DELETE FROM device_tokens WHERE token = ?`, [token]);
+async function unregisterDevice(token) {
+    await run(`DELETE FROM device_tokens WHERE token = ?`, [token]);
     return { success: true };
 }
 
 /**
  * Get user device tokens
  */
-function getUserDevices(userId) {
-    return all(`
+async function getUserDevices(userId) {
+    return await all(`
         SELECT token, device_type FROM device_tokens WHERE user_id = ?
     `, [userId]);
 }

@@ -53,7 +53,7 @@ class GoalsService {
     /**
      * منح نقاط للموظف
      */
-    awardPoints(userId, reason, customPoints = null) {
+    async awardPoints(userId, reason, customPoints = null) {
         const points = customPoints !== null ? customPoints : (POINTS_CONFIG[reason] || 0);
         
         if (points === 0) return null;
@@ -68,13 +68,13 @@ class GoalsService {
         };
 
         // إضافة للسجل
-        run(`
+        await run(`
             INSERT INTO point_transactions (id, user_id, points, reason, description, created_at)
             VALUES (?, ?, ?, ?, ?, ?)
         `, [transaction.id, userId, points, reason, transaction.description, transaction.created_at]);
 
         // تحديث مجموع النقاط
-        run(`
+        await run(`
             UPDATE users SET 
                 total_points = COALESCE(total_points, 0) + ?,
                 monthly_points = COALESCE(monthly_points, 0) + ?
@@ -101,7 +101,7 @@ class GoalsService {
     /**
      * خصم نقاط
      */
-    deductPoints(userId, reason, customPoints = null, adminNote = null) {
+    async deductPoints(userId, reason, customPoints = null, adminNote = null) {
         const points = customPoints !== null ? -Math.abs(customPoints) : (POINTS_CONFIG[reason] || 0);
         
         if (points === 0) return null;
@@ -116,12 +116,12 @@ class GoalsService {
             created_at: now()
         };
 
-        run(`
+        await run(`
             INSERT INTO point_transactions (id, user_id, points, reason, description, admin_note, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `, [transaction.id, userId, points, reason, transaction.description, adminNote, transaction.created_at]);
 
-        run(`
+        await run(`
             UPDATE users SET 
                 total_points = MAX(0, COALESCE(total_points, 0) + ?),
                 monthly_points = MAX(0, COALESCE(monthly_points, 0) + ?)
@@ -134,8 +134,8 @@ class GoalsService {
     /**
      * جلب نقاط موظف
      */
-    getUserPoints(userId) {
-        const user = get(`
+    async getUserPoints(userId) {
+        const user = await get(`
             SELECT id, full_name, total_points, monthly_points, current_level
             FROM users WHERE id = ?
         `, [userId]);
@@ -159,8 +159,8 @@ class GoalsService {
     /**
      * جلب سجل النقاط
      */
-    getPointsHistory(userId, limit = 20, offset = 0) {
-        return all(`
+    async getPointsHistory(userId, limit = 20, offset = 0) {
+        return await all(`
             SELECT * FROM point_transactions 
             WHERE user_id = ? 
             ORDER BY created_at DESC 
@@ -171,7 +171,7 @@ class GoalsService {
     /**
      * لوحة المتصدرين
      */
-    getLeaderboard(period = 'monthly', departmentId = null, limit = 10) {
+    async getLeaderboard(period = 'monthly', departmentId = null, limit = 10) {
         // Whitelist valid columns to prevent SQL injection
         const validColumns = ['monthly_points', 'total_points'];
         const pointsColumn = period === 'monthly' ? 'monthly_points' : 'total_points';
@@ -204,7 +204,7 @@ class GoalsService {
         query += ` ORDER BY u.${pointsColumn} DESC LIMIT ?`;
         params.push(safeLimit);
 
-        const users = all(query, params);
+        const users = await all(query, params);
 
         return users.map((user, index) => ({
             rank: index + 1,
@@ -216,15 +216,15 @@ class GoalsService {
     /**
      * إحصائيات الموظف
      */
-    getUserStats(userId, period = 'month') {
+    async getUserStats(userId, period = 'month') {
         let dateFilter = '';
         if (period === 'week') {
-            dateFilter = `AND created_at >= date('now', '-7 days')`;
+            dateFilter = `AND created_at >= CURRENT_DATE - INTERVAL '7 days'`;
         } else if (period === 'month') {
-            dateFilter = `AND created_at >= date('now', '-30 days')`;
+            dateFilter = `AND created_at >= CURRENT_DATE - INTERVAL '30 days'`;
         }
 
-        const stats = get(`
+        const stats = await get(`
             SELECT 
                 SUM(CASE WHEN points > 0 THEN points ELSE 0 END) as earned,
                 SUM(CASE WHEN points < 0 THEN ABS(points) ELSE 0 END) as lost,
@@ -234,7 +234,7 @@ class GoalsService {
             WHERE user_id = ? ${dateFilter}
         `, [userId]);
 
-        const topReasons = all(`
+        const topReasons = await all(`
             SELECT reason, SUM(points) as total_points, COUNT(*) as count
             FROM point_transactions 
             WHERE user_id = ? AND points > 0 ${dateFilter}
@@ -256,9 +256,9 @@ class GoalsService {
     /**
      * الإنجازات/الشارات
      */
-    getUserBadges(userId) {
+    async getUserBadges(userId) {
         // فحص الإنجازات
-        const user = get(`SELECT * FROM users WHERE id = ?`, [userId]);
+        const user = await get(`SELECT * FROM users WHERE id = ?`, [userId]);
         const stats = this._calculateUserAchievements(userId);
 
         const badges = [];
@@ -317,8 +317,8 @@ class GoalsService {
     /**
      * المكافآت المتاحة للاستبدال
      */
-    getAvailableRewards() {
-        return all(`
+    async getAvailableRewards() {
+        return await all(`
             SELECT * FROM rewards 
             WHERE is_active = 1 AND (quantity IS NULL OR quantity > 0)
             ORDER BY points_required ASC
@@ -328,9 +328,9 @@ class GoalsService {
     /**
      * استبدال نقاط بمكافأة
      */
-    redeemReward(userId, rewardId) {
-        const user = get(`SELECT total_points FROM users WHERE id = ?`, [userId]);
-        const reward = get(`SELECT * FROM rewards WHERE id = ? AND is_active = 1`, [rewardId]);
+    async redeemReward(userId, rewardId) {
+        const user = await get(`SELECT total_points FROM users WHERE id = ?`, [userId]);
+        const reward = await get(`SELECT * FROM rewards WHERE id = ? AND is_active = 1`, [rewardId]);
 
         if (!reward) {
             throw new Error('المكافأة غير متوفرة');
@@ -345,7 +345,7 @@ class GoalsService {
         }
 
         // خصم النقاط
-        run(`
+        await run(`
             UPDATE users SET total_points = total_points - ? WHERE id = ?
         `, [reward.points_required, userId]);
 
@@ -359,18 +359,18 @@ class GoalsService {
             created_at: now()
         };
 
-        run(`
+        await run(`
             INSERT INTO reward_redemptions (id, user_id, reward_id, points_spent, status, created_at)
             VALUES (?, ?, ?, ?, ?, ?)
         `, [redemption.id, userId, rewardId, reward.points_required, 'pending', redemption.created_at]);
 
         // تحديث الكمية
         if (reward.quantity !== null) {
-            run(`UPDATE rewards SET quantity = quantity - 1 WHERE id = ?`, [rewardId]);
+            await run(`UPDATE rewards SET quantity = quantity - 1 WHERE id = ?`, [rewardId]);
         }
 
         // إشعار HR
-        const hrUsers = all(`SELECT id FROM users WHERE role IN ('hr', 'admin')`);
+        const hrUsers = await all(`SELECT id FROM users WHERE role IN ('hr', 'admin')`);
         for (const hr of hrUsers) {
             notificationService.create({
                 user_id: hr.id,
@@ -387,22 +387,22 @@ class GoalsService {
     /**
      * إعادة تعيين النقاط الشهرية (تشغيل أول كل شهر)
      */
-    resetMonthlyPoints() {
+    async resetMonthlyPoints() {
         // أرشفة النقاط الشهرية
-        run(`
+        await run(`
             INSERT INTO monthly_points_archive (id, user_id, month, year, points, created_at)
             SELECT 
-                lower(hex(randomblob(16))),
+                lower(encode(gen_random_bytes(16), 'hex')),
                 id,
-                strftime('%m', 'now', '-1 month'),
-                strftime('%Y', 'now', '-1 month'),
+                to_char(CURRENT_DATE - INTERVAL '1 month', 'MM'),
+                to_char(CURRENT_DATE - INTERVAL '1 month', 'YYYY'),
                 monthly_points,
                 CURRENT_TIMESTAMP
             FROM users WHERE monthly_points > 0
         `);
 
         // تصفير
-        run(`UPDATE users SET monthly_points = 0`);
+        await run(`UPDATE users SET monthly_points = 0`);
 
         console.log('[Goals] Monthly points reset completed');
     }
@@ -423,12 +423,12 @@ class GoalsService {
         return LEVELS.find(l => l.level === currentLevelNum + 1) || null;
     }
 
-    _checkLevelUp(userId) {
-        const user = get(`SELECT total_points, current_level FROM users WHERE id = ?`, [userId]);
+    async _checkLevelUp(userId) {
+        const user = await get(`SELECT total_points, current_level FROM users WHERE id = ?`, [userId]);
         const newLevel = this._getLevel(user.total_points || 0);
 
         if (newLevel.level > (user.current_level || 1)) {
-            run(`UPDATE users SET current_level = ? WHERE id = ?`, [newLevel.level, userId]);
+            await run(`UPDATE users SET current_level = ? WHERE id = ?`, [newLevel.level, userId]);
 
             notificationService.create({
                 user_id: userId,
@@ -466,9 +466,9 @@ class GoalsService {
         return descriptions[reason] || reason;
     }
 
-    _calculateUserAchievements(userId) {
+    async _calculateUserAchievements(userId) {
         // هذه دالة مبسطة - يمكن توسيعها
-        const taskStats = get(`
+        const taskStats = await get(`
             SELECT 
                 COUNT(*) as tasks_completed,
                 SUM(CASE WHEN completed_at < due_date THEN 1 ELSE 0 END) as early_completions

@@ -91,6 +91,15 @@ async function startServer() {
         // Start scheduler for background tasks
         startScheduler();
 
+        // Start AI Task Distribution (event bus + task generator + assignment)
+        try {
+            const aiDistribution = require('./services/ai-distribution/index');
+            aiDistribution.start();
+            console.log('[+] AI Task Distribution started');
+        } catch (e) {
+            console.warn('[!] AI Task Distribution failed to start:', e.message);
+        }
+
         // Start listening
         server.listen(PORT, () => {
             console.log('='.repeat(50));

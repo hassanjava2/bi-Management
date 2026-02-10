@@ -135,7 +135,7 @@ class RealisticWorker {
     /**
      * إنشاء عميل جديد
      */
-    _createCustomer() {
+    async _createCustomer() {
         const id = this._generateId();
         const isCompany = Math.random() > 0.6;
         
@@ -160,9 +160,9 @@ class RealisticWorker {
         // استخدام addresses كـ JSON
         const addresses = JSON.stringify([{ city, area, address: `${area}، ${city}` }]);
         
-        run(`
+        await run(`
             INSERT INTO customers (id, code, name, type, phone, email, addresses, credit_limit, balance, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now'))
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
         `, [id, code, name, isCompany ? 'wholesale' : 'retail', phone, email, addresses,
             isCompany ? 5000000 : 1000000]);
         
@@ -175,7 +175,7 @@ class RealisticWorker {
     /**
      * إنشاء منتج جديد
      */
-    _createProduct() {
+    async _createProduct() {
         const template = this._random(this.data.products);
         const id = this._generateId();
         const code = `PRD-${Date.now().toString().slice(-6)}`;
@@ -186,9 +186,9 @@ class RealisticWorker {
         const costPrice = Math.round(template.cost * priceVariation);
         const sellingPrice = Math.round(template.price * priceVariation);
         
-        run(`
+        await run(`
             INSERT INTO products (id, code, name, description, cost_price, selling_price, quantity, min_quantity, unit, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 5, 'قطعة', datetime('now'))
+            VALUES (?, ?, ?, ?, ?, ?, ?, 5, 'قطعة', CURRENT_TIMESTAMP)
         `, [id, code, template.name, `${template.name} - ${template.category}`, costPrice, sellingPrice, quantity]);
         
         this.stats.productsCreated++;
@@ -200,16 +200,16 @@ class RealisticWorker {
     /**
      * إنشاء فاتورة بيع
      */
-    _createSaleInvoice() {
+    async _createSaleInvoice() {
         // الحصول على عميل
-        let customer = get(`SELECT id, name FROM customers ORDER BY RANDOM() LIMIT 1`);
+        let customer = await get(`SELECT id, name FROM customers ORDER BY RANDOM() LIMIT 1`);
         if (!customer) {
             const newCustomer = this._createCustomer();
             customer = { id: newCustomer.id, name: newCustomer.name };
         }
         
         // الحصول على منتجات
-        const products = all(`SELECT id, name, selling_price, quantity FROM products WHERE quantity > 0 ORDER BY RANDOM() LIMIT ?`, 
+        const products = await all(`SELECT id, name, selling_price, quantity FROM products WHERE quantity > 0 ORDER BY RANDOM() LIMIT ?`, 
             [Math.floor(Math.random() * 3) + 1]);
         
         if (products.length === 0) {
@@ -242,20 +242,20 @@ class RealisticWorker {
         const total = subtotal - discountAmount;
         
         // إنشاء الفاتورة
-        run(`
+        await run(`
             INSERT INTO invoices (id, invoice_number, type, customer_id, subtotal, discount_amount, total, status, payment_status, created_at)
-            VALUES (?, ?, 'sale', ?, ?, ?, ?, 'completed', 'pending', datetime('now'))
+            VALUES (?, ?, 'sale', ?, ?, ?, ?, 'completed', 'pending', CURRENT_TIMESTAMP)
         `, [invoiceId, invoiceNumber, customer.id, subtotal, discountAmount, total]);
         
         // إضافة عناصر الفاتورة
         for (const item of items) {
-            run(`
+            await run(`
                 INSERT INTO invoice_items (id, invoice_id, product_id, quantity, unit_price, total, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             `, [this._generateId(), invoiceId, item.productId, item.quantity, item.price, item.total]);
             
             // تقليل المخزون
-            run(`UPDATE products SET quantity = quantity - ? WHERE id = ?`, [item.quantity, item.productId]);
+            await run(`UPDATE products SET quantity = quantity - ? WHERE id = ?`, [item.quantity, item.productId]);
         }
         
         this.stats.invoicesCreated++;
@@ -273,9 +273,9 @@ class RealisticWorker {
     /**
      * إنشاء فاتورة شراء
      */
-    _createPurchaseInvoice() {
+    async _createPurchaseInvoice() {
         // الحصول على مورد أو إنشاء واحد
-        let supplier = get(`SELECT id, name FROM suppliers ORDER BY RANDOM() LIMIT 1`);
+        let supplier = await get(`SELECT id, name FROM suppliers ORDER BY RANDOM() LIMIT 1`);
         if (!supplier) {
             supplier = this._createSupplier();
         }
@@ -289,30 +289,30 @@ class RealisticWorker {
         const total = quantity * unitCost;
         
         // إنشاء فاتورة الشراء
-        run(`
+        await run(`
             INSERT INTO invoices (id, invoice_number, type, supplier_id, subtotal, total, status, payment_status, created_at)
-            VALUES (?, ?, 'purchase', ?, ?, ?, 'completed', 'pending', datetime('now'))
+            VALUES (?, ?, 'purchase', ?, ?, ?, 'completed', 'pending', CURRENT_TIMESTAMP)
         `, [invoiceId, invoiceNumber, supplier.id, total, total]);
         
         // إضافة أو تحديث المنتج
-        let product = get(`SELECT id FROM products WHERE name = ?`, [template.name]);
+        let product = await get(`SELECT id FROM products WHERE name = ?`, [template.name]);
         if (product) {
-            run(`UPDATE products SET quantity = quantity + ?, cost_price = ? WHERE id = ?`, 
+            await run(`UPDATE products SET quantity = quantity + ?, cost_price = ? WHERE id = ?`, 
                 [quantity, unitCost, product.id]);
         } else {
             const productId = this._generateId();
             const code = `PRD-${Date.now().toString().slice(-6)}`;
-            run(`
+            await run(`
                 INSERT INTO products (id, code, name, cost_price, selling_price, quantity, min_quantity, unit, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, 5, 'قطعة', datetime('now'))
+                VALUES (?, ?, ?, ?, ?, ?, 5, 'قطعة', CURRENT_TIMESTAMP)
             `, [productId, code, template.name, unitCost, template.price, quantity]);
             product = { id: productId };
         }
         
         // إضافة عنصر الفاتورة
-        run(`
+        await run(`
             INSERT INTO invoice_items (id, invoice_id, product_id, quantity, unit_price, total, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+            VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `, [this._generateId(), invoiceId, product.id, quantity, unitCost, total]);
         
         this.stats.invoicesCreated++;
@@ -325,14 +325,14 @@ class RealisticWorker {
     /**
      * إنشاء مورد
      */
-    _createSupplier() {
+    async _createSupplier() {
         const template = this._random(this.data.suppliers);
         const id = this._generateId();
         const code = `SUP-${Date.now().toString().slice(-6)}`;
         
-        run(`
+        await run(`
             INSERT INTO suppliers (id, code, name, phone, email, created_at)
-            VALUES (?, ?, ?, ?, ?, datetime('now'))
+            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `, [id, code, template.name, template.phone, template.name.replace(/\s/g, '').toLowerCase() + '@supplier.iq']);
         
         this.bot.log(`🏭 مورد جديد: ${template.name}`);
@@ -343,9 +343,9 @@ class RealisticWorker {
     /**
      * تسجيل دفعة
      */
-    _recordPayment() {
+    async _recordPayment() {
         // البحث عن فاتورة غير مدفوعة
-        const invoice = get(`
+        const invoice = await get(`
             SELECT id, invoice_number, total, type, customer_id, supplier_id 
             FROM invoices 
             WHERE payment_status = 'pending' 
@@ -360,17 +360,17 @@ class RealisticWorker {
     /**
      * تسجيل دفعة لفاتورة محددة
      */
-    _recordPaymentForInvoice(invoiceId, amount, type) {
+    async _recordPaymentForInvoice(invoiceId, amount, type) {
         const paymentId = this._generateId();
         const paymentMethods = ['cash', 'bank_transfer', 'check'];
         const method = this._random(paymentMethods);
         
-        run(`
+        await run(`
             INSERT INTO invoice_payments (id, invoice_id, amount, payment_method, notes, received_at)
-            VALUES (?, ?, ?, ?, 'دفعة آلية', datetime('now'))
+            VALUES (?, ?, ?, ?, 'دفعة آلية', CURRENT_TIMESTAMP)
         `, [paymentId, invoiceId, amount, method]);
         
-        run(`UPDATE invoices SET payment_status = 'paid' WHERE id = ?`, [invoiceId]);
+        await run(`UPDATE invoices SET payment_status = 'paid' WHERE id = ?`, [invoiceId]);
         
         this.stats.paymentsRecorded++;
         this.bot.log(`💰 دفعة: ${amount.toLocaleString()} د.ع (${method})`);
@@ -379,7 +379,7 @@ class RealisticWorker {
     /**
      * إنشاء مهمة
      */
-    _createTask() {
+    async _createTask() {
         const id = this._generateId();
         const titles = [
             'متابعة طلب العميل',
@@ -398,9 +398,9 @@ class RealisticWorker {
         const title = this._random(titles);
         const priority = this._random(priorities);
         
-        run(`
+        await run(`
             INSERT INTO tasks (id, title, description, priority, status, created_at)
-            VALUES (?, ?, ?, ?, 'pending', datetime('now'))
+            VALUES (?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
         `, [id, title, `مهمة تم إنشاؤها تلقائياً: ${title}`, priority]);
         
         this.stats.tasksCreated++;
@@ -410,8 +410,8 @@ class RealisticWorker {
     /**
      * تحديث المخزون
      */
-    _updateInventory() {
-        const product = get(`SELECT id, name, quantity FROM products ORDER BY RANDOM() LIMIT 1`);
+    async _updateInventory() {
+        const product = await get(`SELECT id, name, quantity FROM products ORDER BY RANDOM() LIMIT 1`);
         if (!product) return;
         
         const adjustment = Math.floor(Math.random() * 10) - 3; // -3 to +6
@@ -421,20 +421,20 @@ class RealisticWorker {
         const notes = adjustment > 0 ? 'تعديل مخزون' : 'تالف/مفقود';
         
         // الحصول على مستودع افتراضي
-        let warehouse = get(`SELECT id FROM warehouses LIMIT 1`);
+        let warehouse = await get(`SELECT id FROM warehouses LIMIT 1`);
         if (!warehouse) {
             const warehouseId = this._generateId();
-            run(`INSERT INTO warehouses (id, code, name, type, created_at) VALUES (?, 'WH-001', 'المستودع الرئيسي', 'main', datetime('now'))`, [warehouseId]);
+            await run(`INSERT INTO warehouses (id, code, name, type, created_at) VALUES (?, 'WH-001', 'المستودع الرئيسي', 'main', CURRENT_TIMESTAMP)`, [warehouseId]);
             warehouse = { id: warehouseId };
         }
         
-        run(`
+        await run(`
             INSERT INTO inventory_movements (id, product_id, warehouse_id, movement_type, quantity, before_quantity, after_quantity, notes, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `, [this._generateId(), product.id, warehouse.id, movementType, Math.abs(adjustment), 
             product.quantity, product.quantity + adjustment, notes]);
         
-        run(`UPDATE products SET quantity = quantity + ? WHERE id = ?`, [adjustment, product.id]);
+        await run(`UPDATE products SET quantity = quantity + ? WHERE id = ?`, [adjustment, product.id]);
         
         this.bot.log(`📊 تعديل مخزون: ${product.name} ${adjustment > 0 ? '+' : ''}${adjustment}`);
     }

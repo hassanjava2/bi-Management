@@ -1,120 +1,80 @@
 /**
  * BI Management - Database Configuration
- * اتصال قاعدة البيانات SQLite (using sql.js)
+ * PostgreSQL only — استخدم await مع run/get/all/transaction
  */
 
-const initSqlJs = require('sql.js');
-const fs = require('fs');
-const path = require('path');
+const { AsyncLocalStorage } = require('async_hooks');
 
-// Database path
-const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '../../..', 'data', 'bi_management.db');
+let pgPool = null;
+const pgClientStorage = new AsyncLocalStorage();
 
-// Database instance
-let db = null;
-let SQL = null;
+function toPgPlaceholders(sql) {
+    let i = 0;
+    return sql.replace(/\?/g, () => `$${++i}`);
+}
 
-// Initialize database
 async function initDatabase() {
-    if (db) return db;
-
-    SQL = await initSqlJs();
-
-    // Load existing database or create new one
-    if (fs.existsSync(dbPath)) {
-        const buffer = fs.readFileSync(dbPath);
-        db = new SQL.Database(buffer);
-        console.log('[+] Database loaded:', dbPath);
-    } else {
-        db = new SQL.Database();
-        console.log('[+] New database created');
+    if (pgPool) return pgPool;
+    if (!process.env.DATABASE_URL) {
+        throw new Error('DATABASE_URL is required. Set it in .env (e.g. postgresql://user:password@localhost:5432/bi_management)');
     }
-
-    // Enable foreign keys
-    db.run('PRAGMA foreign_keys = ON');
-
-    return db;
+    const { Pool } = require('pg');
+    pgPool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
+    });
+    pgPool.on('error', (err) => console.error('[PG] Pool error:', err.message));
+    const client = await pgPool.connect();
+    client.release();
+    console.log('[+] Database: PostgreSQL connected');
+    return pgPool;
 }
 
-// Save database to file
-function saveDatabase() {
-    if (!db) return;
-    
-    const dir = path.dirname(dbPath);
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-    }
-
-    const data = db.export();
-    const buffer = Buffer.from(data);
-    fs.writeFileSync(dbPath, buffer);
-}
-
-// Auto-save every 30 seconds
-setInterval(() => {
-    if (db) saveDatabase();
-}, 30000);
-
-// Save on exit
-process.on('exit', () => saveDatabase());
-process.on('SIGINT', () => { saveDatabase(); process.exit(); });
-process.on('SIGTERM', () => { saveDatabase(); process.exit(); });
-
-// Get database instance
 function getDatabase() {
-    if (!db) {
-        throw new Error('Database not initialized. Call initDatabase() first.');
-    }
-    return db;
+    if (!pgPool) throw new Error('Database not initialized. Call initDatabase() first.');
+    return pgPool;
 }
 
-// Helper functions
-function run(sql, params = []) {
-    const database = getDatabase();
-    database.run(sql, params);
-    saveDatabase();
-    return { changes: database.getRowsModified() };
+async function run(sql, params = []) {
+    const clientOrPool = pgClientStorage.getStore() || pgPool;
+    const q = toPgPlaceholders(sql);
+    const res = await clientOrPool.query(q, params);
+    return { changes: res.rowCount ?? 0 };
 }
 
-function get(sql, params = []) {
-    const database = getDatabase();
-    const stmt = database.prepare(sql);
-    stmt.bind(params);
-    
-    if (stmt.step()) {
-        const row = stmt.getAsObject();
-        stmt.free();
-        return row;
-    }
-    stmt.free();
-    return null;
+async function get(sql, params = []) {
+    const clientOrPool = pgClientStorage.getStore() || pgPool;
+    const q = toPgPlaceholders(sql);
+    const res = await clientOrPool.query(q, params);
+    return res.rows[0] ?? null;
 }
 
-function all(sql, params = []) {
-    const database = getDatabase();
-    const stmt = database.prepare(sql);
-    stmt.bind(params);
-    
-    const results = [];
-    while (stmt.step()) {
-        results.push(stmt.getAsObject());
-    }
-    stmt.free();
-    return results;
+async function all(sql, params = []) {
+    const clientOrPool = pgClientStorage.getStore() || pgPool;
+    const q = toPgPlaceholders(sql);
+    const res = await clientOrPool.query(q, params);
+    return res.rows ?? [];
 }
 
-function transaction(fn) {
-    const database = getDatabase();
-    database.run('BEGIN TRANSACTION');
+async function transaction(fn) {
+    const client = await pgPool.connect();
     try {
-        const result = fn();
-        database.run('COMMIT');
-        saveDatabase();
+        await client.query('BEGIN');
+        const result = await pgClientStorage.run(client, fn);
+        await client.query('COMMIT');
         return result;
     } catch (error) {
-        database.run('ROLLBACK');
+        await client.query('ROLLBACK');
         throw error;
+    } finally {
+        client.release();
     }
+}
+
+function saveDatabase() {
+    // No-op: PostgreSQL persists automatically
 }
 
 module.exports = {
@@ -124,5 +84,6 @@ module.exports = {
     run,
     get,
     all,
-    transaction
+    transaction,
+    toPgPlaceholders,
 };

@@ -19,17 +19,17 @@ function getGoalsService() {
 /**
  * Create task
  */
-function createTask(data, assignedBy) {
+async function createTask(data, assignedBy) {
     const id = generateId();
 
     try {
-        run(`
+        await run(`
             INSERT INTO tasks (
                 id, title, description, assigned_to, assigned_by,
                 department_id, priority, status, category,
                 source, source_reference, due_date, estimated_minutes,
                 created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         `, [
             id,
             data.title,
@@ -72,8 +72,8 @@ function createTask(data, assignedBy) {
 /**
  * Get task by ID
  */
-function getTask(taskId) {
-    const task = get(`
+async function getTask(taskId) {
+    const task = await get(`
         SELECT t.*, 
                u1.full_name as assigned_to_name,
                u2.full_name as assigned_by_name,
@@ -88,7 +88,7 @@ function getTask(taskId) {
     if (!task) return null;
 
     // Get comments
-    const comments = all(`
+    const comments = await all(`
         SELECT tc.*, u.full_name as user_name
         FROM task_comments tc
         LEFT JOIN users u ON tc.user_id = u.id
@@ -107,7 +107,7 @@ function getTask(taskId) {
 /**
  * Get tasks list
  */
-function getTasks(filters = {}) {
+async function getTasks(filters = {}) {
     let query = `
         SELECT t.*, 
                u1.full_name as assigned_to_name,
@@ -155,7 +155,7 @@ function getTasks(filters = {}) {
     }
 
     if (filters.overdue) {
-        query += ` AND t.due_date < datetime('now') AND t.status NOT IN ('completed', 'cancelled')`;
+        query += ` AND t.due_date < CURRENT_TIMESTAMP AND t.status NOT IN ('completed', 'cancelled')`;
     }
 
     query += ` ORDER BY 
@@ -177,13 +177,13 @@ function getTasks(filters = {}) {
         }
     }
 
-    return all(query, params);
+    return await all(query, params);
 }
 
 /**
  * Update task
  */
-function updateTask(taskId, data) {
+async function updateTask(taskId, data) {
     const updates = [];
     const params = [];
 
@@ -204,7 +204,7 @@ function updateTask(taskId, data) {
     updates.push('updated_at = CURRENT_TIMESTAMP');
     params.push(taskId);
 
-    run(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`, params);
+    await run(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`, params);
 
     return getTask(taskId);
 }
@@ -212,12 +212,12 @@ function updateTask(taskId, data) {
 /**
  * Update task status
  */
-function updateTaskStatus(taskId, status, userId, delayReason = null) {
+async function updateTaskStatus(taskId, status, userId, delayReason = null) {
     const updates = ['status = ?', 'updated_at = CURRENT_TIMESTAMP'];
     const params = [status];
 
     // Get task details before update
-    const taskBefore = get(`SELECT * FROM tasks WHERE id = ?`, [taskId]);
+    const taskBefore = await get(`SELECT * FROM tasks WHERE id = ?`, [taskId]);
 
     if (status === 'in_progress') {
         updates.push('started_at = COALESCE(started_at, CURRENT_TIMESTAMP)');
@@ -242,7 +242,7 @@ function updateTaskStatus(taskId, status, userId, delayReason = null) {
 
     params.push(taskId);
 
-    run(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`, params);
+    await run(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`, params);
 
     // Award points for completed tasks (Bi Goals integration)
     if (status === 'completed' && taskBefore?.assigned_to) {
@@ -267,6 +267,14 @@ function updateTaskStatus(taskId, status, userId, delayReason = null) {
         } catch (e) {
             console.error('[Task Service] Failed to award points:', e.message);
         }
+        try {
+            const aiDist = require('./ai-distribution/index');
+            const kind = taskBefore.category || 'preparation';
+            const onTime = !taskBefore.due_date || (taskBefore.completed_at && new Date(taskBefore.completed_at) <= new Date(taskBefore.due_date));
+            aiDist.historyLearner.recordCompletion(taskBefore.assigned_to, kind, { onTime });
+        } catch (e) {
+            // AI distribution optional
+        }
     }
 
     return getTask(taskId);
@@ -275,16 +283,16 @@ function updateTaskStatus(taskId, status, userId, delayReason = null) {
 /**
  * Add comment to task
  */
-function addComment(taskId, userId, comment) {
+async function addComment(taskId, userId, comment) {
     const id = generateId();
 
-    run(`
+    await run(`
         INSERT INTO task_comments (id, task_id, user_id, comment)
         VALUES (?, ?, ?, ?)
     `, [id, taskId, userId, comment]);
 
     // Notify task owner
-    const task = get(`SELECT assigned_to, title FROM tasks WHERE id = ?`, [taskId]);
+    const task = await get(`SELECT assigned_to, title FROM tasks WHERE id = ?`, [taskId]);
     if (task && task.assigned_to && task.assigned_to !== userId) {
         notificationService.create({
             user_id: task.assigned_to,
@@ -295,7 +303,7 @@ function addComment(taskId, userId, comment) {
         });
     }
 
-    return get(`
+    return await get(`
         SELECT tc.*, u.full_name as user_name
         FROM task_comments tc
         LEFT JOIN users u ON tc.user_id = u.id
@@ -306,16 +314,16 @@ function addComment(taskId, userId, comment) {
 /**
  * Delete task
  */
-function deleteTask(taskId) {
-    run(`DELETE FROM task_comments WHERE task_id = ?`, [taskId]);
-    run(`DELETE FROM tasks WHERE id = ?`, [taskId]);
+async function deleteTask(taskId) {
+    await run(`DELETE FROM task_comments WHERE task_id = ?`, [taskId]);
+    await run(`DELETE FROM tasks WHERE id = ?`, [taskId]);
     return { success: true };
 }
 
 /**
  * Get task statistics
  */
-function getTaskStats(filters = {}) {
+async function getTaskStats(filters = {}) {
     let whereClause = '1=1';
     const params = [];
 
@@ -329,20 +337,20 @@ function getTaskStats(filters = {}) {
         params.push(filters.department_id);
     }
 
-    const stats = get(`
+    const stats = await get(`
         SELECT 
             COUNT(*) as total,
             SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
             SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
             SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
             SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
-            SUM(CASE WHEN due_date < datetime('now') AND status NOT IN ('completed', 'cancelled') THEN 1 ELSE 0 END) as overdue
+            SUM(CASE WHEN due_date < CURRENT_TIMESTAMP AND status NOT IN ('completed', 'cancelled') THEN 1 ELSE 0 END) as overdue
         FROM tasks WHERE ${whereClause}
     `, params);
 
-    const todayTasks = get(`
+    const todayTasks = await get(`
         SELECT COUNT(*) as count FROM tasks 
-        WHERE ${whereClause} AND date(due_date) = date('now')
+        WHERE ${whereClause} AND date(due_date) = CURRENT_DATE
     `, params);
 
     return {

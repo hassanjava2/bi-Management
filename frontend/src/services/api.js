@@ -102,10 +102,18 @@ export const aiAPI = {
   getConversations: (params) => api.get('/ai/conversations', { params }),
   getMessages: (conversationId, params) => api.get(`/ai/conversations/${conversationId}/messages`, { params }),
   suggestTask: (data) => api.post('/ai/tasks/suggest', data),
+  /** اقتراح مهام من وصف مشكلة (للمدير) */
+  suggestTasksFromProblem: (description) => api.post('/ai/problems/suggest-tasks', { description }),
+  /** تأكيد إنشاء المهمة المقترحة من المحادثة */
+  confirmTaskFromChat: (taskData) => api.post('/ai/tasks/confirm-from-chat', taskData),
   createTaskFromProblem: (data) => api.post('/ai/tasks/from-problem', data),
   confirmTask: (data) => api.post('/ai/tasks/confirm', data),
   analyzeEmployee: (id) => api.post(`/ai/analyze/employee/${id}`),
   analyzeAttendance: (data) => api.post('/ai/analyze/attendance', data),
+  /** للمدير: قائمة كل دردشات الموظفين مع الذكاء */
+  adminConversations: (params) => api.get('/ai/admin/conversations', { params }),
+  /** للمدير: تفاصيل محادثة واحدة */
+  adminConversationDetail: (conversationId) => api.get(`/ai/admin/conversations/${conversationId}`),
 }
 
 // Goals API

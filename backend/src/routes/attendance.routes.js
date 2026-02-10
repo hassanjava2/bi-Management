@@ -43,7 +43,7 @@ router.get('/', async (req, res) => {
         
         query += ` ORDER BY ar.date DESC, ar.check_in DESC LIMIT 100`;
         
-        const records = all(query, params);
+        const records = await all(query, params);
         
         res.json({
             success: true,
@@ -62,12 +62,12 @@ router.get('/today', async (req, res) => {
     try {
         const today = new Date().toISOString().split('T')[0];
         
-        const myRecord = get(`
+        const myRecord = await get(`
             SELECT * FROM attendance 
             WHERE user_id = ? AND date = ?
         `, [req.user.id, today]);
         
-        const summary = get(`
+        const summary = await get(`
             SELECT 
                 COUNT(*) as total,
                 SUM(CASE WHEN check_in IS NOT NULL THEN 1 ELSE 0 END) as present,
@@ -99,7 +99,7 @@ router.post('/check-in', async (req, res) => {
         const id = generateId();
         
         // Check if already checked in
-        const existing = get(`
+        const existing = await get(`
             SELECT * FROM attendance 
             WHERE user_id = ? AND date = ?
         `, [req.user.id, today]);
@@ -112,9 +112,9 @@ router.post('/check-in', async (req, res) => {
             });
         }
         
-        run(`
+        await run(`
             INSERT INTO attendance (id, user_id, date, check_in, status, created_at)
-            VALUES (?, ?, ?, ?, ?, datetime('now'))
+            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `, [id, req.user.id, today, now, 'present']);
         
         res.status(201).json({
@@ -135,9 +135,9 @@ router.post('/check-out', async (req, res) => {
         const today = new Date().toISOString().split('T')[0];
         const now = new Date().toISOString();
         
-        const result = run(`
+        const result = await run(`
             UPDATE attendance 
-            SET check_out = ?, updated_at = datetime('now')
+            SET check_out = ?, updated_at = CURRENT_TIMESTAMP
             WHERE user_id = ? AND date = ? AND check_out IS NULL
         `, [now, req.user.id, today]);
         
@@ -166,14 +166,14 @@ router.get('/stats', async (req, res) => {
     try {
         const thisMonth = new Date().toISOString().slice(0, 7);
         
-        const stats = get(`
+        const stats = await get(`
             SELECT 
                 COUNT(DISTINCT date) as work_days,
                 SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present_days,
                 SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late_days,
                 SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) as absent_days
             FROM attendance
-            WHERE user_id = ? AND strftime('%Y-%m', date) = ?
+            WHERE user_id = ? AND to_char(date, 'YYYY-MM') = ?
         `, [req.user.id, thisMonth]);
         
         res.json({
@@ -206,7 +206,7 @@ router.get('/vacations', async (req, res) => {
         if (user_id) { query += ` AND v.user_id = ?`; params.push(user_id); }
         if (status) { query += ` AND v.status = ?`; params.push(status); }
         query += ` ORDER BY v.created_at DESC LIMIT 100`;
-        const vacations = all(query, params);
+        const vacations = await all(query, params);
         res.json({ success: true, data: vacations });
     } catch (error) {
         if (error.message?.includes('no such table')) return res.json({ success: true, data: [] });
@@ -223,8 +223,8 @@ router.post('/vacations', async (req, res) => {
         const { type, start_date, end_date, reason } = req.body;
         if (!start_date || !end_date) return res.status(400).json({ success: false, error: 'التواريخ مطلوبة' });
         const id = generateId();
-        run(`INSERT INTO vacations (id, user_id, type, start_date, end_date, reason, status, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, 'pending', datetime('now'))`,
+        await run(`INSERT INTO vacations (id, user_id, type, start_date, end_date, reason, status, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)`,
             [id, req.user?.id, type || 'annual', start_date, end_date, reason || null]);
         res.status(201).json({ success: true, data: { id, status: 'pending' } });
     } catch (error) {
@@ -241,11 +241,11 @@ router.put('/vacations/:id', async (req, res) => {
     try {
         const { status } = req.body; // approved, rejected
         if (!['approved', 'rejected'].includes(status)) return res.status(400).json({ success: false, error: 'الحالة غير صحيحة' });
-        const existing = get(`SELECT id FROM vacations WHERE id = ?`, [req.params.id]);
+        const existing = await get(`SELECT id FROM vacations WHERE id = ?`, [req.params.id]);
         if (!existing) return res.status(404).json({ success: false, error: 'الإجازة غير موجودة' });
-        run(`UPDATE vacations SET status = ?, approved_by = ?, approved_at = datetime('now') WHERE id = ?`,
+        await run(`UPDATE vacations SET status = ?, approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE id = ?`,
             [status, req.user?.id, req.params.id]);
-        res.json({ success: true, data: get(`SELECT * FROM vacations WHERE id = ?`, [req.params.id]) });
+        res.json({ success: true, data: await get(`SELECT * FROM vacations WHERE id = ?`, [req.params.id]) });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -264,13 +264,13 @@ router.get('/salaries', async (req, res) => {
         const month = req.query.month || new Date().toISOString().slice(0, 7);
         
         // جلب الموظفين مع بيانات الحضور
-        const employees = all(`
+        const employees = await all(`
             SELECT u.id, u.full_name, u.role, u.department_id, u.salary_encrypted,
-                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND strftime('%Y-%m', a.date) = ? AND a.status = 'present') as present_days,
-                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND strftime('%Y-%m', a.date) = ? AND a.status = 'late') as late_days,
-                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND strftime('%Y-%m', a.date) = ? AND a.status = 'absent') as absent_days,
-                   (SELECT SUM(late_minutes) FROM attendance a WHERE a.user_id = u.id AND strftime('%Y-%m', a.date) = ?) as total_late_minutes,
-                   (SELECT SUM(overtime_minutes) FROM attendance a WHERE a.user_id = u.id AND strftime('%Y-%m', a.date) = ?) as total_overtime_minutes
+                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND to_char(a.date, 'YYYY-MM') = ? AND a.status = 'present') as present_days,
+                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND to_char(a.date, 'YYYY-MM') = ? AND a.status = 'late') as late_days,
+                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND to_char(a.date, 'YYYY-MM') = ? AND a.status = 'absent') as absent_days,
+                   (SELECT SUM(late_minutes) FROM attendance a WHERE a.user_id = u.id AND to_char(a.date, 'YYYY-MM') = ?) as total_late_minutes,
+                   (SELECT SUM(overtime_minutes) FROM attendance a WHERE a.user_id = u.id AND to_char(a.date, 'YYYY-MM') = ?) as total_overtime_minutes
             FROM users u
             WHERE u.is_active = 1
             ORDER BY u.full_name
@@ -279,11 +279,11 @@ router.get('/salaries', async (req, res) => {
         // جلب المكافآت والغرامات
         let adjustments = [];
         try {
-            adjustments = all(`
+            adjustments = await all(`
                 SELECT ea.*, u.full_name as employee_name
                 FROM employee_adjustments ea
                 LEFT JOIN users u ON ea.employee_id = u.id
-                WHERE strftime('%Y-%m', ea.created_at) = ?
+                WHERE to_char(ea.created_at, 'YYYY-MM') = ?
                 ORDER BY ea.created_at DESC
             `, [month]);
         } catch (_) {}
@@ -318,8 +318,8 @@ router.post('/adjustments', async (req, res) => {
             return res.status(400).json({ success: false, error: 'الحقول المطلوبة: employee_id, type, amount' });
         }
         const id = generateId();
-        run(`INSERT INTO employee_adjustments (id, employee_id, type, amount, reason, description, created_by, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+        await run(`INSERT INTO employee_adjustments (id, employee_id, type, amount, reason, description, created_by, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
             [id, employee_id, type, parseFloat(amount), reason || null, description || null, req.user?.id]);
         res.status(201).json({ success: true, data: { id } });
     } catch (error) {

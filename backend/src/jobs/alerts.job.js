@@ -7,6 +7,8 @@
 const { all, get } = require('../config/database');
 let notificationService;
 try { notificationService = require('../services/notification.service'); } catch (_) {}
+let eventBus;
+try { eventBus = require('../services/ai-distribution/event-bus'); } catch (_) {}
 
 /**
  * فحص المخزون المنخفض وإرسال تنبيهات
@@ -14,24 +16,28 @@ try { notificationService = require('../services/notification.service'); } catch
 async function checkLowStock() {
     console.log('[Alerts Job] Checking low stock...');
     try {
-        const lowStock = all(`
+        const lowStock = await all(`
             SELECT id, name, quantity, min_quantity
             FROM products
             WHERE quantity <= min_quantity AND (is_deleted = 0 OR is_deleted IS NULL)
         `);
 
         for (const product of lowStock) {
-            if (!notificationService?.notifyEvent) continue;
-            const NT = notificationService.NOTIFICATION_TYPES;
-            const type = product.quantity === 0 ? NT.STOCK_OUT : NT.STOCK_LOW;
-            notificationService.notifyEvent(type, {
-                product_name: product.name,
-                quantity: product.quantity,
-                send_to_admins: true,
-                entity_type: 'product',
-                entity_id: product.id,
-                action_url: '/inventory',
-            });
+            if (notificationService?.notifyEvent) {
+                const NT = notificationService.NOTIFICATION_TYPES;
+                const type = product.quantity === 0 ? NT.STOCK_OUT : NT.STOCK_LOW;
+                notificationService.notifyEvent(type, {
+                    product_name: product.name,
+                    quantity: product.quantity,
+                    send_to_admins: true,
+                    entity_type: 'product',
+                    entity_id: product.id,
+                    action_url: '/inventory',
+                });
+            }
+            if (eventBus) {
+                eventBus.emit(eventBus.EVENT_TYPES.STOCK_LOW, { product_id: product.id, productId: product.id, product_name: product.name, quantity: product.quantity, min_quantity: product.min_quantity });
+            }
         }
         console.log(`[Alerts Job] Found ${lowStock.length} low-stock products`);
         return lowStock.length;
@@ -47,15 +53,15 @@ async function checkLowStock() {
 async function checkExpiringWarranties() {
     console.log('[Alerts Job] Checking expiring warranties...');
     try {
-        const expiring = all(`
+        const expiring = await all(`
             SELECT sn.id, sn.serial_number, sn.warranty_expires, p.name as product_name,
                    c.name as customer_name, c.id as customer_id
             FROM serial_numbers sn
             LEFT JOIN products p ON sn.product_id = p.id
             LEFT JOIN customers c ON sn.customer_id = c.id
             WHERE sn.warranty_expires IS NOT NULL
-              AND sn.warranty_expires > date('now')
-              AND sn.warranty_expires <= date('now', '+7 days')
+              AND sn.warranty_expires > CURRENT_DATE
+              AND sn.warranty_expires <= CURRENT_DATE + INTERVAL '7 days'
               AND sn.status = 'sold'
         `);
 
@@ -85,14 +91,14 @@ async function checkExpiringWarranties() {
 async function checkOverduePayments() {
     console.log('[Alerts Job] Checking overdue payments...');
     try {
-        const overdue = all(`
+        const overdue = await all(`
             SELECT i.id, i.invoice_number, i.total, i.remaining_amount, i.due_date,
                    c.name as customer_name, c.id as customer_id
             FROM invoices i
             LEFT JOIN customers c ON i.customer_id = c.id
             WHERE i.payment_status IN ('pending', 'partial')
               AND i.due_date IS NOT NULL
-              AND i.due_date < date('now')
+              AND i.due_date < CURRENT_DATE
               AND i.status != 'cancelled'
               AND (i.is_deleted = 0 OR i.is_deleted IS NULL)
         `);
@@ -123,13 +129,13 @@ async function checkOverduePayments() {
 async function checkOverdueTasks() {
     console.log('[Alerts Job] Checking overdue tasks...');
     try {
-        const overdue = all(`
+        const overdue = await all(`
             SELECT t.id, t.title, t.assigned_to, t.due_date, u.full_name as assignee_name
             FROM tasks t
             LEFT JOIN users u ON t.assigned_to = u.id
             WHERE t.status IN ('pending', 'in_progress')
               AND t.due_date IS NOT NULL
-              AND t.due_date < datetime('now')
+              AND t.due_date < CURRENT_TIMESTAMP
         `);
 
         for (const task of overdue) {

@@ -171,21 +171,21 @@ router.get('/reports/debts', auth, authorize(['admin']), async (req, res) => {
 router.get('/statement/customer/:id', auth, authorize(['admin']), async (req, res) => {
   try {
     const { run, get, all } = require('../config/database');
-    const cust = get('SELECT id, name, phone, balance FROM customers WHERE id = ?', [req.params.id]);
+    const cust = await get('SELECT id, name, phone, balance FROM customers WHERE id = ?', [req.params.id]);
     if (!cust) return res.status(404).json({ success: false, error: 'العميل غير موجود' });
 
     // فواتير العميل
-    const invoices = all(`
+    const invoices = await all(`
       SELECT id, invoice_number, type, total, paid_amount, remaining_amount, payment_status, created_at
       FROM invoices WHERE customer_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)
-      ORDER BY created_at DESC
+      Order BY created_at DESC
     `, [req.params.id]);
 
     // سندات القبض/الدفع المرتبطة
     let vouchers = [];
     try {
-      vouchers = all(`
-        SELECT id, voucher_number, type, amount, description, created_at
+      vouchers = await all(`
+        Select id, voucher_number, type, amount, description, created_at
         FROM vouchers WHERE customer_id = ? ORDER BY created_at DESC
       `, [req.params.id]);
     } catch (_) { /* vouchers table might not exist */ }
@@ -237,10 +237,10 @@ router.get('/statement/customer/:id', auth, authorize(['admin']), async (req, re
 router.get('/statement/supplier/:id', auth, authorize(['admin']), async (req, res) => {
   try {
     const { run, get, all } = require('../config/database');
-    const sup = get('SELECT id, name, phone, balance FROM suppliers WHERE id = ?', [req.params.id]);
+    const sup = await get('SELECT id, name, phone, balance FROM suppliers WHERE id = ?', [req.params.id]);
     if (!sup) return res.status(404).json({ success: false, error: 'المورد غير موجود' });
 
-    const invoices = all(`
+    const invoices = await all(`
       SELECT id, invoice_number, type, total, paid_amount, remaining_amount, payment_status, created_at
       FROM invoices WHERE supplier_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)
       ORDER BY created_at DESC
@@ -248,7 +248,7 @@ router.get('/statement/supplier/:id', auth, authorize(['admin']), async (req, re
 
     let vouchers = [];
     try {
-      vouchers = all(`
+      vouchers = await all(`
         SELECT id, voucher_number, type, amount, description, created_at
         FROM vouchers WHERE supplier_id = ? ORDER BY created_at DESC
       `, [req.params.id]);
@@ -306,13 +306,13 @@ router.get('/reconciliation', auth, authorize(['admin']), async (req, res) => {
     const date = req.query.date || new Date().toISOString().split('T')[0];
 
     // مبيعات اليوم
-    const sales = get(`
+    const sales = await get(`
       SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as total, COALESCE(SUM(paid_amount), 0) as paid
       FROM invoices WHERE type IN ('sale', 'sale_credit', 'sale_installment') AND date(created_at) = ?
     `, [date]);
 
     // مشتريات اليوم
-    const purchases = get(`
+    const purchases = await get(`
       SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as total
       FROM invoices WHERE type = 'purchase' AND date(created_at) = ?
     `, [date]);
@@ -320,7 +320,7 @@ router.get('/reconciliation', auth, authorize(['admin']), async (req, res) => {
     // سندات القبض
     let receipts = { count: 0, total: 0 };
     try {
-      receipts = get(`
+      receipts = await get(`
         SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
         FROM vouchers WHERE type = 'receipt' AND date(created_at) = ?
       `, [date]) || receipts;
@@ -329,7 +329,7 @@ router.get('/reconciliation', auth, authorize(['admin']), async (req, res) => {
     // سندات الدفع
     let payments = { count: 0, total: 0 };
     try {
-      payments = get(`
+      payments = await get(`
         SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
         FROM vouchers WHERE type = 'payment' AND date(created_at) = ?
       `, [date]) || payments;
@@ -338,7 +338,7 @@ router.get('/reconciliation', auth, authorize(['admin']), async (req, res) => {
     // مصاريف اليوم
     let expenses = { count: 0, total: 0 };
     try {
-      expenses = get(`
+      expenses = await get(`
         SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
         FROM expenses WHERE date(expense_date) = ? OR date(created_at) = ?
       `, [date, date]) || expenses;

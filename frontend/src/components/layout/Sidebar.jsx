@@ -6,7 +6,7 @@ import {
   Building2, Trophy, GraduationCap, Shield, Activity, Package,
   Receipt, RefreshCw, DollarSign, Truck, Wrench, UserCircle,
   ChevronDown, ShoppingCart, FileCheck, CreditCard, BarChart3,
-  Calculator, Bot, Boxes, X, LogOut, Search,
+  Calculator, Bot, Boxes, X, LogOut, Search, Workflow, MessageCircle,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useQuery } from '@tanstack/react-query'
@@ -57,7 +57,7 @@ const navSections = [
     ],
   },
   {
-    id: 'admin', label: 'الإدارة', roles: ['owner', 'admin'],
+    id: 'admin', label: 'الإدارة', roles: ['owner', 'admin', 'manager'],
     items: [
       { name: 'الموافقات', href: '/approvals', icon: FileCheck },
       { name: 'المواد الثابتة', href: '/fixed-assets', icon: Boxes },
@@ -66,6 +66,8 @@ const navSections = [
       { name: 'سجل العمليات', href: '/audit', icon: Activity },
       { name: 'الإعدادات', href: '/settings', icon: Settings },
       { name: 'البوت الذكي', href: '/bot', icon: Bot },
+      { name: 'التوزيع الذكي', href: '/ai-distribution', icon: Workflow },
+      { name: 'دردشات الموظفين مع الذكاء', href: '/ai-chats', icon: MessageCircle, roles: ['owner', 'admin', 'manager'] },
     ],
   },
 ]

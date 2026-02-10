@@ -20,11 +20,11 @@ async function checkOverdueTasks() {
     let overdueTasks;
     try {
         // Get tasks that are overdue and not completed
-        overdueTasks = all(`
+        overdueTasks = await all(`
             SELECT t.*, u.full_name as assigned_to_name
             FROM tasks t
             LEFT JOIN users u ON t.assigned_to = u.id
-            WHERE t.due_date < datetime('now')
+            WHERE t.due_date < CURRENT_TIMESTAMP
             AND t.status NOT IN ('completed', 'cancelled')
             AND t.assigned_to IS NOT NULL
         `);
@@ -39,12 +39,12 @@ async function checkOverdueTasks() {
         // Check if we already sent a reminder in the last 24 hours
         // Note: task.id is sanitized since it comes from database UUID
         const taskIdPattern = '%"task_id":"' + String(task.id).replace(/[%_\\]/g, '') + '"%';
-        const recentReminder = all(`
+        const recentReminder = await all(`
             SELECT id FROM notifications
             WHERE user_id = ?
             AND type = 'reminder'
             AND data LIKE ?
-            AND created_at > datetime('now', '-24 hours')
+            AND created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'
         `, [task.assigned_to, taskIdPattern]);
 
         if (recentReminder.length === 0) {
@@ -58,7 +58,7 @@ async function checkOverdueTasks() {
             });
 
             // Update task to mark as notified
-            run(`
+            await run(`
                 UPDATE tasks 
                 SET status = CASE WHEN status = 'pending' THEN 'overdue' ELSE status END
                 WHERE id = ?
@@ -78,14 +78,14 @@ async function sendDailyTaskReminders() {
     console.log('[Scheduler] Sending daily task reminders...');
     
     // Get tasks due today grouped by user
-    const tasksByUser = all(`
+    const tasksByUser = await all(`
         SELECT 
             u.id as user_id,
             u.full_name,
             COUNT(t.id) as task_count
         FROM tasks t
         JOIN users u ON t.assigned_to = u.id
-        WHERE date(t.due_date) = date('now')
+        WHERE date(t.due_date) = CURRENT_DATE
         AND t.status NOT IN ('completed', 'cancelled')
         GROUP BY u.id
     `);
@@ -107,13 +107,13 @@ async function sendDailyTaskReminders() {
 /**
  * Clean old notifications (older than 30 days)
  */
-function cleanOldNotifications() {
+async function cleanOldNotifications() {
     console.log('[Scheduler] Cleaning old notifications...');
     
     try {
-        const result = run(`
+        const result = await run(`
             DELETE FROM notifications 
-            WHERE created_at < datetime('now', '-30 days')
+            WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '30 days'
         `);
 
         console.log(`[Scheduler] Deleted ${result?.changes || 0} old notifications`);
@@ -127,13 +127,13 @@ function cleanOldNotifications() {
 /**
  * Clean old audit logs (older than 90 days, keep critical ones)
  */
-function cleanOldAuditLogs() {
+async function cleanOldAuditLogs() {
     console.log('[Scheduler] Cleaning old audit logs...');
     
     try {
-        const result = run(`
+        const result = await run(`
             DELETE FROM audit_logs 
-            WHERE created_at < datetime('now', '-90 days')
+            WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '90 days'
             AND severity != 'critical'
         `);
 
@@ -184,10 +184,10 @@ function stopScheduler() {
 async function checkPendingInvoiceReminders() {
     try {
         const invoiceWorkflow = require('./invoiceWorkflow.service');
-        const due = invoiceWorkflow.getRemindersDue();
+        const due = await invoiceWorkflow.getRemindersDue();
         if (!due || due.length === 0) return { sent: 0 };
         for (const r of due) {
-            const inv = get('SELECT id, invoice_number, created_by FROM invoices WHERE id = ?', [r.invoice_id]);
+            const inv = await get('SELECT id, invoice_number, created_by FROM invoices WHERE id = ?', [r.invoice_id]);
             if (!inv) continue;
             if (r.notify_creator && inv.created_by) {
                 notificationService.create({

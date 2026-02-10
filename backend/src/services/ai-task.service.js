@@ -79,7 +79,7 @@ async function confirmAndCreateTask(userId, taskData) {
 
         // إشعار مدير القسم
         if (task.department_id) {
-            const manager = get(`
+            const manager = await get(`
                 SELECT id FROM users 
                 WHERE department_id = ? AND role IN ('manager', 'admin')
                 LIMIT 1
@@ -107,7 +107,7 @@ async function confirmAndCreateTask(userId, taskData) {
  * إنشاء مهام التدريب للموظف الجديد
  */
 async function createOnboardingTasks(newEmployeeId) {
-    const employee = get(`
+    const employee = await get(`
         SELECT u.*, d.name as department_name 
         FROM users u 
         LEFT JOIN departments d ON u.department_id = d.id 
@@ -194,7 +194,7 @@ async function createDailyTasks(userId) {
     const today = new Date().toISOString().split('T')[0];
     
     // التحقق من وجود مهام اليوم
-    const existingTasks = all(`
+    const existingTasks = await all(`
         SELECT id FROM tasks 
         WHERE assigned_to = ? 
         AND date(due_date) = ? 
@@ -206,14 +206,14 @@ async function createDailyTasks(userId) {
     }
 
     // جلب المهام المتكررة
-    const recurringTasks = all(`
+    const recurringTasks = await all(`
         SELECT * FROM task_templates 
         WHERE (user_id = ? OR user_id IS NULL)
         AND is_active = 1
         AND (
             recurrence = 'daily'
-            OR (recurrence = 'weekly' AND strftime('%w', 'now') = day_of_week)
-            OR (recurrence = 'monthly' AND strftime('%d', 'now') = day_of_month)
+            OR (recurrence = 'weekly' AND EXTRACT(DOW FROM CURRENT_DATE)::integer = day_of_week)
+            OR (recurrence = 'monthly' AND EXTRACT(DAY FROM CURRENT_DATE)::integer = day_of_month)
         )
     `, [userId]);
 
@@ -249,9 +249,9 @@ async function createTaskFromInvoice(invoice, assignTo = null) {
     // تحديد المسؤول حسب نوع الفاتورة
     let department = null;
     if (invoice.type === 'purchase') {
-        department = get(`SELECT id FROM departments WHERE name_en = 'Inventory' OR name LIKE '%مخازن%'`);
+        department = await get(`SELECT id FROM departments WHERE name_en = 'Inventory' OR name LIKE '%مخازن%'`);
     } else {
-        department = get(`SELECT id FROM departments WHERE name_en = 'Sales' OR name LIKE '%مبيعات%'`);
+        department = await get(`SELECT id FROM departments WHERE name_en = 'Sales' OR name LIKE '%مبيعات%'`);
     }
 
     const taskData = {
@@ -294,7 +294,7 @@ async function createTaskFromInvoice(invoice, assignTo = null) {
 /**
  * تحديد القسم المناسب
  */
-function determineDepartment(suggestedCode, description) {
+async function determineDepartment(suggestedCode, description) {
     const descLower = description.toLowerCase();
     
     const departmentKeywords = {
@@ -308,7 +308,7 @@ function determineDepartment(suggestedCode, description) {
 
     // أولاً: استخدم اقتراح AI
     if (suggestedCode) {
-        const dept = get(`SELECT id, name, name_en FROM departments WHERE name_en = ? OR name LIKE ?`, 
+        const dept = await get(`SELECT id, name, name_en FROM departments WHERE name_en = ? OR name LIKE ?`, 
             [suggestedCode, `%${suggestedCode}%`]);
         if (dept) return dept;
     }
@@ -317,7 +317,7 @@ function determineDepartment(suggestedCode, description) {
     for (const [deptName, keywords] of Object.entries(departmentKeywords)) {
         for (const keyword of keywords) {
             if (descLower.includes(keyword)) {
-                const dept = get(`SELECT id, name, name_en FROM departments WHERE name_en = ? OR name LIKE ?`, 
+                const dept = await get(`SELECT id, name, name_en FROM departments WHERE name_en = ? OR name LIKE ?`, 
                     [deptName, `%${deptName}%`]);
                 if (dept) return dept;
             }

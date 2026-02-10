@@ -107,7 +107,7 @@ class AutoHealer {
     /**
      * فحص الجداول المفقودة
      */
-    _checkMissingTables() {
+    async _checkMissingTables() {
         const requiredTables = [
             'users', 'roles', 'permissions', 'products', 'categories',
             'customers', 'suppliers', 'invoices', 'invoice_items',
@@ -118,8 +118,8 @@ class AutoHealer {
         const issues = [];
         
         for (const table of requiredTables) {
-            const exists = get(`
-                SELECT name FROM sqlite_master 
+            const exists = await get(`
+                SELECT table_name FROM information_schema.tables WHERE table_schema='public' 
                 WHERE type='table' AND name=?
             `, [table]);
             
@@ -134,7 +134,7 @@ class AutoHealer {
     /**
      * إصلاح الجداول المفقودة
      */
-    _fixMissingTables(issues) {
+    async _fixMissingTables(issues) {
         let fixed = 0;
         
         for (const issue of issues) {
@@ -143,11 +143,8 @@ class AutoHealer {
                 const createStatements = {
                     'settings': `
                         CREATE TABLE IF NOT EXISTS settings (
-                            id TEXT PRIMARY KEY,
-                            key TEXT UNIQUE NOT NULL,
-                            value TEXT,
-                            created_at TEXT,
-                            updated_at TEXT
+                            key TEXT PRIMARY KEY,
+                            value TEXT
                         )
                     `,
                     'categories': `
@@ -155,13 +152,13 @@ class AutoHealer {
                             id TEXT PRIMARY KEY,
                             name TEXT NOT NULL,
                             parent_id TEXT,
-                            created_at TEXT
+                            created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
                         )
                     `
                 };
                 
                 if (createStatements[issue.table]) {
-                    run(createStatements[issue.table]);
+                    await run(createStatements[issue.table]);
                     fixed++;
                 }
             } catch (error) {
@@ -175,12 +172,12 @@ class AutoHealer {
     /**
      * فحص السجلات اليتيمة
      */
-    _checkOrphanRecords() {
+    async _checkOrphanRecords() {
         const issues = [];
         
         try {
             // Invoice items without invoice
-            const orphanItems = all(`
+            const orphanItems = await all(`
                 SELECT ii.id FROM invoice_items ii
                 LEFT JOIN invoices i ON ii.invoice_id = i.id
                 WHERE i.id IS NULL
@@ -195,7 +192,7 @@ class AutoHealer {
             }
             
             // Notifications for non-existent users
-            const orphanNotifications = all(`
+            const orphanNotifications = await all(`
                 SELECT n.id FROM notifications n
                 LEFT JOIN users u ON n.user_id = u.id
                 WHERE u.id IS NULL AND n.user_id IS NOT NULL
@@ -218,13 +215,13 @@ class AutoHealer {
     /**
      * إصلاح السجلات اليتيمة
      */
-    _fixOrphanRecords(issues) {
+    async _fixOrphanRecords(issues) {
         let fixed = 0;
         
         for (const issue of issues) {
             try {
                 if (issue.type === 'orphan_invoice_items') {
-                    run(`
+                    await run(`
                         DELETE FROM invoice_items 
                         WHERE id IN (${issue.ids.map(() => '?').join(',')})
                     `, issue.ids);
@@ -232,7 +229,7 @@ class AutoHealer {
                 }
                 
                 if (issue.type === 'orphan_notifications') {
-                    run(`
+                    await run(`
                         DELETE FROM notifications 
                         WHERE id IN (${issue.ids.map(() => '?').join(',')})
                     `, issue.ids);
@@ -249,13 +246,13 @@ class AutoHealer {
     /**
      * فحص الحالات غير الصالحة
      */
-    _checkInvalidStatuses() {
+    async _checkInvalidStatuses() {
         const issues = [];
         
         try {
             // Valid invoice statuses
             const validInvoiceStatuses = ['draft', 'pending', 'paid', 'partial', 'cancelled', 'refunded'];
-            const invalidInvoices = all(`
+            const invalidInvoices = await all(`
                 SELECT id, status FROM invoices 
                 WHERE status NOT IN (${validInvoiceStatuses.map(() => '?').join(',')})
             `, validInvoiceStatuses);
@@ -269,7 +266,7 @@ class AutoHealer {
             
             // Valid task statuses
             const validTaskStatuses = ['pending', 'in_progress', 'completed', 'cancelled', 'overdue'];
-            const invalidTasks = all(`
+            const invalidTasks = await all(`
                 SELECT id, status FROM tasks 
                 WHERE status NOT IN (${validTaskStatuses.map(() => '?').join(',')})
             `, validTaskStatuses);
@@ -290,21 +287,21 @@ class AutoHealer {
     /**
      * إصلاح الحالات غير الصالحة
      */
-    _fixInvalidStatuses(issues) {
+    async _fixInvalidStatuses(issues) {
         let fixed = 0;
         
         for (const issue of issues) {
             try {
                 if (issue.type === 'invalid_invoice_status') {
                     for (const record of issue.records) {
-                        run(`UPDATE invoices SET status = 'draft' WHERE id = ?`, [record.id]);
+                        await run(`UPDATE invoices SET status = 'draft' WHERE id = ?`, [record.id]);
                         fixed++;
                     }
                 }
                 
                 if (issue.type === 'invalid_task_status') {
                     for (const record of issue.records) {
-                        run(`UPDATE tasks SET status = 'pending' WHERE id = ?`, [record.id]);
+                        await run(`UPDATE tasks SET status = 'pending' WHERE id = ?`, [record.id]);
                         fixed++;
                     }
                 }
@@ -319,17 +316,17 @@ class AutoHealer {
     /**
      * فحص التكرارات
      */
-    _checkDuplicates() {
+    async _checkDuplicates() {
         const issues = [];
         
         try {
             // Duplicate emails
-            const dupEmails = all(`
+            const dupEmails = await all(`
                 SELECT email, COUNT(*) as count 
                 FROM users 
                 WHERE email IS NOT NULL
                 GROUP BY email 
-                HAVING count > 1
+                HAVING COUNT(*) > 1
             `);
             
             if (dupEmails?.length > 0) {
@@ -340,12 +337,12 @@ class AutoHealer {
             }
             
             // Duplicate invoice numbers
-            const dupInvoices = all(`
+            const dupInvoices = await all(`
                 SELECT invoice_number, COUNT(*) as count 
                 FROM invoices 
                 WHERE invoice_number IS NOT NULL
                 GROUP BY invoice_number 
-                HAVING count > 1
+                HAVING COUNT(*) > 1
             `);
             
             if (dupInvoices?.length > 0) {
@@ -374,18 +371,18 @@ class AutoHealer {
     /**
      * فحص الحقول المطلوبة الفارغة
      */
-    _checkNullRequiredFields() {
+    async _checkNullRequiredFields() {
         const issues = [];
         
         try {
             // Users without email
-            const noEmail = all(`SELECT id FROM users WHERE email IS NULL OR email = ''`);
+            const noEmail = await all(`SELECT id FROM users WHERE email IS NULL OR email = ''`);
             if (noEmail?.length > 0) {
                 issues.push({ type: 'users_no_email', count: noEmail.length });
             }
             
             // Products without name
-            const noName = all(`SELECT id FROM products WHERE name IS NULL OR name = ''`);
+            const noName = await all(`SELECT id FROM products WHERE name IS NULL OR name = ''`);
             if (noName?.length > 0) {
                 issues.push({ type: 'products_no_name', count: noName.length, ids: noName.map(p => p.id) });
             }
@@ -399,14 +396,14 @@ class AutoHealer {
     /**
      * إصلاح الحقول الفارغة
      */
-    _fixNullRequiredFields(issues) {
+    async _fixNullRequiredFields(issues) {
         let fixed = 0;
         
         for (const issue of issues) {
             try {
                 if (issue.type === 'products_no_name') {
                     for (const id of issue.ids) {
-                        run(`UPDATE products SET name = ? WHERE id = ?`, [`Product-${id.substring(0, 8)}`, id]);
+                        await run(`UPDATE products SET name = ? WHERE id = ?`, [`Product-${id.substring(0, 8)}`, id]);
                         fixed++;
                     }
                 }
@@ -421,14 +418,14 @@ class AutoHealer {
     /**
      * فحص الجلسات القديمة
      */
-    _checkStaleSessions() {
+    async _checkStaleSessions() {
         const issues = [];
         
         try {
             // Sessions older than 7 days
-            const staleSessions = all(`
+            const staleSessions = await all(`
                 SELECT id FROM user_sessions 
-                WHERE created_at < datetime('now', '-7 days')
+                WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '7 days'
                 AND is_active = 1
             `);
             
@@ -449,13 +446,13 @@ class AutoHealer {
     /**
      * إصلاح الجلسات القديمة
      */
-    _fixStaleSessions(issues) {
+    async _fixStaleSessions(issues) {
         let fixed = 0;
         
         for (const issue of issues) {
             if (issue.type === 'stale_sessions') {
                 try {
-                    run(`
+                    await run(`
                         UPDATE user_sessions 
                         SET is_active = 0 
                         WHERE id IN (${issue.ids.map(() => '?').join(',')})
@@ -473,12 +470,12 @@ class AutoHealer {
     /**
      * فحص عدم تطابق المجاميع
      */
-    _checkInconsistentTotals() {
+    async _checkInconsistentTotals() {
         const issues = [];
         
         try {
             // Invoices where total doesn't match items
-            const inconsistent = all(`
+            const inconsistent = await all(`
                 SELECT 
                     i.id,
                     i.total_amount as stored_total,
@@ -505,14 +502,14 @@ class AutoHealer {
     /**
      * إصلاح عدم تطابق المجاميع
      */
-    _fixInconsistentTotals(issues) {
+    async _fixInconsistentTotals(issues) {
         let fixed = 0;
         
         for (const issue of issues) {
             if (issue.type === 'inconsistent_invoice_totals') {
                 for (const record of issue.records) {
                     try {
-                        run(`
+                        await run(`
                             UPDATE invoices 
                             SET total_amount = ?, updated_at = ?
                             WHERE id = ?
@@ -531,9 +528,9 @@ class AutoHealer {
     /**
      * تسجيل الإصلاح
      */
-    _logFix(ruleName, found, fixed) {
+    async _logFix(ruleName, found, fixed) {
         try {
-            run(`
+            await run(`
                 INSERT INTO bot_fixes (id, error_type, description, fix_applied, success, created_at)
                 VALUES (?, ?, ?, ?, ?, ?)
             `, [

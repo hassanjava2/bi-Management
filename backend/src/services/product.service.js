@@ -18,16 +18,16 @@ const PRODUCT_GROUPS = {
   8: { id: '8', name: 'طابعات', name_en: 'Printers' },
 };
 
-function ensureProductsTable() {
+async function ensureProductsTable() {
   try {
-    get('SELECT 1 FROM products LIMIT 1');
+    await get('SELECT 1 FROM products LIMIT 1');
     return true;
   } catch {
     return false;
   }
 }
 
-function list(filters = {}) {
+async function list(filters = {}) {
   const { search, group_id, category_id, page = 1, limit = 50 } = filters;
   const catId = group_id || category_id;
   let query = `
@@ -50,7 +50,7 @@ function list(filters = {}) {
   const limitNum = parseInt(limit, 10) || 50;
   const offset = (parseInt(page, 10) - 1) * limitNum;
   params.push(limitNum, offset);
-  const rows = all(query, params);
+  const rows = await all(query, params);
   const countParams = [];
   let countQuery = `SELECT COUNT(*) as total FROM products p WHERE (p.is_deleted = 0 OR p.is_deleted IS NULL)`;
   if (search) {
@@ -62,7 +62,7 @@ function list(filters = {}) {
     countQuery += ` AND p.category_id = ?`;
     countParams.push(String(catId));
   }
-  const countResult = get(countQuery, countParams);
+  const countResult = await get(countQuery, countParams);
   const total = (countResult && countResult.total) || 0;
   return {
     rows,
@@ -73,10 +73,10 @@ function list(filters = {}) {
   };
 }
 
-function search(queryTerm, limit = 20) {
+async function search(queryTerm, limit = 20) {
   if (!queryTerm || queryTerm.length < 2) return [];
   const term = `%${queryTerm}%`;
-  const rows = all(
+  const rows = await all(
     `SELECT id, name, name_ar, code, cost_price, selling_price, wholesale_price, category_id FROM products
      WHERE (is_deleted = 0 OR is_deleted IS NULL) AND (name LIKE ? OR name_ar LIKE ? OR code LIKE ?)
      ORDER BY name LIMIT ?`,
@@ -96,8 +96,8 @@ function search(queryTerm, limit = 20) {
   }));
 }
 
-function getById(id) {
-  const row = get(
+async function getById(id) {
+  const row = await get(
     `SELECT p.*, c.name as category_name, c.name_ar as category_name_ar
      FROM products p LEFT JOIN categories c ON p.category_id = c.id
      WHERE p.id = ? AND (p.is_deleted = 0 OR p.is_deleted IS NULL)`,
@@ -113,7 +113,7 @@ function getById(id) {
   };
 }
 
-function create(data) {
+async function create(data) {
   const id = data.id ? String(data.id) : generateId();
   const {
     name,
@@ -144,7 +144,7 @@ function create(data) {
   const cost = cost_price != null ? cost_price : buy_price;
   const selling = selling_price != null ? selling_price : sale_price;
   const createdAt = now();
-  run(
+  await run(
     `INSERT INTO products (id, code, sku, barcode, name, name_ar, description, category_id, brand, model,
        cost_price, selling_price, wholesale_price, min_price, track_by_serial, quantity, min_quantity, unit, warranty_months, is_active, created_at, updated_at, created_by)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -177,8 +177,8 @@ function create(data) {
   return getById(id);
 }
 
-function update(id, data) {
-  const existing = get('SELECT * FROM products WHERE id = ?', [String(id)]);
+async function update(id, data) {
+  const existing = await get('SELECT * FROM products WHERE id = ?', [String(id)]);
   if (!existing) return null;
   const {
     name,
@@ -232,20 +232,20 @@ function update(id, data) {
   updates.push('updated_at = ?');
   params.push(now());
   params.push(String(id));
-  run(`UPDATE products SET ${updates.join(', ')} WHERE id = ?`, params);
+  await run(`UPDATE products SET ${updates.join(', ')} WHERE id = ?`, params);
   return getById(id);
 }
 
-function remove(id) {
-  const existing = get('SELECT id FROM products WHERE id = ?', [String(id)]);
+async function remove(id) {
+  const existing = await get('SELECT id FROM products WHERE id = ?', [String(id)]);
   if (!existing) return false;
-  run(`UPDATE products SET is_deleted = 1, deleted_at = ? WHERE id = ?`, [now(), String(id)]);
+  await run(`UPDATE products SET is_deleted = 1, deleted_at = ? WHERE id = ?`, [now(), String(id)]);
   return true;
 }
 
-function getGroups() {
+async function getGroups() {
   const countQuery = `SELECT category_id as id, COUNT(*) as count FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) AND category_id IS NOT NULL GROUP BY category_id`;
-  const counts = all(countQuery);
+  const counts = await all(countQuery);
   const countMap = {};
   counts.forEach((c) => { countMap[c.id] = c.count; });
   return PRODUCT_GROUP_IDS.map((id) => ({
@@ -256,14 +256,14 @@ function getGroups() {
   }));
 }
 
-function getStats() {
-  const rows = all(
+async function getStats() {
+  const rows = await all(
     `SELECT COUNT(*) as total, AVG(cost_price) as avg_buy_price, AVG(selling_price) as avg_sale_price,
       SUM(quantity * COALESCE(cost_price, 0)) as total_value
      FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL)`
   );
   const r = rows[0];
-  const byGroup = all(
+  const byGroup = await all(
     `SELECT category_id, COUNT(*) as cnt FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) AND category_id IS NOT NULL GROUP BY category_id`
   );
   const by_group = {};
@@ -277,11 +277,11 @@ function getStats() {
   };
 }
 
-function seedFromJson(productsArray) {
+async function seedFromJson(productsArray) {
   const created = [];
   for (const p of productsArray) {
     const id = String(p.id);
-    if (get('SELECT id FROM products WHERE id = ?', [id])) continue;
+    if (await get('SELECT id FROM products WHERE id = ?', [id])) continue;
     create({
       id,
       name: p.name,

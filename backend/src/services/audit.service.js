@@ -41,7 +41,7 @@ const CRITICAL_EVENTS = [
 /**
  * تسجيل حدث في سجل التدقيق
  */
-function log(event) {
+async function log(event) {
     const {
         eventType,
         eventCategory = EVENT_CATEGORIES.SYSTEM,
@@ -66,7 +66,7 @@ function log(event) {
     } = event;
 
     try {
-        run(`
+        await run(`
             INSERT INTO audit_logs 
             (id, event_type, event_category, severity, user_id, user_name, user_role,
              ip_address, user_agent, device_fingerprint, entity_type, entity_id, entity_name,
@@ -112,9 +112,9 @@ function log(event) {
 /**
  * تسجيل حدث بسيط (للتوافق)
  */
-function logAudit(data) {
+async function logAudit(data) {
     try {
-        run(`
+        await run(`
             INSERT INTO audit_logs (id, user_id, event_type, action, entity_type, entity_id,
                 old_value, new_value, ip_address, user_agent, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -295,7 +295,7 @@ function logSecurityEvent(data) {
 /**
  * البحث في السجلات
  */
-function search(filters) {
+async function search(filters) {
     const {
         startDate,
         endDate,
@@ -363,13 +363,13 @@ function search(filters) {
     query += ' LIMIT ? OFFSET ?';
     params.push(limit, (page - 1) * limit);
 
-    return all(query, params);
+    return await all(query, params);
 }
 
 /**
  * عدد السجلات
  */
-function getCount(filters = {}) {
+async function getCount(filters = {}) {
     let query = 'SELECT COUNT(*) as count FROM audit_logs WHERE 1=1';
     const params = [];
 
@@ -388,21 +388,21 @@ function getCount(filters = {}) {
         params.push(filters.userId);
     }
 
-    const result = get(query, params);
+    const result = await get(query, params);
     return result?.count || 0;
 }
 
 /**
  * إحصائيات السجل
  */
-function getStats(days = 7) {
-    return all(`
+async function getStats(days = 7) {
+    return await all(`
         SELECT 
             event_category,
             severity,
             COUNT(*) as count
         FROM audit_logs
-        WHERE created_at >= datetime('now', '-' || ? || ' days')
+        WHERE created_at >= CURRENT_TIMESTAMP - (? * INTERVAL '1 day')
         GROUP BY event_category, severity
         ORDER BY count DESC
     `, [days]);
@@ -411,13 +411,13 @@ function getStats(days = 7) {
 /**
  * عد محاولات تسجيل الدخول الفاشلة
  */
-function countFailedLogins(userId, minutes = 30) {
+async function countFailedLogins(userId, minutes = 30) {
     try {
-        const result = get(`
+        const result = await get(`
             SELECT COUNT(*) as count FROM audit_logs 
             WHERE user_id = ? 
             AND event_type = 'login_failed' 
-            AND created_at > datetime('now', '-' || ? || ' minutes')
+            AND created_at > CURRENT_TIMESTAMP - (? * INTERVAL '1 minute')
         `, [userId, minutes]);
         return result?.count || 0;
     } catch (err) {
@@ -429,14 +429,14 @@ function countFailedLogins(userId, minutes = 30) {
 /**
  * كشف النشاط المشبوه
  */
-function detectSuspiciousActivity(userId) {
+async function detectSuspiciousActivity(userId) {
     if (!userId) return false;
 
-    const result = get(`
+    const result = await get(`
         SELECT COUNT(*) as count
         FROM audit_logs
         WHERE user_id = ?
-        AND created_at > datetime('now', '-1 minutes')
+        AND created_at > CURRENT_TIMESTAMP - INTERVAL '1 minute'
     `, [userId]);
 
     if (result?.count > 100) {
@@ -463,8 +463,8 @@ function notifyOwner(eventType, userName, action) {
 /**
  * جلب السجلات الأخيرة
  */
-function getRecent(limit = 20) {
-    return all(`
+async function getRecent(limit = 20) {
+    return await all(`
         SELECT * FROM audit_logs 
         ORDER BY created_at DESC 
         LIMIT ?
@@ -474,8 +474,8 @@ function getRecent(limit = 20) {
 /**
  * جلب سجلات مستخدم
  */
-function getByUser(userId, limit = 50) {
-    return all(`
+async function getByUser(userId, limit = 50) {
+    return await all(`
         SELECT * FROM audit_logs 
         WHERE user_id = ?
         ORDER BY created_at DESC 

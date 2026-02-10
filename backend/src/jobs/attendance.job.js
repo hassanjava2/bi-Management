@@ -17,7 +17,7 @@ async function checkLateEmployees() {
     const todayDate = today();
     
     // Get active employees who haven't checked in
-    const lateEmployees = all(`
+    const lateEmployees = await all(`
         SELECT u.id, u.full_name, u.department_id, d.name as department_name
         FROM users u
         LEFT JOIN departments d ON u.department_id = d.id
@@ -53,7 +53,7 @@ async function markAbsentEmployees() {
     const todayDate = today();
     
     // Get employees who still haven't checked in
-    const absentEmployees = all(`
+    const absentEmployees = await all(`
         SELECT u.id, u.full_name
         FROM users u
         LEFT JOIN attendance a ON u.id = a.user_id AND a.date = ?
@@ -66,7 +66,7 @@ async function markAbsentEmployees() {
 
     for (const employee of absentEmployees) {
         // Check if they have an approved vacation
-        const vacation = get(`
+        const vacation = await get(`
             SELECT id FROM vacations 
             WHERE user_id = ? 
             AND ? BETWEEN start_date AND end_date
@@ -76,7 +76,7 @@ async function markAbsentEmployees() {
         const status = vacation ? 'vacation' : 'absent';
 
         // Create attendance record
-        run(`
+        await run(`
             INSERT INTO attendance (id, user_id, date, status, notes)
             VALUES (?, ?, ?, ?, ?)
         `, [
@@ -97,6 +97,16 @@ async function markAbsentEmployees() {
                 data: { type: 'marked_absent' }
             });
             markedCount++;
+            // Reassign their open tasks (AI Distribution)
+            try {
+                const aiDist = require('../services/ai-distribution/index');
+                const result = aiDist.reassignTasksFromUser(employee.id);
+                if (result.reassigned?.length > 0) {
+                    console.log(`[Attendance Job] Reassigned ${result.reassigned.length} tasks from absent user ${employee.id}`);
+                }
+            } catch (e) {
+                console.warn('[Attendance Job] AI reassign skipped:', e.message);
+            }
         }
     }
 
@@ -113,7 +123,7 @@ async function generateDailyReport() {
     
     const todayDate = today();
     
-    const stats = get(`
+    const stats = await get(`
         SELECT 
             COUNT(*) as total_records,
             SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present,
@@ -125,7 +135,7 @@ async function generateDailyReport() {
         FROM attendance WHERE date = ?
     `, [todayDate]);
 
-    const totalEmployees = get(`SELECT COUNT(*) as count FROM users WHERE is_active = 1`);
+    const totalEmployees = await get(`SELECT COUNT(*) as count FROM users WHERE is_active = 1`);
 
     const report = {
         date: todayDate,
@@ -144,7 +154,7 @@ async function generateDailyReport() {
     console.log('[Attendance Job] Daily report:', report);
 
     // Send report to HR/Admin
-    const hrUsers = all(`SELECT id FROM users WHERE role IN ('admin', 'hr') AND is_active = 1`);
+    const hrUsers = await all(`SELECT id FROM users WHERE role IN ('admin', 'hr') AND is_active = 1`);
     
     for (const user of hrUsers) {
         notificationService.create({
@@ -168,7 +178,7 @@ async function checkIncompleteTasks() {
     const todayDate = today();
     
     // Get users who checked out today with incomplete tasks
-    const usersWithIncompleteTasks = all(`
+    const usersWithIncompleteTasks = await all(`
         SELECT DISTINCT u.id, u.full_name,
             (SELECT COUNT(*) FROM tasks t 
              WHERE t.assigned_to = u.id 
@@ -189,7 +199,7 @@ async function checkIncompleteTasks() {
         });
 
         // Move incomplete tasks to tomorrow
-        run(`
+        await run(`
             UPDATE tasks 
             SET due_date = date(due_date, '+1 day'),
                 notes = COALESCE(notes, '') || ' [نُقلت من ${todayDate}]'

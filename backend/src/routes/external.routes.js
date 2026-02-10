@@ -11,11 +11,11 @@ const { generateId, now } = require('../utils/helpers');
 const { logAudit } = require('../services/audit.service');
 
 // API Key Authentication for external systems
-function apiKeyAuth(req, res, next) {
+async function apiKeyAuth(req, res, next) {
     const apiKey = req.headers['x-api-key'];
     
     // Check if API key is valid (stored in settings)
-    const validKey = get(`SELECT value FROM settings WHERE key = 'external_api_key'`);
+    const validKey = await get(`SELECT value FROM settings WHERE key = 'external_api_key'`);
     
     if (!apiKey || apiKey !== validKey?.value) {
         return res.status(401).json({
@@ -32,7 +32,7 @@ function apiKeyAuth(req, res, next) {
  * GET /api/external/attendance/sync
  * Get attendance data for sync with bi-comp
  */
-router.get('/attendance/sync', apiKeyAuth, (req, res) => {
+router.get('/attendance/sync', apiKeyAuth, async (req, res) => {
     const { date, from_date, to_date } = req.query;
 
     let query = `
@@ -62,12 +62,12 @@ router.get('/attendance/sync', apiKeyAuth, (req, res) => {
         params.push(from_date, to_date);
     } else {
         // Default: last 7 days
-        query += ` AND a.date >= date('now', '-7 days')`;
+        query += ` AND a.date >= CURRENT_DATE - INTERVAL '7 days'`;
     }
 
     query += ` ORDER BY a.date DESC, a.check_in ASC`;
 
-    const records = all(query, params);
+    const records = await all(query, params);
 
     res.json({
         success: true,
@@ -80,7 +80,7 @@ router.get('/attendance/sync', apiKeyAuth, (req, res) => {
  * POST /api/external/attendance/import
  * Import attendance data from bi-comp
  */
-router.post('/attendance/import', apiKeyAuth, (req, res) => {
+router.post('/attendance/import', apiKeyAuth, async (req, res) => {
     const { records } = req.body;
 
     if (!Array.isArray(records)) {
@@ -98,7 +98,7 @@ router.post('/attendance/import', apiKeyAuth, (req, res) => {
     for (const record of records) {
         try {
             // Find user by employee_code
-            const user = get(`SELECT id FROM users WHERE employee_code = ?`, [record.employee_code]);
+            const user = await get(`SELECT id FROM users WHERE employee_code = ?`, [record.employee_code]);
             
             if (!user) {
                 errors.push({ employee_code: record.employee_code, error: 'User not found' });
@@ -107,13 +107,13 @@ router.post('/attendance/import', apiKeyAuth, (req, res) => {
             }
 
             // Check if record already exists
-            const existing = get(`
+            const existing = await get(`
                 SELECT id FROM attendance WHERE user_id = ? AND date = ?
             `, [user.id, record.date]);
 
             if (existing) {
                 // Update existing record
-                run(`
+                await run(`
                     UPDATE attendance SET
                         check_in = COALESCE(?, check_in),
                         check_out = COALESCE(?, check_out),
@@ -124,7 +124,7 @@ router.post('/attendance/import', apiKeyAuth, (req, res) => {
                 `, [record.check_in, record.check_out, record.status, existing.id]);
             } else {
                 // Insert new record
-                run(`
+                await run(`
                     INSERT INTO attendance (id, user_id, date, check_in, check_out, status, check_in_method)
                     VALUES (?, ?, ?, ?, ?, ?, 'biometric')
                 `, [
@@ -166,8 +166,8 @@ router.post('/attendance/import', apiKeyAuth, (req, res) => {
  * GET /api/external/employees
  * Get employees for external systems
  */
-router.get('/employees', apiKeyAuth, (req, res) => {
-    const employees = all(`
+router.get('/employees', apiKeyAuth, async (req, res) => {
+    const employees = await all(`
         SELECT 
             id,
             employee_code,

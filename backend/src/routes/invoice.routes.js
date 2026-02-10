@@ -17,6 +17,8 @@ const { requestInvoiceVoid, requestDeletion } = require('../services/approval.se
 const invoiceWorkflow = require('../services/invoiceWorkflow.service');
 let notificationService;
 try { notificationService = require('../services/notification.service'); } catch (e) { /* optional */ }
+let eventBus;
+try { eventBus = require('../services/ai-distribution/event-bus'); } catch (e) { eventBus = null; }
 
 router.use(auth);
 
@@ -153,7 +155,7 @@ router.get('/', requireInvoiceView, async (req, res) => {
         query += ` LIMIT ? OFFSET ?`;
         params.push(parseInt(limit), offset);
 
-        const invoices = all(query, params);
+        const invoices = await all(query, params);
 
         // Get total count for pagination
         let countQuery = `SELECT COUNT(*) as total FROM invoices WHERE 1=1`;
@@ -167,7 +169,7 @@ router.get('/', requireInvoiceView, async (req, res) => {
         if (end_date) countQuery += ` AND created_at <= ?`;
         if (search) countQuery += ` AND invoice_number LIKE ?`;
         
-        const countResult = get(countQuery, countParams);
+        const countResult = await get(countQuery, countParams);
 
         res.json({
             success: true,
@@ -208,7 +210,7 @@ router.get('/waiting', requireInvoiceView, async (req, res) => {
             params.push(type);
         }
         query += ` ORDER BY i.created_at DESC LIMIT 100`;
-        const list = all(query, params);
+        const list = await all(query, params);
         res.json({ success: true, data: list });
     } catch (error) {
         console.error('[Invoices] Waiting list error:', error.message);
@@ -219,29 +221,29 @@ router.get('/waiting', requireInvoiceView, async (req, res) => {
 router.get('/stats', requireInvoiceView, async (req, res) => {
     try {
         // Total invoices by type
-        const typeStats = all(`
+        const typeStats = await all(`
             SELECT type, COUNT(*) as count, SUM(total) as total_amount
             FROM invoices
             GROUP BY type
         `);
         
         // Today's sales
-        const todaySales = get(`
+        const todaySales = await get(`
             SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as total
             FROM invoices
-            WHERE type = 'sale' AND date(created_at) = date('now')
+            WHERE type = 'sale' AND date(created_at) = CURRENT_DATE
         `);
         
         // This month sales
-        const monthSales = get(`
+        const monthSales = await get(`
             SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as total
             FROM invoices
             WHERE type = 'sale' 
-            AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
+            AND date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP)
         `);
         
         // Payment status
-        const paymentStats = all(`
+        const paymentStats = await all(`
             SELECT payment_status, COUNT(*) as count
             FROM invoices
             GROUP BY payment_status
@@ -268,7 +270,7 @@ router.get('/stats', requireInvoiceView, async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
     try {
-        const invoice = get(`
+        const invoice = await get(`
             SELECT i.*,
                    c.name as customer_name, c.phone as customer_phone,
                    s.name as supplier_name
@@ -296,7 +298,7 @@ router.get('/:id', async (req, res) => {
         }
 
         // Get items
-        const items = all(`
+        const items = await all(`
             SELECT ii.*,
                    p.name as product_name
             FROM invoice_items ii
@@ -349,13 +351,13 @@ router.post('/', (req, res, next) => {
         const invoiceNumber = `INV-${Date.now().toString().slice(-8)}`;
 
         // Insert invoice
-        run(`
+        await run(`
             INSERT INTO invoices (
                 id, invoice_number, type, payment_type, customer_id, supplier_id,
                 subtotal, discount_percent, discount_amount, tax_amount, shipping_cost,
                 total, payment_method, payment_status, paid_amount, remaining_amount,
                 notes, status, created_by, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `, [
             id,
             invoiceNumber,
@@ -381,7 +383,7 @@ router.post('/', (req, res, next) => {
         // Insert items + auto-generate serials for purchase invoices
         for (const item of items) {
             const itemId = generateId();
-            run(`
+            await run(`
                 INSERT INTO invoice_items (
                     id, invoice_id, product_id, quantity, unit_price, total, serial_number
                 ) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -402,7 +404,7 @@ router.post('/', (req, res, next) => {
                     try {
                         const serialId = generateId();
                         const year = new Date().getFullYear();
-                        const lastSerial = get(`SELECT serial_number FROM serial_numbers WHERE serial_number LIKE ? ORDER BY serial_number DESC LIMIT 1`, [`BI-${year}-%`]);
+                        const lastSerial = await get(`SELECT serial_number FROM serial_numbers WHERE serial_number LIKE ? ORDER BY serial_number DESC LIMIT 1`, [`BI-${year}-%`]);
                         let nextNum = 1;
                         if (lastSerial && lastSerial.serial_number) {
                             const parts = lastSerial.serial_number.split('-');
@@ -410,8 +412,8 @@ router.post('/', (req, res, next) => {
                             if (!isNaN(lastNum)) nextNum = lastNum + 1;
                         }
                         const serial = `BI-${year}-${String(nextNum).padStart(6, '0')}`;
-                        run(`INSERT INTO serial_numbers (id, serial_number, product_id, purchase_cost, supplier_id, status, warehouse_id, created_at, created_by)
-                             VALUES (?, ?, ?, ?, ?, 'new', 'inspection', datetime('now'), ?)`,
+                        await run(`INSERT INTO serial_numbers (id, serial_number, product_id, purchase_cost, supplier_id, status, warehouse_id, created_at, created_by)
+                             VALUES (?, ?, ?, ?, ?, 'new', 'inspection', CURRENT_TIMESTAMP, ?)`,
                             [serialId, serial, item.product_id, item.price || item.unit_price || 0, supplier_id || null, req.user?.id]);
                     } catch (serialErr) {
                         console.error('[Invoices] Auto-serial error:', serialErr.message);
@@ -422,13 +424,13 @@ router.post('/', (req, res, next) => {
             // Mark device as sold if device_id provided (sale invoices)
             if (item.device_id && (type === 'sale' || type === 'sale_credit' || type === 'sale_installment')) {
                 try {
-                    run(`UPDATE serial_numbers SET status = 'sold', sale_invoice_id = ?, sale_date = date('now') WHERE id = ?`, [id, item.device_id]);
+                    await run(`UPDATE serial_numbers SET status = 'sold', sale_invoice_id = ?, sale_date = CURRENT_DATE WHERE id = ?`, [id, item.device_id]);
                 } catch (e) { /* device might not exist */ }
             }
         }
 
         // Get created invoice
-        const createdInvoice = get(`SELECT * FROM invoices WHERE id = ?`, [id]);
+        const createdInvoice = await get(`SELECT * FROM invoices WHERE id = ?`, [id]);
 
         logInvoiceAudit(req, 'invoice_created', id, createdInvoice.invoice_number, null, {
             invoice_number: createdInvoice.invoice_number,
@@ -466,9 +468,9 @@ router.post('/', (req, res, next) => {
 
         if (req.body.sub_type && createdInvoice) {
             try {
-                run(`UPDATE invoices SET sub_type = ? WHERE id = ?`, [req.body.sub_type, id]);
+                await run(`UPDATE invoices SET sub_type = ? WHERE id = ?`, [req.body.sub_type, id]);
                 if (req.body.sub_type === 'waiting' || req.body.sub_type === 'quotation') {
-                    run(`UPDATE invoices SET status = ? WHERE id = ?`, ['draft', id]);
+                    await run(`UPDATE invoices SET status = ? WHERE id = ?`, ['draft', id]);
                 }
                 invoiceWorkflow.logWorkflow(id, invoiceWorkflow.WORKFLOW_EVENTS.CREATED, req.user?.id, req.user?.role, req.body.sub_type || null);
             } catch (e) { /* columns may not exist yet */ }
@@ -476,7 +478,7 @@ router.post('/', (req, res, next) => {
 
         res.status(201).json({
             success: true,
-            data: get('SELECT * FROM invoices WHERE id = ?', [id]) || createdInvoice
+            data: await get('SELECT * FROM invoices WHERE id = ?', [id]) || createdInvoice
         });
     } catch (error) {
         console.error('[Invoices] Create error:', error.message);
@@ -490,7 +492,7 @@ router.post('/', (req, res, next) => {
  */
 router.get('/:id/workflow-log', requireInvoiceView, async (req, res) => {
     try {
-        const inv = get('SELECT id FROM invoices WHERE id = ?', [req.params.id]);
+        const inv = await get('SELECT id FROM invoices WHERE id = ?', [req.params.id]);
         if (!inv) return res.status(404).json({ success: false, error: 'NOT_FOUND' });
         const log = invoiceWorkflow.getWorkflowLog(req.params.id, 50);
         res.json({ success: true, data: log });
@@ -514,6 +516,17 @@ router.post('/:id/transition', requireInvoiceView, async (req, res) => {
             req.user?.role,
             notes
         );
+        if (eventBus && new_status === 'completed') {
+            const inv = await get('SELECT id, type, payment_type, total FROM invoices WHERE id = ?', [req.params.id]);
+            const items = await all('SELECT id, product_id, quantity, total FROM invoice_items WHERE invoice_id = ?', [req.params.id]);
+            const payload = { invoice_id: req.params.id, invoiceId: req.params.id, type: inv?.type, items: items || [], payment_type: inv?.payment_type };
+            if (inv?.type === 'purchase') {
+                eventBus.emit(eventBus.EVENT_TYPES.PURCHASE_CONFIRMED, payload);
+            } else {
+                eventBus.emit(eventBus.EVENT_TYPES.INVOICE_COMPLETED, payload);
+                eventBus.emit(eventBus.EVENT_TYPES.DEVICE_SOLD, payload);
+            }
+        }
         res.json({ success: true, data: result });
     } catch (error) {
         if (error.message === 'INVOICE_NOT_FOUND') return res.status(404).json({ success: false, error: 'NOT_FOUND' });
@@ -528,7 +541,7 @@ router.post('/:id/transition', requireInvoiceView, async (req, res) => {
  */
 router.post('/:id/audit', requireInvoiceView, async (req, res) => {
     try {
-        const inv = get('SELECT id FROM invoices WHERE id = ?', [req.params.id]);
+        const inv = await get('SELECT id FROM invoices WHERE id = ?', [req.params.id]);
         if (!inv) return res.status(404).json({ success: false, error: 'NOT_FOUND' });
         const result = invoiceWorkflow.setAudited(req.params.id, req.user?.id);
         res.json({ success: true, data: result });
@@ -543,7 +556,7 @@ router.post('/:id/audit', requireInvoiceView, async (req, res) => {
  */
 router.post('/:id/prepare', requireInvoiceView, async (req, res) => {
     try {
-        const inv = get('SELECT id FROM invoices WHERE id = ?', [req.params.id]);
+        const inv = await get('SELECT id FROM invoices WHERE id = ?', [req.params.id]);
         if (!inv) return res.status(404).json({ success: false, error: 'NOT_FOUND' });
         const result = invoiceWorkflow.setPrepared(req.params.id, req.user?.id);
         res.json({ success: true, data: result });
@@ -558,7 +571,7 @@ router.post('/:id/prepare', requireInvoiceView, async (req, res) => {
  */
 router.post('/:id/convert-to-active', requireInvoiceView, async (req, res) => {
     try {
-        const inv = get('SELECT * FROM invoices WHERE id = ?', [req.params.id]);
+        const inv = await get('SELECT * FROM invoices WHERE id = ?', [req.params.id]);
         if (!inv) return res.status(404).json({ success: false, error: 'NOT_FOUND' });
         if (inv.status !== 'draft' && inv.status !== 'waiting') {
             return res.status(400).json({ success: false, error: 'Only draft/waiting invoices can be converted' });
@@ -578,9 +591,9 @@ router.post('/:id/convert-to-active', requireInvoiceView, async (req, res) => {
  */
 router.get('/:id/expenses', requireInvoiceView, async (req, res) => {
     try {
-        const inv = get('SELECT id FROM invoices WHERE id = ?', [req.params.id]);
+        const inv = await get('SELECT id FROM invoices WHERE id = ?', [req.params.id]);
         if (!inv) return res.status(404).json({ success: false, error: 'NOT_FOUND' });
-        const rows = all('SELECT * FROM invoice_expenses WHERE invoice_id = ? ORDER BY created_at', [req.params.id]);
+        const rows = await all('SELECT * FROM invoice_expenses WHERE invoice_id = ? ORDER BY created_at', [req.params.id]);
         res.json({ success: true, data: rows });
     } catch (e) {
         if (e.message && e.message.includes('no such table')) return res.json({ success: true, data: [] });
@@ -596,12 +609,12 @@ router.post('/:id/expenses', requireInvoiceView, async (req, res) => {
     try {
         const { expense_type, amount, currency, notes } = req.body || {};
         if (!expense_type || amount == null) return res.status(400).json({ success: false, error: 'expense_type and amount required' });
-        const inv = get('SELECT id FROM invoices WHERE id = ?', [req.params.id]);
+        const inv = await get('SELECT id FROM invoices WHERE id = ?', [req.params.id]);
         if (!inv) return res.status(404).json({ success: false, error: 'NOT_FOUND' });
         const id = generateId();
-        run(`INSERT INTO invoice_expenses (id, invoice_id, expense_type, amount, currency, notes) VALUES (?, ?, ?, ?, ?, ?)`,
+        await run(`INSERT INTO invoice_expenses (id, invoice_id, expense_type, amount, currency, notes) VALUES (?, ?, ?, ?, ?, ?)`,
             [id, req.params.id, expense_type, parseFloat(amount), currency || 'IQD', notes || null]);
-        res.status(201).json({ success: true, data: get('SELECT * FROM invoice_expenses WHERE id = ?', [id]) });
+        res.status(201).json({ success: true, data: await get('SELECT * FROM invoice_expenses WHERE id = ?', [id]) });
     } catch (e) {
         if (e.message && e.message.includes('no such table')) return res.status(501).json({ success: false, error: 'invoice_expenses table not found' });
         res.status(500).json({ success: false, error: e.message });
@@ -617,9 +630,9 @@ router.post('/copy-items', requireInvoiceView, async (req, res) => {
     try {
         const { source_invoice_id, item_ids, type, customer_id, supplier_id } = req.body || {};
         if (!source_invoice_id || !type) return res.status(400).json({ success: false, error: 'source_invoice_id and type required' });
-        const src = get('SELECT * FROM invoices WHERE id = ?', [source_invoice_id]);
+        const src = await get('SELECT * FROM invoices WHERE id = ?', [source_invoice_id]);
         if (!src) return res.status(404).json({ success: false, error: 'SOURCE_NOT_FOUND' });
-        let items = all('SELECT * FROM invoice_items WHERE invoice_id = ?', [source_invoice_id]);
+        let items = await all('SELECT * FROM invoice_items WHERE invoice_id = ?', [source_invoice_id]);
         if (Array.isArray(item_ids) && item_ids.length) {
             items = items.filter((i) => item_ids.includes(i.id));
         }
@@ -628,17 +641,17 @@ router.post('/copy-items', requireInvoiceView, async (req, res) => {
         const newNumber = `INV-${Date.now().toString().slice(-8)}`;
         let subtotal = 0;
         for (const it of items) subtotal += parseFloat(it.total) || 0;
-        run(`
+        await run(`
             INSERT INTO invoices (id, invoice_number, type, customer_id, supplier_id, subtotal, total, status, created_by, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'draft', ?, datetime('now'))
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'draft', ?, CURRENT_TIMESTAMP)
         `, [newId, newNumber, type, customer_id || null, supplier_id || null, subtotal, subtotal, req.user?.id]);
         for (const it of items) {
             const itemId = generateId();
-            run(`INSERT INTO invoice_items (id, invoice_id, product_id, quantity, unit_price, total) VALUES (?, ?, ?, ?, ?, ?)`,
+            await run(`INSERT INTO invoice_items (id, invoice_id, product_id, quantity, unit_price, total) VALUES (?, ?, ?, ?, ?, ?)`,
                 [itemId, newId, it.product_id, it.quantity, it.unit_price, it.total]);
         }
         logInvoiceAudit(req, 'invoice_created', newId, newNumber, null, { source_invoice_id, copied_items: items.length });
-        res.status(201).json({ success: true, data: get('SELECT * FROM invoices WHERE id = ?', [newId]) });
+        res.status(201).json({ success: true, data: await get('SELECT * FROM invoices WHERE id = ?', [newId]) });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
     }
@@ -673,7 +686,7 @@ router.put('/:id', async (req, res) => {
         const { id } = req.params;
         const updates = req.body;
 
-        const existing = get(`SELECT * FROM invoices WHERE id = ?`, [id]);
+        const existing = await get(`SELECT * FROM invoices WHERE id = ?`, [id]);
         if (!existing) {
             return res.status(404).json({ success: false, error: 'NOT_FOUND' });
         }
@@ -711,7 +724,7 @@ router.put('/:id', async (req, res) => {
             });
         }
         
-        setClauses.push(`updated_at = datetime('now')`);
+        setClauses.push(`updated_at = CURRENT_TIMESTAMP`);
         params.push(id);
         
         const oldValue = {};
@@ -719,9 +732,9 @@ router.put('/:id', async (req, res) => {
         const newValue = {};
         allowedFields.forEach(f => { if (updates[f] !== undefined) newValue[f] = updates[f]; });
         
-        run(`UPDATE invoices SET ${setClauses.join(', ')} WHERE id = ?`, params);
+        await run(`UPDATE invoices SET ${setClauses.join(', ')} WHERE id = ?`, params);
         
-        const updated = get(`SELECT * FROM invoices WHERE id = ?`, [id]);
+        const updated = await get(`SELECT * FROM invoices WHERE id = ?`, [id]);
 
         logInvoiceAudit(req, 'invoice_modified', id, existing.invoice_number, oldValue, newValue, updates.paid_amount !== undefined ? { payment_updated: true } : null);
 
@@ -744,7 +757,7 @@ router.post('/:id/cancel', async (req, res) => {
         const { id } = req.params;
         const { reason } = req.body;
 
-        const existing = get(`SELECT * FROM invoices WHERE id = ?`, [id]);
+        const existing = await get(`SELECT * FROM invoices WHERE id = ?`, [id]);
         if (!existing) {
             return res.status(404).json({ success: false, error: 'NOT_FOUND' });
         }
@@ -763,15 +776,15 @@ router.post('/:id/cancel', async (req, res) => {
         }
 
         if (hasBypassApproval(req.user)) {
-            run(`
+            await run(`
                 UPDATE invoices 
                 SET status = 'cancelled', 
-                    cancelled_at = datetime('now'),
+                    cancelled_at = CURRENT_TIMESTAMP,
                     cancelled_reason = ?,
-                    updated_at = datetime('now')
+                    updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             `, [reason || null, id]);
-            const cancelled = get(`SELECT * FROM invoices WHERE id = ?`, [id]);
+            const cancelled = await get(`SELECT * FROM invoices WHERE id = ?`, [id]);
             logInvoiceAudit(req, 'invoice_cancelled', id, existing.invoice_number, { status: existing.status }, { status: 'cancelled', reason: reason || null }, { reason: reason || null, bypass: true });
             // تنبيه إلغاء
             try {
@@ -808,17 +821,17 @@ router.post('/:id/cancel-now', async (req, res) => {
         }
         const { id } = req.params;
         const { reason } = req.body;
-        const existing = get(`SELECT * FROM invoices WHERE id = ?`, [id]);
+        const existing = await get(`SELECT * FROM invoices WHERE id = ?`, [id]);
         if (!existing) return res.status(404).json({ success: false, error: 'NOT_FOUND' });
         if (existing.status === 'cancelled' || existing.status === 'voided') {
             return res.status(400).json({ success: false, error: 'ALREADY_CANCELLED' });
         }
-        run(`
+        await run(`
             UPDATE invoices 
-            SET status = 'cancelled', cancelled_at = datetime('now'), cancelled_reason = ?, updated_at = datetime('now')
+            SET status = 'cancelled', cancelled_at = CURRENT_TIMESTAMP, cancelled_reason = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         `, [reason || null, id]);
-        const cancelled = get(`SELECT * FROM invoices WHERE id = ?`, [id]);
+        const cancelled = await get(`SELECT * FROM invoices WHERE id = ?`, [id]);
         logInvoiceAudit(req, 'invoice_cancelled', id, existing.invoice_number, { status: existing.status }, { status: 'cancelled' }, { reason: reason || null, bypass: true });
         res.json({ success: true, data: cancelled });
     } catch (error) {
@@ -835,7 +848,7 @@ router.post('/:id/request-deletion', async (req, res) => {
     try {
         const { id } = req.params;
         const { reason } = req.body;
-        const existing = get(`SELECT * FROM invoices WHERE id = ?`, [id]);
+        const existing = await get(`SELECT * FROM invoices WHERE id = ?`, [id]);
         if (!existing) return res.status(404).json({ success: false, error: 'NOT_FOUND' });
         const deletePerm = getInvoicePermission(existing.type, 'delete');
         if (req.user?.role !== 'owner' && !checkPermission(req.user, deletePerm)) {
@@ -860,7 +873,7 @@ router.post('/:id/request-deletion', async (req, res) => {
  */
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
-    const existing = get(`SELECT * FROM invoices WHERE id = ?`, [id]);
+    const existing = await get(`SELECT * FROM invoices WHERE id = ?`, [id]);
     if (!existing) {
         return res.status(404).json({ success: false, error: 'NOT_FOUND' });
     }
@@ -869,7 +882,7 @@ router.delete('/:id', async (req, res) => {
         if (req.user?.role !== 'owner' && !checkPermission(req.user, deletePerm)) {
             return res.status(403).json({ success: false, error: 'PERMISSION_DENIED', required_permission: deletePerm });
         }
-        run(`UPDATE invoices SET status = 'deleted', updated_at = datetime('now') WHERE id = ?`, [id]);
+        await run(`UPDATE invoices SET status = 'deleted', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [id]);
         logInvoiceAudit(req, 'invoice_deleted', id, existing.invoice_number, { status: existing.status }, { status: 'deleted' }, { bypass: true });
         return res.json({ success: true, message: 'Invoice deleted successfully' });
     }
@@ -892,9 +905,9 @@ router.delete('/:id/force', async (req, res) => {
             return res.status(403).json({ success: false, error: 'PERMISSION_DENIED', message: 'صلاحية تجاوز الموافقات مطلوبة' });
         }
         const { id } = req.params;
-        const existing = get(`SELECT * FROM invoices WHERE id = ?`, [id]);
+        const existing = await get(`SELECT * FROM invoices WHERE id = ?`, [id]);
         if (!existing) return res.status(404).json({ success: false, error: 'NOT_FOUND' });
-        run(`UPDATE invoices SET status = 'deleted', updated_at = datetime('now') WHERE id = ?`, [id]);
+        await run(`UPDATE invoices SET status = 'deleted', updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [id]);
         logInvoiceAudit(req, 'invoice_deleted', id, existing.invoice_number, { status: existing.status }, { status: 'deleted' }, { bypass: true });
         res.json({ success: true, message: 'Invoice deleted successfully' });
     } catch (error) {
@@ -909,7 +922,7 @@ router.delete('/:id/force', async (req, res) => {
  */
 router.get('/:id/print', async (req, res) => {
     try {
-        const invoice = get(`
+        const invoice = await get(`
             SELECT i.*,
                    c.name as customer_name, c.phone as customer_phone, c.addresses as customer_address,
                    s.name as supplier_name
@@ -936,7 +949,7 @@ router.get('/:id/print', async (req, res) => {
             });
         }
 
-        const items = all(`
+        const items = await all(`
             SELECT ii.*, p.name as product_name
             FROM invoice_items ii
             LEFT JOIN products p ON ii.product_id = p.id

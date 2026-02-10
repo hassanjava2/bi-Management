@@ -17,7 +17,7 @@ function initSocket(httpServer) {
     });
 
     // Authentication middleware
-    io.use((socket, next) => {
+    io.use(async (socket, next) => {
         const token = socket.handshake.auth.token;
         
         if (!token) {
@@ -31,7 +31,7 @@ function initSocket(httpServer) {
         }
 
         // Get user
-        const user = get(
+        const user = await get(
             `SELECT id, full_name, role, security_level 
              FROM users WHERE id = ? AND is_active = 1`,
             [decoded.id]

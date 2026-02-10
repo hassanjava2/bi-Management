@@ -8,7 +8,6 @@ const router = express.Router();
 const { auth } = require('../middleware/auth');
 const { checkPermission, checkSecurityLevel } = require('../middleware/checkPermission');
 const { getPermissionService } = require('../services/permission.service');
-const { getDatabase } = require('../config/database');
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // الصلاحيات
@@ -19,17 +18,16 @@ const { getDatabase } = require('../config/database');
  */
 router.get('/permissions', auth, checkPermission('system.permissions.view'), async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
         const { grouped } = req.query;
         
         if (grouped === 'true') {
-            const permissions = permissionService.getPermissionsByModule();
+            const permissions = await permissionService.getPermissionsByModule();
             return res.json({ success: true, data: permissions });
         }
         
-        const permissions = permissionService.getAllPermissions();
+        const permissions = await permissionService.getAllPermissions();
         res.json({ success: true, data: permissions });
     } catch (error) {
         console.error('Error fetching permissions:', error);
@@ -46,10 +44,9 @@ router.get('/permissions', auth, checkPermission('system.permissions.view'), asy
  */
 router.get('/roles', auth, checkPermission('system.roles.view'), async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
-        const roles = permissionService.getAllRoles();
+        const roles = await permissionService.getAllRoles();
         res.json({ success: true, data: roles });
     } catch (error) {
         console.error('Error fetching roles:', error);
@@ -62,15 +59,14 @@ router.get('/roles', auth, checkPermission('system.roles.view'), async (req, res
  */
 router.get('/roles/:id', auth, checkPermission('system.roles.view'), async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
-        const role = permissionService.getRoleById(req.params.id);
+        const role = await permissionService.getRoleById(req.params.id);
         if (!role) {
             return res.status(404).json({ success: false, message: 'الدور غير موجود' });
         }
         
-        const permissions = permissionService.getRolePermissions(req.params.id);
+        const permissions = await permissionService.getRolePermissions(req.params.id);
         
         res.json({ 
             success: true, 
@@ -91,8 +87,7 @@ router.get('/roles/:id', auth, checkPermission('system.roles.view'), async (req,
  */
 router.post('/roles', auth, checkPermission('system.roles.create'), checkSecurityLevel(4), async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
         const { name, name_ar, description, security_level, color, icon, permission_ids } = req.body;
         
@@ -100,13 +95,13 @@ router.post('/roles', auth, checkPermission('system.roles.create'), checkSecurit
             return res.status(400).json({ success: false, message: 'اسم الدور مطلوب' });
         }
         
-        const role = permissionService.createRole({
+        const role = await permissionService.createRole({
             name, name_ar, description, security_level, color, icon
         }, req.user.id);
         
         // تعيين الصلاحيات إذا موجودة
         if (permission_ids && permission_ids.length > 0) {
-            permissionService.setRolePermissions(role.id, permission_ids, req.user.id);
+            await permissionService.setRolePermissions(role.id, permission_ids, req.user.id);
         }
         
         res.status(201).json({ success: true, data: role, message: 'تم إنشاء الدور بنجاح' });
@@ -121,14 +116,13 @@ router.post('/roles', auth, checkPermission('system.roles.create'), checkSecurit
  */
 router.put('/roles/:id', auth, checkPermission('system.roles.edit'), checkSecurityLevel(4), async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
-        const role = permissionService.updateRole(req.params.id, req.body, req.user.id);
+        const role = await permissionService.updateRole(req.params.id, req.body, req.user.id);
         
         // تحديث الصلاحيات إذا موجودة
         if (req.body.permission_ids) {
-            permissionService.setRolePermissions(req.params.id, req.body.permission_ids, req.user.id);
+            await permissionService.setRolePermissions(req.params.id, req.body.permission_ids, req.user.id);
         }
         
         res.json({ success: true, data: role, message: 'تم تحديث الدور بنجاح' });
@@ -143,10 +137,9 @@ router.put('/roles/:id', auth, checkPermission('system.roles.edit'), checkSecuri
  */
 router.delete('/roles/:id', auth, checkPermission('system.roles.delete'), checkSecurityLevel(5), async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
-        permissionService.deleteRole(req.params.id, req.user.id);
+        await permissionService.deleteRole(req.params.id, req.user.id);
         
         res.json({ success: true, message: 'تم حذف الدور بنجاح' });
     } catch (error) {
@@ -160,8 +153,7 @@ router.delete('/roles/:id', auth, checkPermission('system.roles.delete'), checkS
  */
 router.put('/roles/:id/permissions', auth, checkPermission('system.permissions.assign'), checkSecurityLevel(4), async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
         const { permission_ids } = req.body;
         
@@ -169,7 +161,7 @@ router.put('/roles/:id/permissions', auth, checkPermission('system.permissions.a
             return res.status(400).json({ success: false, message: 'قائمة الصلاحيات مطلوبة' });
         }
         
-        const permissions = permissionService.setRolePermissions(req.params.id, permission_ids, req.user.id);
+        const permissions = await permissionService.setRolePermissions(req.params.id, permission_ids, req.user.id);
         
         res.json({ success: true, data: permissions, message: 'تم تحديث صلاحيات الدور بنجاح' });
     } catch (error) {
@@ -187,18 +179,15 @@ router.put('/roles/:id/permissions', auth, checkPermission('system.permissions.a
  */
 router.get('/users/:userId/permissions', auth, checkPermission('system.permissions.view'), async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
         const { type } = req.query; // all, custom, role
         
         let permissions;
         if (type === 'custom') {
-            permissions = permissionService.getUserCustomPermissions(req.params.userId);
-        } else if (type === 'all') {
-            permissions = permissionService.getUserAllPermissions(req.params.userId);
+            permissions = await permissionService.getUserCustomPermissions(req.params.userId);
         } else {
-            permissions = permissionService.getUserAllPermissions(req.params.userId);
+            permissions = await permissionService.getUserAllPermissions(req.params.userId);
         }
         
         res.json({ 
@@ -221,12 +210,11 @@ router.post('/users/:userId/permissions/:permissionId/grant',
     checkSecurityLevel(4),
     async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
         const { expires_at, reason } = req.body;
         
-        permissionService.grantUserPermission(
+        await permissionService.grantUserPermission(
             req.params.userId,
             req.params.permissionId,
             { expires_at, reason },
@@ -249,12 +237,11 @@ router.post('/users/:userId/permissions/:permissionId/revoke',
     checkSecurityLevel(4),
     async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
         const { reason } = req.body;
         
-        permissionService.revokeUserPermission(
+        await permissionService.revokeUserPermission(
             req.params.userId,
             req.params.permissionId,
             reason,
@@ -277,10 +264,9 @@ router.delete('/users/:userId/permissions/:permissionId',
     checkSecurityLevel(4),
     async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
-        permissionService.removeUserPermissionOverride(
+        await permissionService.removeUserPermissionOverride(
             req.params.userId,
             req.params.permissionId,
             req.user.id
@@ -302,12 +288,11 @@ router.delete('/users/:userId/permissions/:permissionId',
  */
 router.get('/history', auth, checkPermission('system.permissions.history'), async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
         const { userId, roleId, fromDate, toDate, limit } = req.query;
         
-        const history = permissionService.getPermissionHistory({
+        const history = await permissionService.getPermissionHistory({
             userId,
             roleId,
             fromDate,
@@ -331,12 +316,11 @@ router.get('/history', auth, checkPermission('system.permissions.history'), asyn
  */
 router.get('/my-permissions', auth, async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
         // Super Admin و Owner لهم كل الصلاحيات
         if (['super_admin', 'owner'].includes(req.user.role)) {
-            const allPermissions = permissionService.getAllPermissions();
+            const allPermissions = await permissionService.getAllPermissions();
             return res.json({
                 success: true,
                 data: allPermissions,
@@ -345,7 +329,7 @@ router.get('/my-permissions', auth, async (req, res) => {
             });
         }
         
-        const permissions = permissionService.getUserAllPermissions(req.user.id);
+        const permissions = await permissionService.getUserAllPermissions(req.user.id);
         
         res.json({ 
             success: true, 
@@ -364,15 +348,14 @@ router.get('/my-permissions', auth, async (req, res) => {
  */
 router.get('/check/:code', auth, async (req, res) => {
     try {
-        const db = getDatabase();
-        const permissionService = getPermissionService(db);
+        const permissionService = getPermissionService();
         
         // Super Admin و Owner لهم كل الصلاحيات
         if (['super_admin', 'owner'].includes(req.user.role)) {
             return res.json({ success: true, has_permission: true });
         }
         
-        const permissions = permissionService.getUserAllPermissions(req.user.id);
+        const permissions = await permissionService.getUserAllPermissions(req.user.id);
         const hasPermission = permissions.some(p => p.code === req.params.code && p.is_granted !== false);
         
         res.json({ success: true, has_permission: hasPermission });

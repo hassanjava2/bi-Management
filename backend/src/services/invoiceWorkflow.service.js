@@ -35,11 +35,11 @@ const WORKFLOW_EVENTS = {
 /**
  * تسجيل حدث في سجل سير العمل
  */
-function logWorkflow(invoiceId, event, userId, role, notes = null) {
+async function logWorkflow(invoiceId, event, userId, role, notes = null) {
     const id = generateId();
     const createdAt = now();
     try {
-        run(`
+        await run(`
             INSERT INTO invoice_workflow_log (id, invoice_id, event, user_id, role, notes, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `, [id, invoiceId, event, userId || null, role || null, notes || null, createdAt]);
@@ -54,8 +54,8 @@ function logWorkflow(invoiceId, event, userId, role, notes = null) {
  * تحويل حالة الفاتورة مع التسجيل
  * المسموح: draft -> waiting, waiting -> pending_audit, pending_audit -> pending_preparation, pending_preparation -> completed, waiting -> completed (تحويل لقائمة فعالة)
  */
-function transitionTo(invoiceId, newStatus, userId, role, notes = null) {
-    const inv = get('SELECT id, status FROM invoices WHERE id = ?', [invoiceId]);
+async function transitionTo(invoiceId, newStatus, userId, role, notes = null) {
+    const inv = await get('SELECT id, status FROM invoices WHERE id = ?', [invoiceId]);
     if (!inv) {
         throw new Error('INVOICE_NOT_FOUND');
     }
@@ -78,7 +78,7 @@ function transitionTo(invoiceId, newStatus, userId, role, notes = null) {
         // يمكن تحديث auditor_id / preparer_id من الطلب الخارجي
     }
 
-    run(`UPDATE invoices SET status = ?, updated_at = ? WHERE id = ?`, [newStatus, updates.updated_at, invoiceId]);
+    await run(`UPDATE invoices SET status = ?, updated_at = ? WHERE id = ?`, [newStatus, updates.updated_at, invoiceId]);
     logWorkflow(invoiceId, WORKFLOW_EVENTS.STATUS_CHANGED, userId, role, notes || `status: ${inv.status} -> ${newStatus}`);
     return { invoice_id: invoiceId, previous_status: inv.status, new_status: newStatus };
 }
@@ -86,9 +86,9 @@ function transitionTo(invoiceId, newStatus, userId, role, notes = null) {
 /**
  * تعيين مدقق وتحديث حالة إلى تم التدقيق
  */
-function setAudited(invoiceId, auditorId) {
+async function setAudited(invoiceId, auditorId) {
     const at = now();
-    run(`UPDATE invoices SET auditor_id = ?, audited_at = ?, updated_at = ? WHERE id = ?`, [auditorId, at, at, invoiceId]);
+    await run(`UPDATE invoices SET auditor_id = ?, audited_at = ?, updated_at = ? WHERE id = ?`, [auditorId, at, at, invoiceId]);
     logWorkflow(invoiceId, WORKFLOW_EVENTS.AUDITED, auditorId, 'auditor', null);
     return { invoice_id: invoiceId, auditor_id: auditorId, audited_at: at };
 }
@@ -96,9 +96,9 @@ function setAudited(invoiceId, auditorId) {
 /**
  * تعيين مجهز وتحديث حالة إلى تم التجهيز
  */
-function setPrepared(invoiceId, preparerId) {
+async function setPrepared(invoiceId, preparerId) {
     const at = now();
-    run(`UPDATE invoices SET preparer_id = ?, prepared_at = ?, updated_at = ? WHERE id = ?`, [preparerId, at, at, invoiceId]);
+    await run(`UPDATE invoices SET preparer_id = ?, prepared_at = ?, updated_at = ? WHERE id = ?`, [preparerId, at, at, invoiceId]);
     logWorkflow(invoiceId, WORKFLOW_EVENTS.PREPARED, preparerId, 'preparer', null);
     return { invoice_id: invoiceId, preparer_id: preparerId, prepared_at: at };
 }
@@ -106,8 +106,8 @@ function setPrepared(invoiceId, preparerId) {
 /**
  * جلب سجل سير عمل فاتورة
  */
-function getWorkflowLog(invoiceId, limit = 50) {
-    return all(
+async function getWorkflowLog(invoiceId, limit = 50) {
+    return await all(
         `SELECT id, invoice_id, event, user_id, role, notes, created_at 
          FROM invoice_workflow_log 
          WHERE invoice_id = ? 
@@ -120,11 +120,11 @@ function getWorkflowLog(invoiceId, limit = 50) {
 /**
  * إنشاء تذكير لقائمة بالانتظار/غير مكتملة
  */
-function createReminder(invoiceId, remindAt, notifyCreator = 1, notifySupervisor = 1) {
+async function createReminder(invoiceId, remindAt, notifyCreator = 1, notifySupervisor = 1) {
     const id = generateId();
-    run(`
+    await run(`
         INSERT INTO pending_invoice_reminders (id, invoice_id, remind_at, remind_count, notify_creator, notify_supervisor, created_at)
-        VALUES (?, ?, ?, 0, ?, ?, datetime('now'))
+        VALUES (?, ?, ?, 0, ?, ?, CURRENT_TIMESTAMP)
     `, [id, invoiceId, remindAt, notifyCreator ? 1 : 0, notifySupervisor ? 1 : 0]);
     return { id, invoice_id: invoiceId, remind_at: remindAt };
 }
@@ -132,26 +132,26 @@ function createReminder(invoiceId, remindAt, notifyCreator = 1, notifySupervisor
 /**
  * جلب التذكيرات المستحقة (للسcheduler)
  */
-function getRemindersDue() {
-    return all(`
+async function getRemindersDue() {
+    return await all(`
         SELECT r.id, r.invoice_id, r.remind_at, r.remind_count, r.notify_creator, r.notify_supervisor
         FROM pending_invoice_reminders r
         JOIN invoices i ON i.id = r.invoice_id
-        WHERE r.remind_at <= datetime('now') AND i.status IN ('draft', 'waiting')
+        WHERE r.remind_at <= CURRENT_TIMESTAMP AND i.status IN ('draft', 'waiting')
     `);
 }
 
 /**
  * زيادة عداد التذكير وتحديث موعد التذكير التالي (مثلاً بعد 24 ساعة)
  */
-function markReminderSent(reminderId, nextRemindAt = null) {
-    const r = get('SELECT id, remind_count FROM pending_invoice_reminders WHERE id = ?', [reminderId]);
+async function markReminderSent(reminderId, nextRemindAt = null) {
+    const r = await get('SELECT id, remind_count FROM pending_invoice_reminders WHERE id = ?', [reminderId]);
     if (!r) return null;
     const count = (r.remind_count || 0) + 1;
     if (nextRemindAt) {
-        run('UPDATE pending_invoice_reminders SET remind_count = ?, remind_at = ?, created_at = created_at WHERE id = ?', [count, nextRemindAt, reminderId]);
+        await run('UPDATE pending_invoice_reminders SET remind_count = ?, remind_at = ?, created_at = created_at WHERE id = ?', [count, nextRemindAt, reminderId]);
     } else {
-        run('UPDATE pending_invoice_reminders SET remind_count = ? WHERE id = ?', [count, reminderId]);
+        await run('UPDATE pending_invoice_reminders SET remind_count = ? WHERE id = ?', [count, reminderId]);
     }
     return { id: reminderId, remind_count: count };
 }
@@ -159,8 +159,8 @@ function markReminderSent(reminderId, nextRemindAt = null) {
 /**
  * حذف تذكير (عند تحويل القائمة لفعالة أو حذفها)
  */
-function deleteRemindersForInvoice(invoiceId) {
-    run('DELETE FROM pending_invoice_reminders WHERE invoice_id = ?', [invoiceId]);
+async function deleteRemindersForInvoice(invoiceId) {
+    await run('DELETE FROM pending_invoice_reminders WHERE invoice_id = ?', [invoiceId]);
     return true;
 }
 

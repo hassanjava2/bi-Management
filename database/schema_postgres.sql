@@ -1,8 +1,5 @@
--- BI Management - Complete Database Schema v3
--- SQLite Compatible
--- 60 tables
-
-PRAGMA foreign_keys = OFF;
+-- BI Management - PostgreSQL Schema
+-- نفس البنية لـ schema_v3_sqlite مع تعديلات متوافقة مع PostgreSQL
 
 -- ============================================
 -- CORE: Users, Roles, Permissions
@@ -18,8 +15,8 @@ CREATE TABLE IF NOT EXISTS roles (
     is_active INTEGER DEFAULT 1,
     color TEXT,
     icon TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS permissions (
@@ -36,14 +33,14 @@ CREATE TABLE IF NOT EXISTS permissions (
     requires_approval INTEGER DEFAULT 0,
     security_level INTEGER DEFAULT 0,
     sort_order INTEGER DEFAULT 0,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS role_permissions (
     id TEXT PRIMARY KEY,
     role_id TEXT NOT NULL,
     permission_id TEXT NOT NULL,
-    granted_at TEXT DEFAULT (datetime('now')),
+    granted_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     granted_by TEXT
 );
 
@@ -54,8 +51,8 @@ CREATE TABLE IF NOT EXISTS departments (
     description TEXT,
     manager_id TEXT,
     parent_id TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS positions (
@@ -88,8 +85,8 @@ CREATE TABLE IF NOT EXISTS users (
     monthly_points INTEGER DEFAULT 0,
     current_level INTEGER DEFAULT 1,
     avatar_url TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS user_permissions (
@@ -97,7 +94,7 @@ CREATE TABLE IF NOT EXISTS user_permissions (
     user_id TEXT NOT NULL,
     permission_id TEXT NOT NULL,
     is_granted INTEGER DEFAULT 1,
-    granted_at TEXT DEFAULT (datetime('now')),
+    granted_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     granted_by TEXT,
     expires_at TEXT,
     reason TEXT
@@ -112,7 +109,7 @@ CREATE TABLE IF NOT EXISTS permission_history (
     old_value TEXT,
     new_value TEXT,
     changed_by TEXT,
-    changed_at TEXT DEFAULT (datetime('now')),
+    changed_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     reason TEXT,
     ip_address TEXT
 );
@@ -152,10 +149,10 @@ CREATE TABLE IF NOT EXISTS products (
     category_id TEXT,
     brand TEXT,
     model TEXT,
-    cost_price REAL DEFAULT 0,
-    selling_price REAL DEFAULT 0,
-    wholesale_price REAL DEFAULT 0,
-    min_price REAL DEFAULT 0,
+    cost_price DOUBLE PRECISION DEFAULT 0,
+    selling_price DOUBLE PRECISION DEFAULT 0,
+    wholesale_price DOUBLE PRECISION DEFAULT 0,
+    min_price DOUBLE PRECISION DEFAULT 0,
     track_by_serial INTEGER DEFAULT 0,
     quantity INTEGER DEFAULT 0,
     min_quantity INTEGER DEFAULT 0,
@@ -164,8 +161,8 @@ CREATE TABLE IF NOT EXISTS products (
     is_active INTEGER DEFAULT 1,
     is_deleted INTEGER DEFAULT 0,
     deleted_at TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now')),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by TEXT
 );
 
@@ -174,22 +171,22 @@ CREATE TABLE IF NOT EXISTS warehouses (
     code TEXT,
     name TEXT NOT NULL,
     type TEXT DEFAULT 'main',
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS serial_numbers (
     id TEXT PRIMARY KEY,
     serial_number TEXT,
     product_id TEXT,
-    purchase_cost REAL DEFAULT 0,
+    purchase_cost DOUBLE PRECISION DEFAULT 0,
     supplier_id TEXT,
     status TEXT DEFAULT 'available',
     warehouse_id TEXT DEFAULT 'main',
     is_deleted INTEGER DEFAULT 0,
     deleted_at TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by TEXT,
-    updated_at TEXT DEFAULT (datetime('now'))
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS serial_number_history (
@@ -198,7 +195,7 @@ CREATE TABLE IF NOT EXISTS serial_number_history (
     event_type TEXT,
     event_details TEXT,
     performed_by TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS devices (
@@ -216,12 +213,12 @@ CREATE TABLE IF NOT EXISTS devices (
     location_shelf TEXT,
     location_row TEXT,
     custody_employee TEXT,
-    purchase_cost REAL DEFAULT 0,
+    purchase_cost DOUBLE PRECISION DEFAULT 0,
     supplier_id TEXT,
     is_deleted INTEGER DEFAULT 0,
     deleted_at TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now')),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by TEXT
 );
 
@@ -231,7 +228,7 @@ CREATE TABLE IF NOT EXISTS device_history (
     event_type TEXT,
     event_details TEXT,
     performed_by TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS inventory_movements (
@@ -246,7 +243,7 @@ CREATE TABLE IF NOT EXISTS inventory_movements (
     reason TEXT,
     notes TEXT,
     created_by TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================
@@ -262,8 +259,8 @@ CREATE TABLE IF NOT EXISTS customers (
     phone2 TEXT,
     email TEXT,
     addresses TEXT,
-    balance REAL DEFAULT 0,
-    credit_limit REAL DEFAULT 0,
+    balance DOUBLE PRECISION DEFAULT 0,
+    credit_limit DOUBLE PRECISION DEFAULT 0,
     loyalty_level TEXT DEFAULT 'bronze',
     notes TEXT,
     is_active INTEGER DEFAULT 1,
@@ -272,8 +269,8 @@ CREATE TABLE IF NOT EXISTS customers (
     is_deleted INTEGER DEFAULT 0,
     deleted_at TEXT,
     last_purchase_at TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now')),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by TEXT
 );
 
@@ -292,15 +289,15 @@ CREATE TABLE IF NOT EXISTS suppliers (
     city TEXT,
     country TEXT,
     notes TEXT,
-    rating REAL DEFAULT 0,
-    total_purchases REAL DEFAULT 0,
-    balance REAL DEFAULT 0,
+    rating DOUBLE PRECISION DEFAULT 0,
+    total_purchases DOUBLE PRECISION DEFAULT 0,
+    balance DOUBLE PRECISION DEFAULT 0,
     pending_returns INTEGER DEFAULT 0,
     is_active INTEGER DEFAULT 1,
     is_deleted INTEGER DEFAULT 0,
     deleted_at TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================
@@ -316,16 +313,16 @@ CREATE TABLE IF NOT EXISTS invoices (
     payment_status TEXT DEFAULT 'pending',
     customer_id TEXT,
     supplier_id TEXT,
-    subtotal REAL DEFAULT 0,
-    discount_amount REAL DEFAULT 0,
-    tax_amount REAL DEFAULT 0,
-    total REAL DEFAULT 0,
-    paid_amount REAL DEFAULT 0,
-    remaining_amount REAL DEFAULT 0,
+    subtotal DOUBLE PRECISION DEFAULT 0,
+    discount_amount DOUBLE PRECISION DEFAULT 0,
+    tax_amount DOUBLE PRECISION DEFAULT 0,
+    total DOUBLE PRECISION DEFAULT 0,
+    paid_amount DOUBLE PRECISION DEFAULT 0,
+    remaining_amount DOUBLE PRECISION DEFAULT 0,
     payment_method TEXT,
     notes TEXT,
-    discount_percent REAL DEFAULT 0,
-    shipping_cost REAL DEFAULT 0,
+    discount_percent DOUBLE PRECISION DEFAULT 0,
+    shipping_cost DOUBLE PRECISION DEFAULT 0,
     sub_type TEXT,
     due_date TEXT,
     auditor_id TEXT,
@@ -333,8 +330,8 @@ CREATE TABLE IF NOT EXISTS invoices (
     preparer_id TEXT,
     prepared_at TEXT,
     created_by TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now')),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     is_deleted INTEGER DEFAULT 0,
     deleted_at TEXT,
     cancelled_at TEXT,
@@ -350,22 +347,22 @@ CREATE TABLE IF NOT EXISTS invoice_items (
     product_name TEXT,
     serial_number TEXT,
     quantity INTEGER DEFAULT 1,
-    unit_price REAL DEFAULT 0,
-    cost_price REAL DEFAULT 0,
-    discount REAL DEFAULT 0,
-    total REAL DEFAULT 0,
+    unit_price DOUBLE PRECISION DEFAULT 0,
+    cost_price DOUBLE PRECISION DEFAULT 0,
+    discount DOUBLE PRECISION DEFAULT 0,
+    total DOUBLE PRECISION DEFAULT 0,
     notes TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS invoice_payments (
     id TEXT PRIMARY KEY,
     invoice_id TEXT NOT NULL,
-    amount REAL DEFAULT 0,
+    amount DOUBLE PRECISION DEFAULT 0,
     payment_method TEXT,
     notes TEXT,
     received_by TEXT,
-    received_at TEXT DEFAULT (datetime('now'))
+    received_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS invoice_workflow_log (
@@ -375,7 +372,7 @@ CREATE TABLE IF NOT EXISTS invoice_workflow_log (
     user_id TEXT,
     role TEXT,
     notes TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS pending_invoice_reminders (
@@ -385,17 +382,17 @@ CREATE TABLE IF NOT EXISTS pending_invoice_reminders (
     remind_count INTEGER DEFAULT 0,
     notify_creator INTEGER DEFAULT 1,
     notify_supervisor INTEGER DEFAULT 0,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS invoice_expenses (
     id TEXT PRIMARY KEY,
     invoice_id TEXT NOT NULL,
     expense_type TEXT,
-    amount REAL DEFAULT 0,
+    amount DOUBLE PRECISION DEFAULT 0,
     currency TEXT DEFAULT 'IQD',
     notes TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================
@@ -418,7 +415,7 @@ CREATE TABLE IF NOT EXISTS returns (
     destination_warehouse_id TEXT,
     processed_at TEXT,
     created_by TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS return_items (
@@ -428,7 +425,7 @@ CREATE TABLE IF NOT EXISTS return_items (
     serial_id TEXT,
     serial_number TEXT,
     quantity INTEGER DEFAULT 1,
-    unit_price REAL DEFAULT 0,
+    unit_price DOUBLE PRECISION DEFAULT 0,
     item_classification TEXT,
     condition_notes TEXT,
     decision TEXT
@@ -442,7 +439,7 @@ CREATE TABLE IF NOT EXISTS vouchers (
     id TEXT PRIMARY KEY,
     voucher_number TEXT,
     type TEXT DEFAULT 'receipt',
-    amount REAL DEFAULT 0,
+    amount DOUBLE PRECISION DEFAULT 0,
     currency TEXT DEFAULT 'IQD',
     customer_id TEXT,
     supplier_id TEXT,
@@ -456,7 +453,7 @@ CREATE TABLE IF NOT EXISTS vouchers (
     notes TEXT,
     is_deleted INTEGER DEFAULT 0,
     created_by TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS accounts (
@@ -468,7 +465,7 @@ CREATE TABLE IF NOT EXISTS accounts (
 CREATE TABLE IF NOT EXISTS cash_registers (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    balance REAL DEFAULT 0,
+    balance DOUBLE PRECISION DEFAULT 0,
     responsible_user_id TEXT,
     is_active INTEGER DEFAULT 1
 );
@@ -477,12 +474,12 @@ CREATE TABLE IF NOT EXISTS cash_transactions (
     id TEXT PRIMARY KEY,
     cash_register_id TEXT NOT NULL,
     type TEXT DEFAULT 'in',
-    amount REAL DEFAULT 0,
+    amount DOUBLE PRECISION DEFAULT 0,
     description TEXT,
     reference_type TEXT,
     reference_id TEXT,
     created_by TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS journal_entries (
@@ -490,19 +487,19 @@ CREATE TABLE IF NOT EXISTS journal_entries (
     entry_number TEXT,
     entry_date TEXT,
     description TEXT,
-    total_debit REAL DEFAULT 0,
-    total_credit REAL DEFAULT 0,
+    total_debit DOUBLE PRECISION DEFAULT 0,
+    total_credit DOUBLE PRECISION DEFAULT 0,
     status TEXT DEFAULT 'draft',
     created_by TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS journal_entry_lines (
     id TEXT PRIMARY KEY,
     journal_entry_id TEXT NOT NULL,
     account_id TEXT,
-    debit REAL DEFAULT 0,
-    credit REAL DEFAULT 0,
+    debit DOUBLE PRECISION DEFAULT 0,
+    credit DOUBLE PRECISION DEFAULT 0,
     description TEXT
 );
 
@@ -530,8 +527,8 @@ CREATE TABLE IF NOT EXISTS tasks (
     delay_reason TEXT,
     attachments TEXT,
     notes TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS task_comments (
@@ -539,7 +536,7 @@ CREATE TABLE IF NOT EXISTS task_comments (
     task_id TEXT NOT NULL,
     user_id TEXT,
     comment TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS task_templates (
@@ -571,8 +568,8 @@ CREATE TABLE IF NOT EXISTS attendance (
     overtime_minutes INTEGER DEFAULT 0,
     notes TEXT,
     approved_by TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS vacations (
@@ -584,7 +581,7 @@ CREATE TABLE IF NOT EXISTS vacations (
     reason TEXT,
     status TEXT DEFAULT 'pending',
     approved_by TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================
@@ -605,7 +602,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     data TEXT,
     is_read INTEGER DEFAULT 0,
     read_at TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS audit_logs (
@@ -630,7 +627,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     module TEXT,
     action TEXT,
     metadata TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS security_events (
@@ -642,7 +639,7 @@ CREATE TABLE IF NOT EXISTS security_events (
     resolved INTEGER DEFAULT 0,
     resolved_by TEXT,
     resolved_at TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS approvals (
@@ -661,7 +658,7 @@ CREATE TABLE IF NOT EXISTS approvals (
     decided_by TEXT,
     decision_reason TEXT,
     decided_at TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS alert_rules (
@@ -671,7 +668,7 @@ CREATE TABLE IF NOT EXISTS alert_rules (
     description TEXT,
     is_enabled INTEGER DEFAULT 1,
     threshold TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================
@@ -697,8 +694,8 @@ CREATE TABLE IF NOT EXISTS warranty_claims (
     supplier_response_at TEXT,
     supplier_decision TEXT,
     supplier_notes TEXT,
-    repair_cost REAL DEFAULT 0,
-    parts_cost REAL DEFAULT 0,
+    repair_cost DOUBLE PRECISION DEFAULT 0,
+    parts_cost DOUBLE PRECISION DEFAULT 0,
     replacement_device_id TEXT,
     paid_by TEXT,
     returned_at TEXT,
@@ -708,8 +705,8 @@ CREATE TABLE IF NOT EXISTS warranty_claims (
     customer_notification_notes TEXT,
     closed_at TEXT,
     created_by TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS warranty_tracking (
@@ -718,7 +715,7 @@ CREATE TABLE IF NOT EXISTS warranty_tracking (
     action TEXT,
     action_details TEXT,
     performed_by TEXT,
-    performed_at TEXT DEFAULT (datetime('now'))
+    performed_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS deliveries (
@@ -734,7 +731,7 @@ CREATE TABLE IF NOT EXISTS deliveries (
     status TEXT DEFAULT 'pending',
     driver_id TEXT,
     created_by TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================
@@ -748,7 +745,7 @@ CREATE TABLE IF NOT EXISTS point_transactions (
     reason TEXT,
     description TEXT,
     admin_note TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS rewards (
@@ -758,7 +755,7 @@ CREATE TABLE IF NOT EXISTS rewards (
     points_required INTEGER DEFAULT 0,
     quantity INTEGER DEFAULT 0,
     is_active INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS reward_redemptions (
@@ -767,7 +764,7 @@ CREATE TABLE IF NOT EXISTS reward_redemptions (
     reward_id TEXT NOT NULL,
     points_spent INTEGER DEFAULT 0,
     status TEXT DEFAULT 'pending',
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS monthly_points_archive (
@@ -776,7 +773,7 @@ CREATE TABLE IF NOT EXISTS monthly_points_archive (
     month TEXT,
     year TEXT,
     points INTEGER DEFAULT 0,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS training_plans (
@@ -787,7 +784,7 @@ CREATE TABLE IF NOT EXISTS training_plans (
     duration_days INTEGER DEFAULT 30,
     tasks TEXT,
     is_active INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS employee_training (
@@ -807,7 +804,7 @@ CREATE TABLE IF NOT EXISTS training_progress (
     task_index INTEGER,
     completed INTEGER DEFAULT 0,
     completed_at TEXT,
-    score REAL,
+    score DOUBLE PRECISION,
     notes TEXT
 );
 
@@ -819,7 +816,7 @@ CREATE TABLE IF NOT EXISTS bot_logs (
     id TEXT PRIMARY KEY,
     action TEXT,
     data TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS bot_suggestions (
@@ -828,7 +825,7 @@ CREATE TABLE IF NOT EXISTS bot_suggestions (
     target TEXT,
     suggestion TEXT,
     priority TEXT DEFAULT 'medium',
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS bot_fixes (
@@ -837,7 +834,7 @@ CREATE TABLE IF NOT EXISTS bot_fixes (
     target TEXT,
     fix_sql TEXT,
     status TEXT DEFAULT 'pending',
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS backups (
@@ -846,7 +843,7 @@ CREATE TABLE IF NOT EXISTS backups (
     file_path TEXT,
     file_size INTEGER,
     description TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS cameras (
@@ -856,7 +853,7 @@ CREATE TABLE IF NOT EXISTS cameras (
     location TEXT,
     detection_config TEXT,
     is_active INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS camera_detections (
@@ -868,7 +865,7 @@ CREATE TABLE IF NOT EXISTS camera_detections (
     image_path TEXT,
     task_created INTEGER DEFAULT 0,
     task_id TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS device_tokens (
@@ -878,4 +875,55 @@ CREATE TABLE IF NOT EXISTS device_tokens (
     device_type TEXT
 );
 
-PRAGMA foreign_keys = ON;
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_invoices_customer ON invoices(customer_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_supplier ON invoices(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+CREATE INDEX IF NOT EXISTS idx_invoices_type ON invoices(type);
+CREATE INDEX IF NOT EXISTS idx_invoices_created ON invoices(created_at);
+CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice ON invoice_items(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
+CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active);
+CREATE INDEX IF NOT EXISTS idx_serial_numbers_product ON serial_numbers(product_id);
+CREATE INDEX IF NOT EXISTS idx_serial_numbers_status ON serial_numbers(status);
+CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone);
+CREATE INDEX IF NOT EXISTS idx_suppliers_phone ON suppliers(phone);
+CREATE INDEX IF NOT EXISTS idx_tasks_assigned ON tasks(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+CREATE INDEX IF NOT EXISTS idx_attendance_user_date ON attendance(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipient_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(is_read);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_category ON audit_logs(event_category);
+CREATE INDEX IF NOT EXISTS idx_vouchers_type ON vouchers(type);
+CREATE INDEX IF NOT EXISTS idx_vouchers_customer ON vouchers(customer_id);
+CREATE INDEX IF NOT EXISTS idx_returns_status ON returns(status);
+CREATE INDEX IF NOT EXISTS idx_warranty_status ON warranty_claims(status);
+CREATE INDEX IF NOT EXISTS idx_approvals_status ON approvals(status);
+CREATE INDEX IF NOT EXISTS idx_deliveries_status ON deliveries(status);
+CREATE INDEX IF NOT EXISTS idx_invoice_expenses_invoice ON invoice_expenses(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_sub_type ON invoices(sub_type);
+CREATE INDEX IF NOT EXISTS idx_invoices_payment_method ON invoices(payment_method);
+CREATE INDEX IF NOT EXISTS idx_devices_status ON devices(status);
+CREATE INDEX IF NOT EXISTS idx_devices_warehouse ON devices(warehouse_id);
+
+-- Default warehouses
+INSERT INTO warehouses (id, code, name, type) VALUES ('main', 'WH-MAIN', 'المخزن الرئيسي', 'main') ON CONFLICT (id) DO NOTHING;
+INSERT INTO warehouses (id, code, name, type) VALUES ('inspection', 'WH-INSP', 'مخزن الفحص', 'inspection') ON CONFLICT (id) DO NOTHING;
+INSERT INTO warehouses (id, code, name, type) VALUES ('preparation', 'WH-PREP', 'مخزن التجهيز', 'preparation') ON CONFLICT (id) DO NOTHING;
+INSERT INTO warehouses (id, code, name, type) VALUES ('repair', 'WH-REP', 'مخزن الصيانة', 'repair') ON CONFLICT (id) DO NOTHING;
+INSERT INTO warehouses (id, code, name, type) VALUES ('returns', 'WH-RET', 'مخزن المرتجعات', 'returns') ON CONFLICT (id) DO NOTHING;
+INSERT INTO warehouses (id, code, name, type) VALUES ('defective', 'WH-DEF', 'مخزن التالف', 'defective') ON CONFLICT (id) DO NOTHING;
+INSERT INTO warehouses (id, code, name, type) VALUES ('accessories', 'WH-ACC', 'مخزن الإكسسوارات', 'accessories') ON CONFLICT (id) DO NOTHING;
+
+-- Default cash register
+INSERT INTO cash_registers (id, name, balance, is_active) VALUES ('main', 'الصندوق الرئيسي', 0, 1) ON CONFLICT (id) DO NOTHING;
+
+-- Default settings
+INSERT INTO settings (key, value) VALUES ('company_name', 'BI Management') ON CONFLICT (key) DO NOTHING;
+INSERT INTO settings (key, value) VALUES ('currency', 'IQD') ON CONFLICT (key) DO NOTHING;
+INSERT INTO settings (key, value) VALUES ('work_start_time', '08:00') ON CONFLICT (key) DO NOTHING;
+INSERT INTO settings (key, value) VALUES ('work_end_time', '16:00') ON CONFLICT (key) DO NOTHING;
+INSERT INTO settings (key, value) VALUES ('late_threshold_minutes', '15') ON CONFLICT (key) DO NOTHING;

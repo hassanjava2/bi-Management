@@ -127,9 +127,8 @@ class FeatureTester {
         
         // فحص وجود الجداول
         try {
-            const tables = all(`
-                SELECT name FROM sqlite_master 
-                WHERE type='table' AND name NOT LIKE 'sqlite_%'
+            const tables = await all(`
+                SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE' AND table_name NOT LIKE 'pg_%'
             `);
             
             const tableNames = tables.map(t => t.name);
@@ -146,7 +145,7 @@ class FeatureTester {
             const mainTables = ['users', 'customers', 'products', 'invoices', 'suppliers'];
             for (const table of mainTables) {
                 try {
-                    const count = get(`SELECT COUNT(*) as count FROM ${table}`);
+                    const count = await get(`SELECT COUNT(*) as count FROM ${table}`);
                     this._addResult('database', `سجلات ${table}: ${count?.count || 0}`, true);
                 } catch (e) {
                     this._addResult('database', `قراءة ${table}`, false, e.message);
@@ -165,16 +164,16 @@ class FeatureTester {
         
         try {
             // قراءة الصلاحيات من قاعدة البيانات
-            const permissions = all(`SELECT * FROM permissions LIMIT 100`);
+            const permissions = await all(`SELECT * FROM permissions LIMIT 100`);
             this._addResult('permissions', `عدد الصلاحيات في DB: ${permissions?.length || 0}`, 
                 permissions?.length > 0);
             
             // قراءة الأدوار
-            const roles = all(`SELECT * FROM roles`);
+            const roles = await all(`SELECT * FROM roles`);
             this._addResult('permissions', `عدد الأدوار: ${roles?.length || 0}`, true);
             
             // فحص ربط الأدوار بالصلاحيات
-            const rolePerms = all(`SELECT * FROM role_permissions LIMIT 100`);
+            const rolePerms = await all(`SELECT * FROM role_permissions LIMIT 100`);
             this._addResult('permissions', `ربط الأدوار بالصلاحيات: ${rolePerms?.length || 0}`, true);
             
         } catch (error) {
@@ -452,12 +451,12 @@ class FeatureTester {
     /**
      * حفظ التقرير
      */
-    _saveReport(report) {
+    async _saveReport(report) {
         try {
             // حفظ في قاعدة البيانات
-            run(`
+            await run(`
                 INSERT INTO bot_logs (id, action, data, created_at)
-                VALUES (?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, CURRENT_TIMESTAMP)
             `, [
                 `report-${Date.now()}`,
                 'feature_test',

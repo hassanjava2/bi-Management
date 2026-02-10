@@ -47,21 +47,23 @@ const upload = multer({
 router.use(auth);
 
 // Ensure media table
-try {
-    run(`CREATE TABLE IF NOT EXISTS media (
-        id TEXT PRIMARY KEY,
-        file_name TEXT,
-        file_type TEXT,
-        file_size INTEGER,
-        mime_type TEXT,
-        storage_path TEXT,
-        entity_type TEXT,
-        entity_id TEXT,
-        media_category TEXT,
-        uploaded_by TEXT,
-        created_at TEXT DEFAULT (datetime('now'))
-    )`);
-} catch (_) {}
+(async () => {
+    try {
+        await run(`CREATE TABLE IF NOT EXISTS media (
+            id TEXT PRIMARY KEY,
+            file_name TEXT,
+            file_type TEXT,
+            file_size INTEGER,
+            mime_type TEXT,
+            storage_path TEXT,
+            entity_type TEXT,
+            entity_id TEXT,
+            media_category TEXT,
+            uploaded_by TEXT,
+            created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        )`);
+    } catch (_) {}
+})();
 
 /**
  * POST /api/media/upload
@@ -75,7 +77,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         const { entity_type, entity_id, media_category } = req.body;
         const id = generateId();
 
-        run(`INSERT INTO media (id, file_name, file_type, file_size, mime_type, storage_path, entity_type, entity_id, media_category, uploaded_by)
+        await run(`INSERT INTO media (id, file_name, file_type, file_size, mime_type, storage_path, entity_type, entity_id, media_category, uploaded_by)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
             id,
             req.file.originalname,
@@ -89,7 +91,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
             req.user?.id,
         ]);
 
-        const media = get('SELECT * FROM media WHERE id = ?', [id]);
+        const media = await get('SELECT * FROM media WHERE id = ?', [id]);
         res.status(201).json({
             success: true,
             data: {
@@ -115,7 +117,7 @@ router.post('/upload-multiple', upload.array('files', 10), async (req, res) => {
 
         for (const file of req.files) {
             const id = generateId();
-            run(`INSERT INTO media (id, file_name, file_type, file_size, mime_type, storage_path, entity_type, entity_id, media_category, uploaded_by)
+            await run(`INSERT INTO media (id, file_name, file_type, file_size, mime_type, storage_path, entity_type, entity_id, media_category, uploaded_by)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
                 id, file.originalname,
                 file.mimetype.startsWith('video') ? 'video' : file.mimetype.startsWith('image') ? 'image' : 'document',
@@ -137,7 +139,7 @@ router.post('/upload-multiple', upload.array('files', 10), async (req, res) => {
  */
 router.get('/file/:id', async (req, res) => {
     try {
-        const media = get('SELECT * FROM media WHERE id = ?', [req.params.id]);
+        const media = await get('SELECT * FROM media WHERE id = ?', [req.params.id]);
         if (!media || !media.storage_path) return res.status(404).json({ success: false, error: 'الملف غير موجود' });
         if (!fs.existsSync(media.storage_path)) return res.status(404).json({ success: false, error: 'الملف محذوف' });
         res.sendFile(media.storage_path);
@@ -152,7 +154,7 @@ router.get('/file/:id', async (req, res) => {
  */
 router.get('/entity/:type/:id', async (req, res) => {
     try {
-        const files = all('SELECT id, file_name, file_type, file_size, media_category, created_at FROM media WHERE entity_type = ? AND entity_id = ? ORDER BY created_at DESC', [req.params.type, req.params.id]);
+        const files = await all('SELECT id, file_name, file_type, file_size, media_category, created_at FROM media WHERE entity_type = ? AND entity_id = ? ORDER BY created_at DESC', [req.params.type, req.params.id]);
         res.json({
             success: true,
             data: files.map(f => ({ ...f, url: `/api/media/file/${f.id}` }))
@@ -167,13 +169,13 @@ router.get('/entity/:type/:id', async (req, res) => {
  */
 router.delete('/:id', async (req, res) => {
     try {
-        const media = get('SELECT * FROM media WHERE id = ?', [req.params.id]);
+        const media = await get('SELECT * FROM media WHERE id = ?', [req.params.id]);
         if (!media) return res.status(404).json({ success: false, error: 'الملف غير موجود' });
         // حذف الملف من القرص
         if (media.storage_path && fs.existsSync(media.storage_path)) {
             fs.unlinkSync(media.storage_path);
         }
-        run('DELETE FROM media WHERE id = ?', [req.params.id]);
+        await run('DELETE FROM media WHERE id = ?', [req.params.id]);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

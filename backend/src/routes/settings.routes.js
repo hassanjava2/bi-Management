@@ -15,7 +15,7 @@ router.use(auth);
  */
 router.get('/', async (req, res) => {
     try {
-        const settings = all(`SELECT * FROM settings ORDER BY category, key`);
+        const settings = await all(`SELECT * FROM settings ORDER BY category, key`);
         
         // تحويل إلى كائن منظم
         const organized = {};
@@ -41,7 +41,7 @@ router.get('/', async (req, res) => {
  */
 router.get('/print', async (req, res) => {
     try {
-        const rows = all(`SELECT key, value FROM settings WHERE category = 'print' OR key LIKE 'print.%'`);
+        const rows = await all(`SELECT key, value FROM settings WHERE category = 'print' OR key LIKE 'print.%'`);
         const data = { default_printer: '', paper_size: 'A4', orientation: 'portrait' };
         for (const r of rows) {
             const k = r.key.replace('print.', '');
@@ -59,7 +59,7 @@ router.get('/print', async (req, res) => {
  */
 router.get('/invoice-templates', async (req, res) => {
     try {
-        const rows = all(`SELECT key, value FROM settings WHERE category = 'invoice_template' OR key LIKE 'invoice_template.%'`);
+        const rows = await all(`SELECT key, value FROM settings WHERE category = 'invoice_template' OR key LIKE 'invoice_template.%'`);
         const data = {};
         for (const r of rows) data[r.key] = r.value;
         res.json({ success: true, data });
@@ -74,7 +74,7 @@ router.get('/invoice-templates', async (req, res) => {
  */
 router.get('/:key', async (req, res) => {
     try {
-        const setting = get(`SELECT * FROM settings WHERE key = ?`, [req.params.key]);
+        const setting = await get(`SELECT * FROM settings WHERE key = ?`, [req.params.key]);
         
         if (!setting) {
             return res.status(404).json({
@@ -100,13 +100,13 @@ router.put('/:key', async (req, res) => {
     try {
         const { value } = req.body;
         
-        const existing = get(`SELECT * FROM settings WHERE key = ?`, [req.params.key]);
+        const existing = await get(`SELECT * FROM settings WHERE key = ?`, [req.params.key]);
         
         if (existing) {
-            run(`UPDATE settings SET value = ?, updated_at = datetime('now') WHERE key = ?`, 
+            await run(`UPDATE settings SET value = ?, updated_at = CURRENT_TIMESTAMP WHERE key = ?`, 
                 [value, req.params.key]);
         } else {
-            run(`INSERT INTO settings (key, value, category, created_at) VALUES (?, ?, 'general', datetime('now'))`,
+            await run(`INSERT INTO settings (key, value, category, created_at) VALUES (?, ?, 'general', CURRENT_TIMESTAMP)`,
                 [req.params.key, value]);
         }
         
@@ -125,7 +125,7 @@ router.put('/:key', async (req, res) => {
  */
 router.get('/category/:category', async (req, res) => {
     try {
-        const settings = all(`SELECT * FROM settings WHERE category = ?`, [req.params.category]);
+        const settings = await all(`SELECT * FROM settings WHERE category = ?`, [req.params.category]);
         
         const data = {};
         for (const s of settings) {

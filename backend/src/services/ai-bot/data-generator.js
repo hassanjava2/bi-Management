@@ -167,7 +167,7 @@ class DataGenerator {
         };
         
         try {
-            run(`
+            await run(`
                 INSERT INTO customers (id, code, name, type, phone, email, addresses, credit_limit)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `, [
@@ -208,7 +208,7 @@ class DataGenerator {
         };
         
         try {
-            run(`
+            await run(`
                 INSERT INTO products (id, code, sku, name, brand, cost_price, selling_price, wholesale_price, quantity, min_quantity, warranty_months, is_active)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
@@ -231,14 +231,14 @@ class DataGenerator {
      */
     async _generateInvoice() {
         // Get random customer
-        const customer = get(`SELECT id, name FROM customers ORDER BY RANDOM() LIMIT 1`);
+        const customer = await get(`SELECT id, name FROM customers ORDER BY RANDOM() LIMIT 1`);
         if (!customer) {
             await this._generateCustomer();
             return null;
         }
         
         // Get random products
-        const products = all(`SELECT id, name, selling_price, quantity FROM products WHERE quantity > 0 ORDER BY RANDOM() LIMIT 3`);
+        const products = await all(`SELECT id, name, selling_price, quantity FROM products WHERE quantity > 0 ORDER BY RANDOM() LIMIT 3`);
         if (!products || products.length === 0) {
             await this._generateProduct();
             return null;
@@ -293,7 +293,7 @@ class DataGenerator {
         
         try {
             // Insert invoice
-            run(`
+            await run(`
                 INSERT INTO invoices (id, invoice_number, type, payment_type, customer_id, status,
                     subtotal, discount_percent, discount_amount, total, payment_method, payment_status,
                     paid_amount, remaining_amount, notes)
@@ -307,16 +307,16 @@ class DataGenerator {
             
             // Insert items
             for (const item of items) {
-                run(`
+                await run(`
                     INSERT INTO invoice_items (id, invoice_id, product_id, quantity, unit_price, total)
                     VALUES (?, ?, ?, ?, ?, ?)
                 `, [item.id, invoice.id, item.product_id, item.quantity, item.unit_price, item.total]);
                 
                 // Update product quantity
                 if (invoiceType === 'sale') {
-                    run(`UPDATE products SET quantity = quantity - ? WHERE id = ?`, [item.quantity, item.product_id]);
+                    await run(`UPDATE products SET quantity = quantity - ? WHERE id = ?`, [item.quantity, item.product_id]);
                 } else {
-                    run(`UPDATE products SET quantity = quantity + ? WHERE id = ?`, [item.quantity, item.product_id]);
+                    await run(`UPDATE products SET quantity = quantity + ? WHERE id = ?`, [item.quantity, item.product_id]);
                 }
             }
             
@@ -350,7 +350,7 @@ class DataGenerator {
      * إنشاء حركة مخزون
      */
     async _generateInventoryMovement() {
-        const product = get(`SELECT id, name, quantity FROM products WHERE quantity > 0 ORDER BY RANDOM() LIMIT 1`);
+        const product = await get(`SELECT id, name, quantity FROM products WHERE quantity > 0 ORDER BY RANDOM() LIMIT 1`);
         if (!product) return null;
         
         const movementTypes = ['in', 'out', 'adjustment', 'transfer'];
@@ -369,7 +369,7 @@ class DataGenerator {
         };
         
         try {
-            run(`
+            await run(`
                 INSERT INTO inventory_movements (id, product_id, type, quantity, reason, created_at)
                 VALUES (?, ?, ?, ?, ?, ?)
             `, [
@@ -378,7 +378,7 @@ class DataGenerator {
             ]);
             
             // Update product quantity
-            run(`UPDATE products SET quantity = quantity + ? WHERE id = ?`, [movement.quantity, movement.product_id]);
+            await run(`UPDATE products SET quantity = quantity + ? WHERE id = ?`, [movement.quantity, movement.product_id]);
             
             this.bot.logToDB('inventory_movement_generated', { movement_id: movement.id, type: movement.type });
             return movement;

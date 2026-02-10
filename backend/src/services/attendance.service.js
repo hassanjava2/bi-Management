@@ -19,12 +19,12 @@ function getGoalsService() {
 /**
  * Check in
  */
-function checkIn(userId, data = {}) {
+async function checkIn(userId, data = {}) {
     const todayDate = today();
     const currentTime = now();
 
     // Check if already checked in
-    const existing = get(`
+    const existing = await get(`
         SELECT id, check_in FROM attendance 
         WHERE user_id = ? AND date = ?
     `, [userId, todayDate]);
@@ -38,7 +38,7 @@ function checkIn(userId, data = {}) {
     }
 
     // Get work start time from settings
-    const settings = get(`SELECT value FROM settings WHERE key = 'work_start_time'`);
+    const settings = await get(`SELECT value FROM settings WHERE key = 'work_start_time'`);
     const workStartTime = settings?.value || '09:00';
 
     // Calculate late minutes
@@ -49,7 +49,7 @@ function checkIn(userId, data = {}) {
 
     if (existing) {
         // Update existing record
-        run(`
+        await run(`
             UPDATE attendance SET
                 check_in = ?,
                 check_in_location = ?,
@@ -68,7 +68,7 @@ function checkIn(userId, data = {}) {
         ]);
     } else {
         // Create new record
-        run(`
+        await run(`
             INSERT INTO attendance (
                 id, user_id, date, check_in, check_in_location,
                 check_in_method, status, late_minutes
@@ -86,7 +86,7 @@ function checkIn(userId, data = {}) {
     }
 
     // Send welcome notification
-    const user = get(`SELECT full_name FROM users WHERE id = ?`, [userId]);
+    const user = await get(`SELECT full_name FROM users WHERE id = ?`, [userId]);
     if (status === 'late') {
         notificationService.create({
             user_id: userId,
@@ -120,12 +120,12 @@ function checkIn(userId, data = {}) {
 /**
  * Check out
  */
-function checkOut(userId, data = {}) {
+async function checkOut(userId, data = {}) {
     const todayDate = today();
     const currentTime = now();
 
     // Get today's record
-    const record = get(`
+    const record = await get(`
         SELECT id, check_in FROM attendance 
         WHERE user_id = ? AND date = ?
     `, [userId, todayDate]);
@@ -143,7 +143,7 @@ function checkOut(userId, data = {}) {
     const overtimeMinutes = Math.max(0, workMinutes - 480); // 8 hours = 480 minutes
 
     // Update record
-    run(`
+    await run(`
         UPDATE attendance SET
             check_out = ?,
             check_out_location = ?,
@@ -167,8 +167,8 @@ function checkOut(userId, data = {}) {
 /**
  * Get attendance record
  */
-function getAttendance(attendanceId) {
-    const record = get(`
+async function getAttendance(attendanceId) {
+    const record = await get(`
         SELECT a.*, u.full_name as user_name, d.name as department_name
         FROM attendance a
         LEFT JOIN users u ON a.user_id = u.id
@@ -188,13 +188,13 @@ function getAttendance(attendanceId) {
 /**
  * Get today's attendance
  */
-function getTodayAttendance() {
-    const records = all(`
+async function getTodayAttendance() {
+    const records = await all(`
         SELECT a.*, u.full_name as user_name, u.employee_code, d.name as department_name
         FROM attendance a
         LEFT JOIN users u ON a.user_id = u.id
         LEFT JOIN departments d ON u.department_id = d.id
-        WHERE a.date = date('now')
+        WHERE a.date = CURRENT_DATE
         ORDER BY a.check_in ASC
     `);
 
@@ -208,7 +208,7 @@ function getTodayAttendance() {
 /**
  * Get attendance report
  */
-function getAttendanceReport(filters = {}) {
+async function getAttendanceReport(filters = {}) {
     let query = `
         SELECT a.*, u.full_name as user_name, u.employee_code, d.name as department_name
         FROM attendance a
@@ -250,16 +250,16 @@ function getAttendanceReport(filters = {}) {
         params.push(filters.limit);
     }
 
-    return all(query, params);
+    return await all(query, params);
 }
 
 /**
  * Manual attendance entry (HR only)
  */
-function manualAttendance(data, enteredBy) {
+async function manualAttendance(data, enteredBy) {
     const id = generateId();
 
-    run(`
+    await run(`
         INSERT INTO attendance (
             id, user_id, date, check_in, check_out,
             status, notes, approved_by, check_in_method
@@ -281,10 +281,10 @@ function manualAttendance(data, enteredBy) {
 /**
  * Get attendance stats for dashboard
  */
-function getAttendanceStats(date = null) {
+async function getAttendanceStats(date = null) {
     const targetDate = date || today();
     
-    const stats = get(`
+    const stats = await get(`
         SELECT 
             COUNT(*) as total_records,
             SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present,
@@ -295,7 +295,7 @@ function getAttendanceStats(date = null) {
         FROM attendance WHERE date = ?
     `, [targetDate]);
 
-    const totalEmployees = get(`SELECT COUNT(*) as count FROM users WHERE is_active = 1`);
+    const totalEmployees = await get(`SELECT COUNT(*) as count FROM users WHERE is_active = 1`);
 
     return {
         date: targetDate,
@@ -312,10 +312,10 @@ function getAttendanceStats(date = null) {
 /**
  * Get today's record for a specific user
  */
-function getTodayRecordForUser(userId) {
+async function getTodayRecordForUser(userId) {
     const todayDate = today();
     
-    return get(`
+    return await get(`
         SELECT * FROM attendance 
         WHERE user_id = ? AND date = ?
     `, [userId, todayDate]);

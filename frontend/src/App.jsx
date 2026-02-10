@@ -24,6 +24,8 @@ const PermissionsPage = lazy(() => import('./pages/PermissionsPage'))
 const AuditPage = lazy(() => import('./pages/AuditPage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const BotDashboard = lazy(() => import('./pages/BotDashboard'))
+const AIDistributionPage = lazy(() => import('./pages/AIDistributionPage'))
+const AIChatsPage = lazy(() => import('./pages/AIChatsPage'))
 const InventoryPage = lazy(() => import('./pages/InventoryPage'))
 const SalesPage = lazy(() => import('./pages/SalesPage'))
 const NewInvoicePage = lazy(() => import('./pages/NewInvoicePage'))
@@ -153,6 +155,8 @@ function App() {
           <Route path="settings" element={<Suspense fallback={<PageFallback />}><SettingsPage /></Suspense>} />
           <Route path="notifications" element={<Suspense fallback={<PageFallback />}><NotificationsPage /></Suspense>} />
           <Route path="bot" element={<Suspense fallback={<PageFallback />}><BotDashboard /></Suspense>} />
+          <Route path="ai-distribution" element={<Suspense fallback={<PageFallback />}><AIDistributionPage /></Suspense>} />
+          <Route path="ai-chats" element={<Suspense fallback={<PageFallback />}><AIChatsPage /></Suspense>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

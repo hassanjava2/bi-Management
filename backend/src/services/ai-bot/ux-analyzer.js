@@ -513,13 +513,17 @@ class UXAnalyzer {
     /**
      * تخزين الاقتراحات
      */
-    _storeSuggestions(suggestions) {
+    async _storeSuggestions(suggestions) {
         for (const suggestion of suggestions) {
             try {
-                run(`
-                    INSERT OR REPLACE INTO bot_suggestions 
+                await run(`
+                    INSERT INTO bot_suggestions 
                     (id, type, component, suggestion, priority, status, created_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT (id) DO UPDATE SET
+                        type = EXCLUDED.type, component = EXCLUDED.component,
+                        suggestion = EXCLUDED.suggestion, priority = EXCLUDED.priority,
+                        status = EXCLUDED.status, created_at = EXCLUDED.created_at
                 `, [
                     suggestion.id,
                     suggestion.type,

@@ -28,6 +28,7 @@ import {
   Settings,
   Bot,
   Bell,
+  Workflow,
 } from 'lucide-react'
 
 const pageTitles = [
@@ -60,6 +61,7 @@ const pageTitles = [
   { path: '/settings', title: 'الإعدادات', icon: Settings },
   { path: '/notifications', title: 'الإشعارات', icon: Bell },
   { path: '/bot', title: 'البوت الذكي', icon: Bot },
+  { path: '/ai-distribution', title: 'التوزيع الذكي', icon: Workflow },
   { path: '/rep-dashboard', title: 'لوحة المندوب', icon: BarChart3 },
 ]
 

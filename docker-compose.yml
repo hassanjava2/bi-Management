@@ -17,9 +17,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-BiSecure2024!}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql:ro
-      - ./database/indexes.sql:/docker-entrypoint-initdb.d/2-indexes.sql:ro
-      - ./database/seeds.sql:/docker-entrypoint-initdb.d/3-seeds.sql:ro
+      - ./database/schema_postgres.sql:/docker-entrypoint-initdb.d/1-schema.sql:ro
     ports:
       - "5432:5432"
     healthcheck:

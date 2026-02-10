@@ -16,7 +16,7 @@ async function createUser(data, createdBy) {
     const id = generateId();
     
     // Generate employee code
-    const countResult = get(`SELECT COUNT(*) as count FROM users`);
+    const countResult = await get(`SELECT COUNT(*) as count FROM users`);
     const employeeCode = `EMP${String((countResult?.count || 0) + 1).padStart(3, '0')}`;
 
     // Hash password
@@ -37,15 +37,15 @@ async function createUser(data, createdBy) {
     let hasSecurityLevel = false;
     let hasCreatedBy = false;
     try {
-        const cols = get(`SELECT sql FROM sqlite_master WHERE type='table' AND name='users'`);
-        const sql = cols?.sql || '';
-        hasEmployeeCode = sql.includes('employee_code');
-        hasDepartmentId = sql.includes('department_id');
-        hasPositionId = sql.includes('position_id');
-        hasSalaryEncrypted = sql.includes('salary_encrypted');
-        hasHireDate = sql.includes('hire_date');
-        hasSecurityLevel = sql.includes('security_level');
-        hasCreatedBy = sql.includes('created_by');
+        const rows = await all(`SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='users'`);
+        const colSet = new Set((rows || []).map(r => r.column_name));
+        hasEmployeeCode = colSet.has('employee_code');
+        hasDepartmentId = colSet.has('department_id');
+        hasPositionId = colSet.has('position_id');
+        hasSalaryEncrypted = colSet.has('salary_encrypted');
+        hasHireDate = colSet.has('hire_date');
+        hasSecurityLevel = colSet.has('security_level');
+        hasCreatedBy = colSet.has('created_by');
     } catch(_) {}
 
     // Build dynamic insert
@@ -61,7 +61,7 @@ async function createUser(data, createdBy) {
     if (hasCreatedBy) { cols.push('created_by'); vals.push(createdBy); }
 
     const placeholders = cols.map(() => '?').join(', ');
-    run(`INSERT INTO users (${cols.join(', ')}) VALUES (${placeholders})`, vals);
+    await run(`INSERT INTO users (${cols.join(', ')}) VALUES (${placeholders})`, vals);
 
     return getUser(id, SECURITY_LEVELS.ADMIN);
 }
@@ -69,11 +69,11 @@ async function createUser(data, createdBy) {
 /**
  * Get user by ID
  */
-function getUser(userId, requesterLevel = 1) {
+async function getUser(userId, requesterLevel = 1) {
     // Try with departments/positions join first, fall back to simple query
     let user;
     try {
-        user = get(`
+        user = await get(`
             SELECT u.*, 
                    d.name as department_name,
                    p.name as position_title
@@ -83,7 +83,7 @@ function getUser(userId, requesterLevel = 1) {
             WHERE u.id = ?
         `, [userId]);
     } catch(_) {
-        user = get(`SELECT * FROM users WHERE id = ?`, [userId]);
+        user = await get(`SELECT * FROM users WHERE id = ?`, [userId]);
     }
 
     if (!user) return null;
@@ -119,12 +119,12 @@ function getUser(userId, requesterLevel = 1) {
 /**
  * Get users list
  */
-function getUsers(filters = {}, requesterLevel = 1) {
+async function getUsers(filters = {}, requesterLevel = 1) {
     // Check if join columns exist
     let useJoins = true;
     try {
-        const colCheck = get(`SELECT sql FROM sqlite_master WHERE type='table' AND name='users'`);
-        useJoins = colCheck?.sql?.includes('department_id') || false;
+        const colRow = await get(`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='users' AND column_name='department_id'`);
+        useJoins = !!colRow;
     } catch(_) { useJoins = false; }
 
     let query;
@@ -182,7 +182,7 @@ function getUsers(filters = {}, requesterLevel = 1) {
         }
     }
 
-    const users = all(query, params);
+    const users = await all(query, params);
 
     return users.map(user => ({
         id: user.id,
@@ -205,7 +205,7 @@ function getUsers(filters = {}, requesterLevel = 1) {
 /**
  * Update user
  */
-function updateUser(userId, data, updatedBy) {
+async function updateUser(userId, data, updatedBy) {
     const updates = [];
     const params = [];
 
@@ -256,7 +256,7 @@ function updateUser(userId, data, updatedBy) {
     updates.push('updated_at = CURRENT_TIMESTAMP');
     params.push(userId);
 
-    run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
+    await run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
 
     return getUser(userId, SECURITY_LEVELS.ADMIN);
 }
@@ -264,15 +264,15 @@ function updateUser(userId, data, updatedBy) {
 /**
  * Delete user (soft delete)
  */
-function deleteUser(userId) {
-    run(`UPDATE users SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [userId]);
+async function deleteUser(userId) {
+    await run(`UPDATE users SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [userId]);
     return { success: true };
 }
 
 /**
  * Get user count
  */
-function getUserCount(filters = {}) {
+async function getUserCount(filters = {}) {
     let query = `SELECT COUNT(*) as count FROM users WHERE 1=1`;
     const params = [];
 
@@ -286,7 +286,7 @@ function getUserCount(filters = {}) {
         params.push(filters.department_id);
     }
 
-    const result = get(query, params);
+    const result = await get(query, params);
     return result?.count || 0;
 }
 

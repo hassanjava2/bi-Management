@@ -58,18 +58,9 @@ function loadOldRecord(tableName, idField = 'id') {
     return async (req, res, next) => {
         try {
             if (req.params[idField]) {
-                const db = require('../config/database').getDb();
-                const query = `SELECT * FROM ${tableName} WHERE id = ?`;
-                const result = db.exec(query, [req.params[idField]]);
-                
-                if (result.length > 0 && result[0].values.length > 0) {
-                    const columns = result[0].columns;
-                    const values = result[0].values[0];
-                    req.oldRecord = {};
-                    columns.forEach((col, i) => {
-                        req.oldRecord[col] = values[i];
-                    });
-                }
+                const { get } = require('../config/database');
+                const row = await get(`SELECT * FROM ${tableName} WHERE id = ?`, [req.params[idField]]);
+                req.oldRecord = row || null;
             }
         } catch (err) {
             console.error('[Audit] Failed to load old record:', err.message);

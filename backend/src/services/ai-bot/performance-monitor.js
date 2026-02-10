@@ -97,13 +97,12 @@ class PerformanceMonitor {
         try {
             // Test query time
             const queryStart = Date.now();
-            get('SELECT 1');
+            await get('SELECT 1');
             metrics.queryTime = Date.now() - queryStart;
             
             // Table count
-            const tables = all(`
-                SELECT name FROM sqlite_master 
-                WHERE type='table' AND name NOT LIKE 'sqlite_%'
+            const tables = await all(`
+                SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE' AND table_name NOT LIKE 'pg_%'
             `);
             metrics.tableCount = tables?.length || 0;
             
@@ -113,7 +112,7 @@ class PerformanceMonitor {
             
             for (const table of mainTables) {
                 try {
-                    const result = get(`SELECT COUNT(*) as count FROM ${table}`);
+                    const result = await get(`SELECT COUNT(*) as count FROM ${table}`);
                     if (result) {
                         tableCounts.push({ table, count: result.count });
                         metrics.totalRecords += result.count;
@@ -128,11 +127,8 @@ class PerformanceMonitor {
                 .slice(0, 5);
             
             // Index count
-            const indexes = all(`
-                SELECT COUNT(*) as count FROM sqlite_master 
-                WHERE type='index'
-            `);
-            metrics.indexCount = indexes?.[0]?.count || 0;
+            const indexResult = await get(`SELECT COUNT(*) as count FROM pg_indexes WHERE schemaname='public'`);
+            metrics.indexCount = indexResult?.count || 0;
             
         } catch (error) {
             this.bot.log(`DB metrics error: ${error.message}`, 'warn');
@@ -162,15 +158,15 @@ class PerformanceMonitor {
         
         try {
             // Get recent error rate from audit logs
-            const recentErrors = get(`
+            const recentErrors = await get(`
                 SELECT COUNT(*) as count FROM audit_logs 
                 WHERE severity = 'critical' 
-                AND created_at > datetime('now', '-5 minutes')
+                AND created_at > CURRENT_TIMESTAMP - INTERVAL '5 minutes'
             `);
             
-            const totalRequests = get(`
+            const totalRequests = await get(`
                 SELECT COUNT(*) as count FROM audit_logs 
-                WHERE created_at > datetime('now', '-5 minutes')
+                WHERE created_at > CURRENT_TIMESTAMP - INTERVAL '5 minutes'
             `);
             
             if (totalRequests?.count > 0) {
@@ -252,22 +248,22 @@ class PerformanceMonitor {
     /**
      * تسجيل المقاييس
      */
-    _logMetrics(data) {
+    async _logMetrics(data) {
         try {
-            run(`
+            await run(`
                 CREATE TABLE IF NOT EXISTS performance_metrics (
                     id TEXT PRIMARY KEY,
-                    cpu_usage REAL,
-                    memory_usage REAL,
+                    cpu_usage NUMERIC,
+                    memory_usage NUMERIC,
                     db_query_time INTEGER,
                     heap_used INTEGER,
-                    error_rate REAL,
+                    error_rate NUMERIC,
                     issues_count INTEGER,
-                    created_at TEXT
+                    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
                 )
             `);
             
-            run(`
+            await run(`
                 INSERT INTO performance_metrics 
                 (id, cpu_usage, memory_usage, db_query_time, heap_used, error_rate, issues_count, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -283,9 +279,9 @@ class PerformanceMonitor {
             ]);
             
             // Clean old metrics (keep last 24 hours)
-            run(`
+            await run(`
                 DELETE FROM performance_metrics 
-                WHERE created_at < datetime('now', '-24 hours')
+                WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '24 hours'
             `);
         } catch (error) {
             // Ignore

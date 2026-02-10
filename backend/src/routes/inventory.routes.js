@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
         
         query += ` ORDER BY p.name LIMIT 100`;
         
-        const products = all(query, params);
+        const products = await all(query, params);
         
         res.json({
             success: true,
@@ -49,7 +49,7 @@ router.get('/', async (req, res) => {
  */
 router.get('/movements', async (req, res) => {
     try {
-        const movements = all(`
+        const movements = await all(`
             SELECT im.*, p.name as product_name
             FROM inventory_movements im
             LEFT JOIN products p ON im.product_id = p.id
@@ -75,14 +75,14 @@ router.post('/movements', async (req, res) => {
         const { product_id, type, quantity, reason, notes } = req.body;
         const id = generateId();
         
-        run(`
+        await run(`
             INSERT INTO inventory_movements (id, product_id, type, quantity, reason, notes, created_by, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `, [id, product_id, type, quantity, reason, notes, req.user?.id]);
         
         // تحديث كمية المنتج
         const multiplier = type === 'in' ? 1 : -1;
-        run(`UPDATE products SET quantity = quantity + ? WHERE id = ?`, [quantity * multiplier, product_id]);
+        await run(`UPDATE products SET quantity = quantity + ? WHERE id = ?`, [quantity * multiplier, product_id]);
         
         res.status(201).json({
             success: true,
@@ -99,10 +99,10 @@ router.post('/movements', async (req, res) => {
  */
 router.get('/stats', async (req, res) => {
     try {
-        const totalProducts = get(`SELECT COUNT(*) as count FROM products`);
-        const lowStock = get(`SELECT COUNT(*) as count FROM products WHERE quantity < min_quantity`);
-        const outOfStock = get(`SELECT COUNT(*) as count FROM products WHERE quantity = 0`);
-        const totalValue = get(`SELECT SUM(quantity * cost_price) as value FROM products`);
+        const totalProducts = await get(`SELECT COUNT(*) as count FROM products`);
+        const lowStock = await get(`SELECT COUNT(*) as count FROM products WHERE quantity < min_quantity`);
+        const outOfStock = await get(`SELECT COUNT(*) as count FROM products WHERE quantity = 0`);
+        const totalValue = await get(`SELECT SUM(quantity * cost_price) as value FROM products`);
         
         res.json({
             success: true,
@@ -124,7 +124,7 @@ router.get('/stats', async (req, res) => {
  */
 router.get('/warehouses', async (req, res) => {
     try {
-        const warehouses = all(`SELECT * FROM warehouses ORDER BY name`);
+        const warehouses = await all(`SELECT * FROM warehouses ORDER BY name`);
         res.json({
             success: true,
             data: warehouses.length ? warehouses : [{ id: 'main', name: 'المخزن الرئيسي', code: 'MAIN', type: 'main' }]
@@ -140,7 +140,7 @@ router.get('/warehouses', async (req, res) => {
  */
 router.get('/products', async (req, res) => {
     try {
-        const products = all(`SELECT id, name, name_ar, code, cost_price, selling_price, category_id FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) ORDER BY name LIMIT 500`);
+        const products = await all(`SELECT id, name, name_ar, code, cost_price, selling_price, category_id FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) ORDER BY name LIMIT 500`);
         res.json({ success: true, data: products });
     } catch (error) {
         res.json({ success: true, data: [] });
@@ -153,7 +153,7 @@ router.get('/products', async (req, res) => {
  */
 router.get('/devices', async (req, res) => {
     try {
-        const rows = all(`
+        const rows = await all(`
             SELECT sn.*, p.name as product_name
             FROM serial_numbers sn
             LEFT JOIN products p ON sn.product_id = p.id
@@ -178,9 +178,9 @@ router.post('/devices', async (req, res) => {
         }
         const id = generateId();
         const serial = serial_number && String(serial_number).trim() ? String(serial_number).trim() : `BI-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
-        run(`
+        await run(`
             INSERT INTO serial_numbers (id, serial_number, product_id, purchase_cost, supplier_id, status, warehouse_id, created_at, created_by)
-            VALUES (?, ?, ?, ?, ?, 'available', ?, datetime('now'), ?)
+            VALUES (?, ?, ?, ?, ?, 'available', ?, CURRENT_TIMESTAMP, ?)
         `, [id, serial, product_id, purchase_price ? parseFloat(purchase_price) : null, supplier_id || null, warehouse_id || 'main', req.user?.id]);
         res.status(201).json({
             success: true,
@@ -196,7 +196,7 @@ router.post('/devices', async (req, res) => {
  */
 router.get('/devices/:id', async (req, res) => {
     try {
-        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        const row = await get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
         if (!row) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
         res.json({ success: true, data: row });
     } catch (error) {
@@ -209,7 +209,7 @@ router.get('/devices/:id', async (req, res) => {
  */
 router.put('/devices/:id', async (req, res) => {
     try {
-        const existing = get(`SELECT id FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        const existing = await get(`SELECT id FROM serial_numbers WHERE id = ?`, [req.params.id]);
         if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
         const { status, warehouse_id, serial_number } = req.body;
         const updates = [];
@@ -218,12 +218,12 @@ router.put('/devices/:id', async (req, res) => {
         if (warehouse_id !== undefined) { updates.push('warehouse_id = ?'); params.push(warehouse_id); }
         if (serial_number !== undefined) { updates.push('serial_number = ?'); params.push(String(serial_number).trim()); }
         if (updates.length === 0) {
-            const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+            const row = await get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
             return res.json({ success: true, data: row });
         }
         params.push(req.params.id);
-        run(`UPDATE serial_numbers SET ${updates.join(', ')} WHERE id = ?`, params);
-        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        await run(`UPDATE serial_numbers SET ${updates.join(', ')} WHERE id = ?`, params);
+        const row = await get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
         res.json({ success: true, data: row });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -235,9 +235,9 @@ router.put('/devices/:id', async (req, res) => {
  */
 router.delete('/devices/:id', async (req, res) => {
     try {
-        const existing = get(`SELECT id FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        const existing = await get(`SELECT id FROM serial_numbers WHERE id = ?`, [req.params.id]);
         if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
-        run(`DELETE FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        await run(`DELETE FROM serial_numbers WHERE id = ?`, [req.params.id]);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -249,11 +249,11 @@ router.delete('/devices/:id', async (req, res) => {
  */
 router.get('/devices/:id/history', async (req, res) => {
     try {
-        const existing = get(`SELECT id FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        const existing = await get(`SELECT id FROM serial_numbers WHERE id = ?`, [req.params.id]);
         if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
         let history = [];
         try {
-            const rows = all(`SELECT * FROM serial_number_history WHERE device_id = ? ORDER BY created_at DESC LIMIT 50`, [req.params.id]);
+            const rows = await all(`SELECT * FROM serial_number_history WHERE device_id = ? ORDER BY created_at DESC LIMIT 50`, [req.params.id]);
             history = Array.isArray(rows) ? rows : [];
         } catch (_) {
             // جدول السجل قد يكون غير موجود
@@ -269,12 +269,12 @@ router.get('/devices/:id/history', async (req, res) => {
  */
 router.post('/devices/:id/transfer', async (req, res) => {
     try {
-        const existing = get(`SELECT id, warehouse_id FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        const existing = await get(`SELECT id, warehouse_id FROM serial_numbers WHERE id = ?`, [req.params.id]);
         if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
         const { warehouse_id, reason } = req.body;
         if (!warehouse_id) return res.status(400).json({ success: false, error: 'warehouse_id مطلوب' });
-        run(`UPDATE serial_numbers SET warehouse_id = ? WHERE id = ?`, [warehouse_id, req.params.id]);
-        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        await run(`UPDATE serial_numbers SET warehouse_id = ? WHERE id = ?`, [warehouse_id, req.params.id]);
+        const row = await get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
         res.json({ success: true, data: row });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -287,22 +287,22 @@ router.post('/devices/:id/transfer', async (req, res) => {
  */
 router.post('/devices/:id/custody', async (req, res) => {
     try {
-        const existing = get(`SELECT id, serial_number FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        const existing = await get(`SELECT id, serial_number FROM serial_numbers WHERE id = ?`, [req.params.id]);
         if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
         const { action, reason } = req.body; // action: 'take' or 'release'
         if (action === 'take') {
-            run(`UPDATE serial_numbers SET custody_employee_id = ?, custody_date = datetime('now') WHERE id = ?`, [req.user?.id, req.params.id]);
+            await run(`UPDATE serial_numbers SET custody_employee_id = ?, custody_date = CURRENT_TIMESTAMP WHERE id = ?`, [req.user?.id, req.params.id]);
         } else if (action === 'release') {
-            run(`UPDATE serial_numbers SET custody_employee_id = NULL, custody_date = NULL WHERE id = ?`, [req.params.id]);
+            await run(`UPDATE serial_numbers SET custody_employee_id = NULL, custody_date = NULL WHERE id = ?`, [req.params.id]);
         }
         // Log to history
         try {
             const hId = generateId();
-            run(`INSERT INTO serial_number_history (id, device_id, action_type, action_details, employee_id, created_at)
-                 VALUES (?, ?, ?, ?, ?, datetime('now'))`,
+            await run(`INSERT INTO serial_number_history (id, device_id, action_type, action_details, employee_id, created_at)
+                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
                 [hId, req.params.id, action === 'take' ? 'custody_taken' : 'custody_released', reason || null, req.user?.id]);
         } catch (_) { /* history table might not exist */ }
-        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        const row = await get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
         res.json({ success: true, data: row });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -315,7 +315,7 @@ router.post('/devices/:id/custody', async (req, res) => {
  */
 router.post('/devices/:id/inspect', async (req, res) => {
     try {
-        const existing = get(`SELECT id, serial_number FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        const existing = await get(`SELECT id, serial_number FROM serial_numbers WHERE id = ?`, [req.params.id]);
         if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
         const { result, actual_specs, discrepancies, condition_notes, photos } = req.body;
         // result: 'pass' | 'pass_with_notes' | 'fail' | 'return_to_supplier'
@@ -324,18 +324,24 @@ router.post('/devices/:id/inspect', async (req, res) => {
         if (result === 'return_to_supplier') newStatus = 'return_to_supplier';
         if (result === 'pass' || result === 'pass_with_notes') newStatus = 'ready_for_prep';
 
-        run(`UPDATE serial_numbers SET status = ?, inspection_result = ?, inspection_notes = ?, inspected_by = ?, inspected_at = datetime('now') WHERE id = ?`,
+        await run(`UPDATE serial_numbers SET status = ?, inspection_result = ?, inspection_notes = ?, inspected_by = ?, inspected_at = CURRENT_TIMESTAMP WHERE id = ?`,
             [newStatus, result || null, condition_notes || null, req.user?.id, req.params.id]);
 
         // Log to history
         try {
             const hId = generateId();
-            run(`INSERT INTO serial_number_history (id, device_id, action_type, action_details, employee_id, created_at)
-                 VALUES (?, ?, 'inspected', ?, ?, datetime('now'))`,
+            await run(`INSERT INTO serial_number_history (id, device_id, action_type, action_details, employee_id, created_at)
+                 VALUES (?, ?, 'inspected', ?, ?, CURRENT_TIMESTAMP)`,
                 [hId, req.params.id, JSON.stringify({ result, discrepancies: discrepancies || null }), req.user?.id]);
         } catch (_) { /* history table might not exist */ }
 
-        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        const row = await get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        if (result === 'pass' || result === 'pass_with_notes') {
+            try {
+                const eventBus = require('../services/ai-distribution/event-bus');
+                eventBus.emit(eventBus.EVENT_TYPES.INSPECTION_COMPLETE, { device_id: req.params.id, deviceId: req.params.id, result, inspection_result: result });
+            } catch (_) { /* optional */ }
+        }
         res.json({ success: true, data: row });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -348,25 +354,25 @@ router.post('/devices/:id/inspect', async (req, res) => {
  */
 router.post('/devices/:id/prepare', async (req, res) => {
     try {
-        const existing = get(`SELECT id, serial_number, status FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        const existing = await get(`SELECT id, serial_number, status FROM serial_numbers WHERE id = ?`, [req.params.id]);
         if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
         const { action, checklist, notes } = req.body;
         // action: 'start' or 'complete'
         if (action === 'start') {
-            run(`UPDATE serial_numbers SET status = 'preparing', prep_started_at = datetime('now'), prep_employee_id = ? WHERE id = ?`,
+            await run(`UPDATE serial_numbers SET status = 'preparing', prep_started_at = CURRENT_TIMESTAMP, prep_employee_id = ? WHERE id = ?`,
                 [req.user?.id, req.params.id]);
         } else if (action === 'complete') {
-            run(`UPDATE serial_numbers SET status = 'ready_to_sell', warehouse_id = 'main', prep_completed_at = datetime('now'), prep_notes = ? WHERE id = ?`,
+            await run(`UPDATE serial_numbers SET status = 'ready_to_sell', warehouse_id = 'main', prep_completed_at = CURRENT_TIMESTAMP, prep_notes = ? WHERE id = ?`,
                 [notes || null, req.params.id]);
         }
         // Log
         try {
             const hId = generateId();
-            run(`INSERT INTO serial_number_history (id, device_id, action_type, action_details, employee_id, created_at)
-                 VALUES (?, ?, ?, ?, ?, datetime('now'))`,
+            await run(`INSERT INTO serial_number_history (id, device_id, action_type, action_details, employee_id, created_at)
+                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
                 [hId, req.params.id, action === 'start' ? 'prep_started' : 'prep_completed', JSON.stringify({ checklist, notes }), req.user?.id]);
         } catch (_) {}
-        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        const row = await get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
         res.json({ success: true, data: row });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -380,7 +386,7 @@ router.post('/devices/:id/prepare', async (req, res) => {
 router.post('/generate-serial', async (req, res) => {
     try {
         const year = new Date().getFullYear();
-        const lastSerial = get(`SELECT serial_number FROM serial_numbers WHERE serial_number LIKE ? ORDER BY serial_number DESC LIMIT 1`, [`BI-${year}-%`]);
+        const lastSerial = await get(`SELECT serial_number FROM serial_numbers WHERE serial_number LIKE ? ORDER BY serial_number DESC LIMIT 1`, [`BI-${year}-%`]);
         let nextNum = 1;
         if (lastSerial && lastSerial.serial_number) {
             const parts = lastSerial.serial_number.split('-');
@@ -400,7 +406,7 @@ router.post('/generate-serial', async (req, res) => {
  */
 router.get('/low-stock', async (req, res) => {
     try {
-        const items = all(`SELECT * FROM products WHERE quantity < min_quantity AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY quantity ASC LIMIT 50`);
+        const items = await all(`SELECT * FROM products WHERE quantity < min_quantity AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY quantity ASC LIMIT 50`);
         res.json({ success: true, data: items });
     } catch (error) {
         res.json({ success: true, data: [] });
@@ -415,7 +421,7 @@ router.get('/parts', async (req, res) => {
     try {
         let rows = [];
         try {
-            rows = all(`SELECT * FROM parts WHERE (is_active = 1 OR is_active IS NULL) ORDER BY name LIMIT 200`);
+            rows = await all(`SELECT * FROM parts WHERE (is_active = 1 OR is_active IS NULL) ORDER BY name LIMIT 200`);
         } catch (e) {
             // parts table might not exist
             rows = [];
@@ -435,8 +441,8 @@ router.post('/parts', async (req, res) => {
         const { name, category, quantity, cost_price, selling_price, warehouse_id } = req.body;
         if (!name) return res.status(400).json({ success: false, error: 'name مطلوب' });
         const id = generateId();
-        run(`INSERT INTO parts (id, name, category, quantity, cost_price, selling_price, warehouse_id, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+        await run(`INSERT INTO parts (id, name, category, quantity, cost_price, selling_price, warehouse_id, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
             [id, name, category || null, quantity || 0, cost_price || 0, selling_price || 0, warehouse_id || null]);
         res.status(201).json({ success: true, data: { id, name } });
     } catch (error) {

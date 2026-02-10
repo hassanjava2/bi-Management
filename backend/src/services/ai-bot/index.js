@@ -157,7 +157,7 @@ class IntelligentBot extends EventEmitter {
     /**
      * دورة الاختبارات التلقائية
      */
-    _startTestingCycle() {
+    async _startTestingCycle() {
         this.intervals.testing = setInterval(async () => {
             if (this.isPaused) return;
             
@@ -179,7 +179,7 @@ class IntelligentBot extends EventEmitter {
     /**
      * دورة الإصلاح التلقائي
      */
-    _startHealingCycle() {
+    async _startHealingCycle() {
         this.intervals.healing = setInterval(async () => {
             if (this.isPaused) return;
             
@@ -200,7 +200,7 @@ class IntelligentBot extends EventEmitter {
     /**
      * دورة إنشاء البيانات
      */
-    _startGeneratorCycle() {
+    async _startGeneratorCycle() {
         this.intervals.generator = setInterval(async () => {
             if (this.isPaused) return;
             
@@ -219,7 +219,7 @@ class IntelligentBot extends EventEmitter {
     /**
      * دورة تحليل UX
      */
-    _startUXAnalysisCycle() {
+    async _startUXAnalysisCycle() {
         this.intervals.uxAnalysis = setInterval(async () => {
             if (this.isPaused) return;
             
@@ -246,7 +246,7 @@ class IntelligentBot extends EventEmitter {
     /**
      * مراقبة الأداء
      */
-    _startPerformanceMonitoring() {
+    async _startPerformanceMonitoring() {
         this.intervals.performance = setInterval(async () => {
             if (this.isPaused) return;
             
@@ -267,7 +267,7 @@ class IntelligentBot extends EventEmitter {
     /**
      * دورة محاكاة المستخدم
      */
-    _startUserSimulationCycle() {
+    async _startUserSimulationCycle() {
         this.intervals.userSimulation = setInterval(async () => {
             if (this.isPaused) return;
             
@@ -357,9 +357,9 @@ class IntelligentBot extends EventEmitter {
     /**
      * تسجيل في قاعدة البيانات
      */
-    logToDB(action, data) {
+    async logToDB(action, data) {
         try {
-            run(`
+            await run(`
                 INSERT INTO bot_logs (id, action, data, created_at)
                 VALUES (?, ?, ?, ?)
             `, [generateId(), action, JSON.stringify(data), now()]);
@@ -372,18 +372,18 @@ class IntelligentBot extends EventEmitter {
     /**
      * التأكد من وجود الجداول
      */
-    _ensureTables() {
+    async _ensureTables() {
         try {
-            run(`
+            await run(`
                 CREATE TABLE IF NOT EXISTS bot_logs (
                     id TEXT PRIMARY KEY,
                     action TEXT NOT NULL,
                     data TEXT,
-                    created_at TEXT NOT NULL
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )
             `);
             
-            run(`
+            await run(`
                 CREATE TABLE IF NOT EXISTS bot_suggestions (
                     id TEXT PRIMARY KEY,
                     type TEXT NOT NULL,
@@ -391,19 +391,19 @@ class IntelligentBot extends EventEmitter {
                     suggestion TEXT NOT NULL,
                     priority TEXT DEFAULT 'medium',
                     status TEXT DEFAULT 'pending',
-                    applied_at TEXT,
-                    created_at TEXT NOT NULL
+                    applied_at TIMESTAMPTZ,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )
             `);
             
-            run(`
+            await run(`
                 CREATE TABLE IF NOT EXISTS bot_fixes (
                     id TEXT PRIMARY KEY,
                     error_type TEXT NOT NULL,
                     description TEXT,
                     fix_applied TEXT,
                     success INTEGER DEFAULT 0,
-                    created_at TEXT NOT NULL
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )
             `);
         } catch (error) {

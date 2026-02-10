@@ -15,7 +15,7 @@ const { logAudit, logSecurityEvent, countFailedLogins } = require('./audit.servi
  */
 async function login(email, password, ipAddress) {
     // Get user (support both email and username)
-    const user = get(`
+    const user = await get(`
         SELECT id, username, email, password_hash, full_name, 
                role, role_id, security_level, is_active,
                failed_login_attempts, locked_until
@@ -66,7 +66,7 @@ async function login(email, password, ipAddress) {
             });
         }
 
-        run(`
+        await run(`
             UPDATE users SET 
                 failed_login_attempts = ?,
                 locked_until = ?
@@ -84,7 +84,7 @@ async function login(email, password, ipAddress) {
     }
 
     // Success - reset failed attempts
-    run(`
+    await run(`
         UPDATE users SET 
             failed_login_attempts = 0,
             locked_until = NULL,
@@ -107,9 +107,9 @@ async function login(email, password, ipAddress) {
     // Create session
     const sessionId = generateId();
     try {
-        run(`
+        await run(`
             INSERT INTO user_sessions (id, user_id, token_hash, ip_address, expires_at)
-            VALUES (?, ?, ?, ?, datetime('now', '+7 days'))
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP + INTERVAL '7 days')
         `, [sessionId, user.id, encrypt(token), ipAddress]);
     } catch (e) {
         // Ignore session creation errors
@@ -141,10 +141,10 @@ async function login(email, password, ipAddress) {
 /**
  * Logout user
  */
-function logout(userId, token, ipAddress) {
+async function logout(userId, token, ipAddress) {
     // Revoke session
     try {
-        run(`
+        await run(`
             UPDATE user_sessions SET 
                 is_active = 0
             WHERE user_id = ? AND is_active = 1
@@ -165,7 +165,7 @@ function logout(userId, token, ipAddress) {
 /**
  * Refresh token
  */
-function refreshToken(refreshTokenStr) {
+async function refreshToken(refreshTokenStr) {
     const decoded = verifyToken(refreshTokenStr);
     
     if (!decoded) {
@@ -173,7 +173,7 @@ function refreshToken(refreshTokenStr) {
     }
 
     // Get user
-    const user = get(`
+    const user = await get(`
         SELECT id, email, role, security_level, is_active
         FROM users WHERE id = ?
     `, [decoded.id]);
@@ -201,7 +201,7 @@ function refreshToken(refreshTokenStr) {
  */
 async function changePassword(userId, currentPassword, newPassword, ipAddress) {
     // Get current password
-    const user = get(`SELECT password_hash FROM users WHERE id = ?`, [userId]);
+    const user = await get(`SELECT password_hash FROM users WHERE id = ?`, [userId]);
 
     if (!user) {
         return { error: 'USER_NOT_FOUND' };
@@ -224,11 +224,11 @@ async function changePassword(userId, currentPassword, newPassword, ipAddress) {
     const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     // Update password
-    run(`UPDATE users SET password_hash = ? WHERE id = ?`, [hashedPassword, userId]);
+    await run(`UPDATE users SET password_hash = ? WHERE id = ?`, [hashedPassword, userId]);
 
     // Revoke all sessions
     try {
-        run(`
+        await run(`
             UPDATE user_sessions SET 
                 is_active = 0
             WHERE user_id = ?

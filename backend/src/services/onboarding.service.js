@@ -32,7 +32,7 @@ class OnboardingService {
      */
     async startOnboarding(employeeId) {
         // 1. جلب معلومات الموظف
-        const employee = get(`
+        const employee = await get(`
             SELECT u.*, p.name as position_name, p.id as position_id,
                    d.name as department_name
             FROM users u
@@ -46,7 +46,7 @@ class OnboardingService {
         }
 
         // 2. التحقق من عدم وجود تدريب سابق
-        const existingTraining = get(`
+        const existingTraining = await get(`
             SELECT id FROM employee_training 
             WHERE employee_id = ? AND status != 'completed'
         `, [employeeId]);
@@ -70,7 +70,7 @@ class OnboardingService {
         const trainingId = generateId();
         const startDate = now();
 
-        run(`
+        await run(`
             INSERT INTO employee_training (
                 id, employee_id, plan_id, started_at, progress, current_day, status
             ) VALUES (?, ?, ?, ?, 0, 1, 'in_progress')
@@ -99,7 +99,7 @@ class OnboardingService {
     async getTrainingPlan(positionId) {
         if (!positionId) return null;
 
-        const plan = get(`
+        const plan = await get(`
             SELECT * FROM training_plans 
             WHERE position_id = ? AND is_active = 1
         `, [positionId]);
@@ -115,7 +115,7 @@ class OnboardingService {
      * الخطة الافتراضية للتدريب
      */
     async getDefaultPlan() {
-        let plan = get(`
+        let plan = await get(`
             SELECT * FROM training_plans 
             WHERE position_id IS NULL AND is_active = 1
             LIMIT 1
@@ -136,7 +136,7 @@ class OnboardingService {
     /**
      * إنشاء خطة تدريب افتراضية
      */
-    createDefaultPlan() {
+    async createDefaultPlan() {
         const planId = generateId();
         const tasks = [
             { day: 1, title: 'التعرف على الشركة', description: 'مقدمة عن شركة BI وتاريخها ورؤيتها', type: 'video' },
@@ -151,7 +151,7 @@ class OnboardingService {
             { day: 7, title: 'اختبار نهائي', description: 'اختبار شامل للتدريب', type: 'quiz' },
         ];
 
-        run(`
+        await run(`
             INSERT INTO training_plans (id, name, description, duration_days, tasks, is_active)
             VALUES (?, ?, ?, ?, ?, 1)
         `, [
@@ -183,7 +183,7 @@ class OnboardingService {
 
             // إنشاء task
             const taskId = generateId();
-            run(`
+            await run(`
                 INSERT INTO tasks (
                     id, title, description, assigned_to, 
                     priority, status, category, due_date,
@@ -199,7 +199,7 @@ class OnboardingService {
             ]);
 
             // تسجيل في training_progress
-            run(`
+            await run(`
                 INSERT INTO training_progress (id, training_id, task_index, completed)
                 VALUES (?, ?, ?, 0)
             `, [generateId(), trainingId, i]);
@@ -232,7 +232,7 @@ class OnboardingService {
      * إشعار HR
      */
     async notifyHR(employee, eventType) {
-        const hrUsers = all(`SELECT id FROM users WHERE role IN ('hr', 'admin')`);
+        const hrUsers = await all(`SELECT id FROM users WHERE role IN ('hr', 'admin')`);
         
         let title, body;
         
@@ -268,7 +268,7 @@ class OnboardingService {
      * فحص تقدم الموظف
      */
     async checkProgress(employeeId) {
-        const training = get(`
+        const training = await get(`
             SELECT et.*, tp.name as plan_name, tp.duration_days, tp.tasks
             FROM employee_training et
             JOIN training_plans tp ON et.plan_id = tp.id
@@ -280,7 +280,7 @@ class OnboardingService {
         }
 
         // حساب التقدم
-        const progress = all(`
+        const progress = await all(`
             SELECT * FROM training_progress 
             WHERE training_id = ?
             ORDER BY task_index
@@ -291,7 +291,7 @@ class OnboardingService {
         const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
         // تحديث نسبة التقدم
-        run(`UPDATE employee_training SET progress = ? WHERE id = ?`, [progressPercent, training.id]);
+        await run(`UPDATE employee_training SET progress = ? WHERE id = ?`, [progressPercent, training.id]);
 
         // حساب اليوم الحالي
         const startDate = new Date(training.started_at);
@@ -321,7 +321,7 @@ class OnboardingService {
      * إكمال مهمة تدريب
      */
     async completeTrainingTask(employeeId, taskIndex, score = null, notes = null) {
-        const training = get(`
+        const training = await get(`
             SELECT et.*, tp.tasks
             FROM employee_training et
             JOIN training_plans tp ON et.plan_id = tp.id
@@ -333,14 +333,14 @@ class OnboardingService {
         }
 
         // تحديث التقدم
-        run(`
+        await run(`
             UPDATE training_progress 
             SET completed = 1, completed_at = CURRENT_TIMESTAMP, score = ?, notes = ?
             WHERE training_id = ? AND task_index = ?
         `, [score, notes, training.id, taskIndex]);
 
         // تحديث المهمة المرتبطة
-        run(`
+        await run(`
             UPDATE tasks SET status = 'completed', completed_at = CURRENT_TIMESTAMP
             WHERE assigned_to = ? AND source = 'onboarding' 
             AND source_reference LIKE ?
@@ -380,13 +380,13 @@ class OnboardingService {
      * إكمال التدريب
      */
     async completeTraining(employeeId, trainingId) {
-        run(`
+        await run(`
             UPDATE employee_training 
             SET status = 'completed', completed_at = CURRENT_TIMESTAMP, progress = 100
             WHERE id = ?
         `, [trainingId]);
 
-        const employee = get(`SELECT * FROM users WHERE id = ?`, [employeeId]);
+        const employee = await get(`SELECT * FROM users WHERE id = ?`, [employeeId]);
 
         // إشعار الموظف
         notificationService.create({
@@ -412,8 +412,8 @@ class OnboardingService {
     /**
      * جلب تدريب موظف
      */
-    getEmployeeTraining(employeeId) {
-        return get(`
+    async getEmployeeTraining(employeeId) {
+        return await get(`
             SELECT et.*, tp.name as plan_name, tp.duration_days, tp.tasks
             FROM employee_training et
             JOIN training_plans tp ON et.plan_id = tp.id
@@ -447,8 +447,8 @@ class OnboardingService {
     /**
      * تقرير التدريب للـ HR
      */
-    getTrainingReport() {
-        const activeTrainings = all(`
+    async getTrainingReport() {
+        const activeTrainings = await all(`
             SELECT et.*, u.full_name, u.email, p.name as position_name,
                    tp.name as plan_name, tp.duration_days
             FROM employee_training et
@@ -459,11 +459,11 @@ class OnboardingService {
             ORDER BY et.started_at DESC
         `);
 
-        const completedThisMonth = get(`
+        const completedThisMonth = await get(`
             SELECT COUNT(*) as count
             FROM employee_training 
             WHERE status = 'completed' 
-            AND completed_at >= datetime('now', '-30 days')
+            AND completed_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
         `);
 
         // تحديد المتأخرين
@@ -488,10 +488,10 @@ class OnboardingService {
     /**
      * إنشاء خطة تدريب جديدة
      */
-    createTrainingPlan(data) {
+    async createTrainingPlan(data) {
         const id = generateId();
 
-        run(`
+        await run(`
             INSERT INTO training_plans (id, position_id, name, description, duration_days, tasks, is_active)
             VALUES (?, ?, ?, ?, ?, ?, 1)
         `, [
@@ -503,14 +503,14 @@ class OnboardingService {
             JSON.stringify(data.tasks || [])
         ]);
 
-        return get(`SELECT * FROM training_plans WHERE id = ?`, [id]);
+        return await get(`SELECT * FROM training_plans WHERE id = ?`, [id]);
     }
 
     /**
      * قائمة خطط التدريب
      */
-    listTrainingPlans() {
-        return all(`
+    async listTrainingPlans() {
+        return await all(`
             SELECT tp.*, p.name as position_name
             FROM training_plans tp
             LEFT JOIN positions p ON tp.position_id = p.id

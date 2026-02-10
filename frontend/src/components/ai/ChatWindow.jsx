@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { X, Minimize2, Maximize2, Bot, Trash2 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -49,17 +49,21 @@ export default function ChatWindow({ isOpen, onClose, onMinimize, isMinimized })
     },
     onSuccess: (response) => {
       const data = response.data.data
-      
-      // Add AI response
+
       const aiMessage = {
         id: Date.now().toString() + '-ai',
         role: 'assistant',
         content: data.response,
         timestamp: new Date().toISOString()
       }
+      if (data.suggested_tasks && data.suggested_tasks.length > 0) {
+        aiMessage.suggested_tasks = data.suggested_tasks
+      }
+      if (data.action_result) {
+        aiMessage.action_result = data.action_result
+      }
       setMessages(prev => [...prev, aiMessage])
-      
-      // Update conversation ID and suggestions
+
       setConversationId(data.conversation_id)
       if (data.suggestions) {
         setSuggestions(data.suggestions)
@@ -87,6 +91,28 @@ export default function ChatWindow({ isOpen, onClose, onMinimize, isMinimized })
     setConversationId(null)
     setSuggestions(['ما مهامي اليوم؟', 'كيف أسجل حضوري؟', 'لدي مشكلة'])
   }
+
+  const confirmTaskMutation = useMutation({
+    mutationFn: (taskData) => aiAPI.confirmTaskFromChat(taskData),
+    onSuccess: (_, variables) => {
+      setMessages(prev => prev.map(m => {
+        if (!m.suggested_tasks) return m
+        return {
+          ...m,
+          suggested_tasks: m.suggested_tasks.map(t => (
+            t.suggested_task && t.suggested_task.title === variables.title
+              ? { ...t, _created: true }
+              : t
+          ))
+        }
+      }))
+    }
+  })
+
+  const handleConfirmTask = useCallback((suggestedTask) => {
+    if (!suggestedTask || !suggestedTask.title) return
+    confirmTaskMutation.mutate(suggestedTask)
+  }, [confirmTaskMutation])
 
   if (!isOpen) return null
 
@@ -150,6 +176,8 @@ export default function ChatWindow({ isOpen, onClose, onMinimize, isMinimized })
                   key={msg.id}
                   message={msg}
                   isUser={msg.role === 'user'}
+                  onConfirmTask={handleConfirmTask}
+                  confirmTaskPending={confirmTaskMutation.isPending}
                 />
               ))}
               

@@ -3,7 +3,7 @@
  * حماية البيانات الحساسة
  */
 
-const { run, get } = require('../config/database');
+const { run, get, all } = require('../config/database');
 const { generateId, now } = require('../utils/helpers');
 
 /**
@@ -107,7 +107,7 @@ function sanitizeResponse(data, fieldsToHide, userLevel) {
  */
 async function logAccessDenied(userId, path, requiredLevel, actualLevel) {
     try {
-        run(`
+        await run(`
             INSERT INTO security_events (
                 id, user_id, event_type, severity, details, ip_address, created_at
             ) VALUES (?, ?, 'ACCESS_DENIED', 'warning', ?, ?, CURRENT_TIMESTAMP)
@@ -127,7 +127,7 @@ async function logAccessDenied(userId, path, requiredLevel, actualLevel) {
  */
 async function logSensitiveAccess(userId, method, path) {
     try {
-        run(`
+        await run(`
             INSERT INTO audit_logs (
                 id, user_id, action, table_name, details, created_at
             ) VALUES (?, ?, ?, 'sensitive_data', ?, CURRENT_TIMESTAMP)
@@ -150,11 +150,11 @@ async function checkSuspiciousActivity(userId) {
 
     try {
         // عد المحاولات المرفوضة في آخر ساعة
-        const result = get(`
+        const result = await get(`
             SELECT COUNT(*) as count FROM security_events
             WHERE user_id = ? 
             AND event_type = 'ACCESS_DENIED'
-            AND created_at > datetime('now', '-1 hour')
+            AND created_at > CURRENT_TIMESTAMP - INTERVAL '1 hour'
         `, [userId]);
 
         if (result?.count >= 5) {
@@ -172,7 +172,7 @@ async function checkSuspiciousActivity(userId) {
 async function alertSecurityTeam(userId, alertType, details) {
     try {
         // تسجيل التنبيه
-        run(`
+        await run(`
             INSERT INTO security_events (
                 id, user_id, event_type, severity, details, created_at
             ) VALUES (?, ?, ?, 'critical', ?, CURRENT_TIMESTAMP)
@@ -184,7 +184,7 @@ async function alertSecurityTeam(userId, alertType, details) {
         ]);
 
         // إرسال إشعار للـ Admin
-        const admins = require('../config/database').all(
+        const admins = await all(
             `SELECT id FROM users WHERE role = 'admin'`
         );
 

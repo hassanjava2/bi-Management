@@ -31,35 +31,35 @@ function getApprovalService() {
  */
 router.get('/executive-dashboard', async (req, res) => {
     try {
-        const revenueToday = get(`
+        const revenueToday = await get(`
             SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as count
             FROM invoices
             WHERE type = 'sale' AND status NOT IN ('cancelled', 'voided', 'deleted')
-            AND date(created_at) = date('now')
+            AND date(created_at) = CURRENT_DATE
         `) || { total: 0, count: 0 };
 
-        const revenueMonth = get(`
+        const revenueMonth = await get(`
             SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as count
             FROM invoices
             WHERE type = 'sale' AND status NOT IN ('cancelled', 'voided', 'deleted')
-            AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
+            AND date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP)
         `) || { total: 0, count: 0 };
 
-        const cashFlow = all(`
+        const cashFlow = await all(`
             SELECT COALESCE(payment_type, payment_method, 'other') as method,
                    COALESCE(SUM(total), 0) as total
             FROM invoices
             WHERE type = 'sale' AND status NOT IN ('cancelled', 'voided', 'deleted')
-            AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
+            AND date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP)
             GROUP BY COALESCE(payment_type, payment_method, 'other')
         `) || [];
 
-        const topSellersMonth = all(`
+        const topSellersMonth = await all(`
             SELECT u.full_name as employee_name, COALESCE(SUM(i.total), 0) as total_sales, COUNT(i.id) as invoice_count
             FROM invoices i
             JOIN users u ON u.id = i.created_by
             WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted')
-            AND strftime('%Y-%m', i.created_at) = strftime('%Y-%m', 'now')
+            AND date_trunc('month', i.created_at) = date_trunc('month', CURRENT_TIMESTAMP)
             GROUP BY u.id
             ORDER BY total_sales DESC
             LIMIT 5
@@ -67,15 +67,15 @@ router.get('/executive-dashboard', async (req, res) => {
 
         let pendingInvoicesCount = 0;
         try {
-            const r = get(`SELECT COUNT(*) as count FROM invoices WHERE payment_status IN ('pending', 'partial') AND status NOT IN ('cancelled', 'voided', 'deleted')`);
+            const r = await get(`SELECT COUNT(*) as count FROM invoices WHERE payment_status IN ('pending', 'partial') AND status NOT IN ('cancelled', 'voided', 'deleted')`);
             pendingInvoicesCount = r?.count || 0;
         } catch (e) { /* ignore */ }
 
         let lowStockCount = 0;
         let lowStockItems = [];
         try {
-            lowStockItems = all(`SELECT id, name, quantity, min_quantity FROM products WHERE min_quantity > 0 AND quantity < min_quantity LIMIT 10`);
-            lowStockCount = (get(`SELECT COUNT(*) as count FROM products WHERE min_quantity > 0 AND quantity < min_quantity`))?.count || 0;
+            lowStockItems = await all(`SELECT id, name, quantity, min_quantity FROM products WHERE min_quantity > 0 AND quantity < min_quantity LIMIT 10`);
+            lowStockCount = (await get(`SELECT COUNT(*) as count FROM products WHERE min_quantity > 0 AND quantity < min_quantity`))?.count || 0;
         } catch (e) { /* ignore */ }
 
         let pendingApprovalsCount = 0;
@@ -86,23 +86,23 @@ router.get('/executive-dashboard', async (req, res) => {
 
         let criticalAuditCount = 0;
         try {
-            const r = get(`SELECT COUNT(*) as count FROM audit_logs WHERE severity = 'critical' AND created_at >= datetime('now', '-7 days')`);
+            const r = await get(`SELECT COUNT(*) as count FROM audit_logs WHERE severity = 'critical' AND created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'`);
             criticalAuditCount = r?.count || 0;
         } catch (e) { /* ignore */ }
 
         let returnsPendingCount = 0;
         try {
-            const r = get(`SELECT COUNT(*) as count FROM returns WHERE status IN ('pending', 'processing')`);
+            const r = await get(`SELECT COUNT(*) as count FROM returns WHERE status IN ('pending', 'processing')`);
             returnsPendingCount = r?.count || 0;
         } catch (e) { /* ignore */ }
 
         let warrantyExpiringCount = 0;
         try {
-            const r = get(`SELECT COUNT(*) as count FROM warranty_claims WHERE status IN ('pending', 'sent_to_supplier')`);
+            const r = await get(`SELECT COUNT(*) as count FROM warranty_claims WHERE status IN ('pending', 'sent_to_supplier')`);
             warrantyExpiringCount = r?.count || 0;
         } catch (e) {
             try {
-                const r2 = get(`SELECT COUNT(*) as count FROM warranty WHERE status IN ('pending', 'open')`);
+                const r2 = await get(`SELECT COUNT(*) as count FROM warranty WHERE status IN ('pending', 'open')`);
                 warrantyExpiringCount = r2?.count || 0;
             } catch (e2) { /* ignore */ }
         }
@@ -151,13 +151,13 @@ router.get('/executive-dashboard', async (req, res) => {
 router.get('/dashboard', async (req, res) => {
     try {
         // إحصائيات سريعة
-        const customers = get(`SELECT COUNT(*) as count FROM customers`) || { count: 0 };
-        const products = get(`SELECT COUNT(*) as count FROM products`) || { count: 0 };
-        const invoices = get(`SELECT COUNT(*) as count FROM invoices`) || { count: 0 };
-        const todaySales = get(`
+        const customers = await get(`SELECT COUNT(*) as count FROM customers`) || { count: 0 };
+        const products = await get(`SELECT COUNT(*) as count FROM products`) || { count: 0 };
+        const invoices = await get(`SELECT COUNT(*) as count FROM invoices`) || { count: 0 };
+        const todaySales = await get(`
             SELECT COALESCE(SUM(total), 0) as total 
             FROM invoices 
-            WHERE type = 'sale' AND date(created_at) = date('now')
+            WHERE type = 'sale' AND date(created_at) = CURRENT_DATE
         `) || { total: 0 };
 
         res.json({
@@ -204,7 +204,7 @@ router.get('/sales', async (req, res) => {
         
         query += ` GROUP BY date(created_at) ORDER BY date DESC LIMIT 30`;
         
-        const sales = all(query, params);
+        const sales = await all(query, params);
         
         res.json({
             success: true,
@@ -221,13 +221,13 @@ router.get('/sales', async (req, res) => {
  */
 router.get('/inventory', async (req, res) => {
     try {
-        const lowStock = all(`
+        const lowStock = await all(`
             SELECT * FROM products 
             WHERE quantity < min_quantity 
             LIMIT 20
         `);
         
-        const totalValue = get(`
+        const totalValue = await get(`
             SELECT SUM(quantity * cost_price) as value FROM products
         `) || { value: 0 };
         
@@ -249,7 +249,7 @@ router.get('/inventory', async (req, res) => {
  */
 router.get('/customers', async (req, res) => {
     try {
-        const topCustomers = all(`
+        const topCustomers = await all(`
             SELECT c.*, 
                    COALESCE(SUM(i.total), 0) as total_purchases
             FROM customers c
@@ -299,12 +299,12 @@ router.get('/sales-by-employee', async (req, res) => {
         }
         query += `
             GROUP BY u.id
-            HAVING invoice_count > 0
-            ORDER BY total_sales DESC
+            HAVING COUNT(i.id) > 0
+            ORDER BY COALESCE(SUM(i.total), 0) DESC
             LIMIT ?
         `;
         params.push(parseInt(limit) || 50);
-        const byEmployee = all(query, params);
+        const byEmployee = await all(query, params);
         res.json({ success: true, data: byEmployee });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -322,16 +322,16 @@ router.get('/top-sellers', async (req, res) => {
         let dateFilter = '';
         const params = [];
         if (period === 'today') {
-            dateFilter = ` AND date(i.created_at) = date('now')`;
+            dateFilter = ` AND date(i.created_at) = CURRENT_DATE`;
         } else if (period === 'week') {
-            dateFilter = ` AND i.created_at >= datetime('now', '-7 days')`;
+            dateFilter = ` AND i.created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'`;
         } else if (period === 'month') {
-            dateFilter = ` AND strftime('%Y-%m', i.created_at) = strftime('%Y-%m', 'now')`;
+            dateFilter = ` AND date_trunc('month', i.created_at) = date_trunc('month', CURRENT_TIMESTAMP)`;
         } else if (start_date && end_date) {
             dateFilter = ` AND i.created_at >= ? AND i.created_at <= ?`;
             params.push(start_date, end_date);
         } else {
-            dateFilter = ` AND strftime('%Y-%m', i.created_at) = strftime('%Y-%m', 'now')`;
+            dateFilter = ` AND date_trunc('month', i.created_at) = date_trunc('month', CURRENT_TIMESTAMP)`;
         }
         const q = `
             SELECT 
@@ -348,7 +348,7 @@ router.get('/top-sellers', async (req, res) => {
             LIMIT ?
         `;
         params.push(parseInt(limit) || 10);
-        const top = all(q, params);
+        const top = await all(q, params);
         res.json({ success: true, data: top });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -376,7 +376,7 @@ router.get('/my-sales', async (req, res) => {
         const params = [userId];
         if (start_date) { query += ` AND created_at >= ?`; params.push(start_date); }
         if (end_date) { query += ` AND created_at <= ?`; params.push(end_date); }
-        const summary = get(query, params);
+        const summary = await get(query, params);
         let byDayQuery = `
             SELECT date(created_at) as date, COUNT(*) as count, SUM(total) as total
             FROM invoices
@@ -386,7 +386,7 @@ router.get('/my-sales', async (req, res) => {
         if (start_date) { byDayQuery += ` AND created_at >= ?`; byDayParams.push(start_date); }
         if (end_date) { byDayQuery += ` AND created_at <= ?`; byDayParams.push(end_date); }
         byDayQuery += ` GROUP BY date(created_at) ORDER BY date DESC LIMIT 31`;
-        const byDay = all(byDayQuery, byDayParams);
+        const byDay = await all(byDayQuery, byDayParams);
         res.json({
             success: true,
             data: {
@@ -420,7 +420,7 @@ router.get('/sales-by-payment', async (req, res) => {
             GROUP BY COALESCE(payment_type, payment_method, 'other')
             ORDER BY total DESC
         `;
-        const data = all(q, params);
+        const data = await all(q, params);
         res.json({ success: true, data });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -455,7 +455,7 @@ router.get('/sales-by-product', async (req, res) => {
             ORDER BY total_sales DESC
             LIMIT ?
         `;
-        const data = all(q, params);
+        const data = await all(q, params);
         res.json({ success: true, data });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -473,22 +473,22 @@ router.get('/profitability', async (req, res) => {
         let filter = ` i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') `;
         const params = [];
         if (month) {
-            filter += ` AND strftime('%Y-%m', i.created_at) = ? `;
+            filter += ` AND to_char(i.created_at, 'YYYY-MM') = ? `;
             params.push(month);
         } else if (start_date && end_date) {
             filter += ` AND i.created_at >= ? AND i.created_at <= ? `;
             params.push(start_date, end_date);
         } else {
-            filter += ` AND strftime('%Y-%m', i.created_at) = strftime('%Y-%m', 'now') `;
+            filter += ` AND date_trunc('month', i.created_at) = date_trunc('month', CURRENT_TIMESTAMP) `;
         }
-        const revenueRow = get(`
+        const revenueRow = await get(`
             SELECT COALESCE(SUM(i.total), 0) as revenue, COUNT(i.id) as invoice_count
             FROM invoices i
             WHERE ${filter}
         `, params);
         let costRow = { cost: null };
         try {
-            costRow = get(`
+            costRow = await get(`
                 SELECT COALESCE(SUM(ii.quantity * p.cost_price), 0) as cost
                 FROM invoice_items ii
                 JOIN invoices i ON i.id = ii.invoice_id
@@ -527,15 +527,15 @@ router.get('/cash-flow', async (req, res) => {
         let filter = ` type = 'sale' AND status NOT IN ('cancelled', 'voided', 'deleted') `;
         const params = [];
         if (month) {
-            filter += ` AND strftime('%Y-%m', created_at) = ? `;
+            filter += ` AND to_char(created_at, 'YYYY-MM') = ? `;
             params.push(month);
         } else if (start_date && end_date) {
             filter += ` AND created_at >= ? AND created_at <= ? `;
             params.push(start_date, end_date);
         } else {
-            filter += ` AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now') `;
+            filter += ` AND date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP) `;
         }
-        const byMethod = all(`
+        const byMethod = await all(`
             SELECT COALESCE(payment_type, payment_method, 'other') as method,
                    COALESCE(SUM(paid_amount), 0) as received,
                    COALESCE(SUM(total), 0) as total,
@@ -544,7 +544,7 @@ router.get('/cash-flow', async (req, res) => {
             WHERE ${filter}
             GROUP BY COALESCE(payment_type, payment_method, 'other')
         `, params);
-        const totals = get(`
+        const totals = await get(`
             SELECT COALESCE(SUM(paid_amount), 0) as total_received,
                    COALESCE(SUM(remaining_amount), 0) as total_pending,
                    COALESCE(SUM(total), 0) as total_invoiced
@@ -580,7 +580,7 @@ router.get('/hr-summary', async (req, res) => {
         const periodEnd = month ? `${month}-31` : new Date().toISOString().slice(0, 10);
         let attendanceSummary = { absent_count: 0, late_count: 0, present_count: 0 };
         try {
-            const r = get(`
+            const r = await get(`
                 SELECT 
                     SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) as absent_count,
                     SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late_count,
@@ -592,11 +592,11 @@ router.get('/hr-summary', async (req, res) => {
         } catch (e) { /* جدول attendance قد يكون باسم آخر */ }
         let tasksSummary = { total: 0, completed: 0, overdue: 0 };
         try {
-            const t = get(`
+            const t = await get(`
                 SELECT 
                     COUNT(*) as total,
                     SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-                    SUM(CASE WHEN status = 'overdue' OR (due_date < datetime('now') AND status NOT IN ('completed', 'cancelled')) THEN 1 ELSE 0 END) as overdue
+                    SUM(CASE WHEN status = 'overdue' OR (due_date < CURRENT_TIMESTAMP AND status NOT IN ('completed', 'cancelled')) THEN 1 ELSE 0 END) as overdue
                 FROM tasks
                 WHERE created_at >= ? AND created_at <= ?
             `, [periodStart, periodEnd + ' 23:59:59']);
@@ -637,7 +637,7 @@ router.get('/my-performance', async (req, res) => {
         const salesParams = [userId];
         if (start_date) { salesQuery += ` AND created_at >= ?`; salesParams.push(start_date); }
         if (end_date) { salesQuery += ` AND created_at <= ?`; salesParams.push(end_date); }
-        const salesSummary = get(salesQuery, salesParams);
+        const salesSummary = await get(salesQuery, salesParams);
         const goals = getGoalsService();
         const points = goals ? goals.getUserPoints(userId) : null;
         res.json({
@@ -673,7 +673,7 @@ router.get('/export/:reportType', async (req, res) => {
             if (start_date) { where += ` AND created_at >= ?`; params.push(start_date); }
             if (end_date) { where += ` AND created_at <= ?`; params.push(end_date); }
             params.push(safeLimit);
-            rows = all(`SELECT date(created_at) as date, COUNT(*) as count, SUM(total) as total FROM invoices ${where} GROUP BY date(created_at) ORDER BY date DESC LIMIT ?`, params);
+            rows = await all(`SELECT date(created_at) as date, COUNT(*) as count, SUM(total) as total FROM invoices ${where} GROUP BY date(created_at) ORDER BY date DESC LIMIT ?`, params);
             headers = ['date', 'count', 'total'];
             filename = 'sales-report.csv';
         } else if (reportType === 'sales-by-employee') {
@@ -682,11 +682,11 @@ router.get('/export/:reportType', async (req, res) => {
             if (start_date) { joinClause += ` AND i.created_at >= ?`; params.push(start_date); }
             if (end_date) { joinClause += ` AND i.created_at <= ?`; params.push(end_date); }
             params.push(safeLimit);
-            rows = all(`SELECT u.full_name as employee_name, u.username, COUNT(i.id) as invoice_count, COALESCE(SUM(i.total), 0) as total_sales ${joinClause} GROUP BY u.id HAVING invoice_count > 0 ORDER BY total_sales DESC LIMIT ?`, params);
+            rows = await all(`SELECT u.full_name as employee_name, u.username, COUNT(i.id) as invoice_count, COALESCE(SUM(i.total), 0) as total_sales ${joinClause} GROUP BY u.id HAVING COUNT(i.id) > 0 ORDER BY COALESCE(SUM(i.total), 0) DESC LIMIT ?`, params);
             headers = ['employee_name', 'username', 'invoice_count', 'total_sales'];
             filename = 'sales-by-employee.csv';
         } else if (reportType === 'customers') {
-            rows = all(`
+            rows = await all(`
                 SELECT c.id, c.name, c.phone, COALESCE(SUM(i.total), 0) as total_purchases, COUNT(i.id) as invoice_count
                 FROM customers c
                 LEFT JOIN invoices i ON c.id = i.customer_id
@@ -697,7 +697,7 @@ router.get('/export/:reportType', async (req, res) => {
             headers = ['id', 'name', 'phone', 'total_purchases', 'invoice_count'];
             filename = 'customers-report.csv';
         } else if (reportType === 'inventory') {
-            rows = all(`
+            rows = await all(`
                 SELECT id, name, sku, quantity, min_quantity, COALESCE(cost_price, 0) as cost_price
                 FROM products
                 ORDER BY quantity ASC
@@ -738,15 +738,15 @@ router.get('/inventory-report', async (req, res) => {
         const safeLimit = Math.min(parseInt(limit) || 50, 200);
         let rows = [];
         if (report_type === 'below_min') {
-            rows = all(`SELECT id, name, sku, quantity, min_quantity FROM products WHERE min_quantity > 0 AND quantity < min_quantity ORDER BY quantity ASC LIMIT ?`, [safeLimit]);
+            rows = await all(`SELECT id, name, sku, quantity, min_quantity FROM products WHERE min_quantity > 0 AND quantity < min_quantity ORDER BY quantity ASC LIMIT ?`, [safeLimit]);
         } else if (report_type === 'negative') {
-            rows = all(`SELECT id, name, sku, quantity FROM products WHERE quantity < 0 LIMIT ?`, [safeLimit]);
+            rows = await all(`SELECT id, name, sku, quantity FROM products WHERE quantity < 0 LIMIT ?`, [safeLimit]);
         } else if (report_type === 'most_sold') {
             const start = start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
             const end = end_date || new Date().toISOString().slice(0, 10);
-            rows = all(`SELECT ii.product_id, p.name, SUM(ii.quantity) as qty FROM invoice_items ii JOIN invoices i ON i.id = ii.invoice_id JOIN products p ON p.id = ii.product_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?) GROUP BY ii.product_id ORDER BY qty DESC LIMIT ?`, [start, end, safeLimit]);
+            rows = await all(`SELECT ii.product_id, p.name, SUM(ii.quantity) as qty FROM invoice_items ii JOIN invoices i ON i.id = ii.invoice_id JOIN products p ON p.id = ii.product_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?) GROUP BY ii.product_id ORDER BY qty DESC LIMIT ?`, [start, end, safeLimit]);
         } else {
-            rows = all(`SELECT id, name, sku, quantity, min_quantity FROM products ORDER BY quantity ASC LIMIT ?`, [safeLimit]);
+            rows = await all(`SELECT id, name, sku, quantity, min_quantity FROM products ORDER BY quantity ASC LIMIT ?`, [safeLimit]);
         }
         res.json({ success: true, data: rows, report_type });
     } catch (error) {
@@ -765,12 +765,12 @@ router.get('/financial-report', async (req, res) => {
         if (report_type === 'vouchers') {
             const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
             const toDate = to || new Date().toISOString().slice(0, 10);
-            const rows = all(`SELECT * FROM vouchers WHERE (is_deleted = 0 OR is_deleted IS NULL) AND date(created_at) BETWEEN date(?) AND date(?) ORDER BY created_at DESC LIMIT 100`, [fromDate, toDate]);
+            const rows = await all(`SELECT * FROM vouchers WHERE (is_deleted = 0 OR is_deleted IS NULL) AND date(created_at) BETWEEN date(?) AND date(?) ORDER BY created_at DESC LIMIT 100`, [fromDate, toDate]);
             return res.json({ success: true, data: rows, report_type: 'vouchers' });
         }
         const summary = {
-            receivables: (get(`SELECT COALESCE(SUM(remaining_amount), 0) as v FROM invoices WHERE type = 'sale' AND payment_status IN ('pending', 'partial') AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.v || 0,
-            payables: (get(`SELECT COALESCE(SUM(remaining_amount), 0) as v FROM invoices WHERE type = 'purchase' AND payment_status IN ('pending', 'partial') AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.v || 0
+            receivables: (await get(`SELECT COALESCE(SUM(remaining_amount), 0) as v FROM invoices WHERE type = 'sale' AND payment_status IN ('pending', 'partial') AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.v || 0,
+            payables: (await get(`SELECT COALESCE(SUM(remaining_amount), 0) as v FROM invoices WHERE type = 'purchase' AND payment_status IN ('pending', 'partial') AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.v || 0
         };
         res.json({ success: true, data: summary, report_type: 'summary' });
     } catch (error) {
@@ -789,29 +789,29 @@ router.get('/analytics-widgets', async (req, res) => {
         const end = end_date || new Date().toISOString().slice(0, 10);
         const widgets = {};
         try {
-            const rev = get(`SELECT COALESCE(SUM(total), 0) as total FROM invoices WHERE type = 'sale' AND status NOT IN ('cancelled', 'voided', 'deleted') AND date(created_at) BETWEEN date(?) AND date(?)`, [start, end]);
-            const cost = get(`SELECT COALESCE(SUM(ii.quantity * COALESCE(ii.cost_price, 0)), 0) as total FROM invoice_items ii JOIN invoices i ON i.id = ii.invoice_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?)`, [start, end]);
+            const rev = await get(`SELECT COALESCE(SUM(total), 0) as total FROM invoices WHERE type = 'sale' AND status NOT IN ('cancelled', 'voided', 'deleted') AND date(created_at) BETWEEN date(?) AND date(?)`, [start, end]);
+            const cost = await get(`SELECT COALESCE(SUM(ii.quantity * COALESCE(ii.cost_price, 0)), 0) as total FROM invoice_items ii JOIN invoices i ON i.id = ii.invoice_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?)`, [start, end]);
             widgets.profit_loss = { revenue: rev?.total || 0, cost: cost?.total || 0, profit: (rev?.total || 0) - (cost?.total || 0) };
         } catch (e) { widgets.profit_loss = { revenue: 0, cost: 0, profit: 0 }; }
         try {
-            widgets.latest_invoices = all(`SELECT id, invoice_number, type, total, created_at FROM invoices WHERE is_deleted = 0 ORDER BY created_at DESC LIMIT 10`);
+            widgets.latest_invoices = await all(`SELECT id, invoice_number, type, total, created_at FROM invoices WHERE is_deleted = 0 ORDER BY created_at DESC LIMIT 10`);
         } catch (e) { widgets.latest_invoices = []; }
         try {
-            widgets.overdue_invoices = all(`SELECT id, invoice_number, customer_id, total, due_date FROM invoices WHERE payment_status IN ('pending', 'partial') AND due_date < date('now') AND status NOT IN ('cancelled', 'voided', 'deleted') LIMIT 20`);
+            widgets.overdue_invoices = await all(`SELECT id, invoice_number, customer_id, total, due_date FROM invoices WHERE payment_status IN ('pending', 'partial') AND due_date < CURRENT_DATE AND status NOT IN ('cancelled', 'voided', 'deleted') LIMIT 20`);
         } catch (e) { widgets.overdue_invoices = []; }
         try {
-            widgets.best_customers = all(`SELECT i.customer_id, c.name as customer_name, SUM(i.total) as total FROM invoices i LEFT JOIN customers c ON c.id = i.customer_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?) GROUP BY i.customer_id ORDER BY total DESC LIMIT 10`, [start, end]);
+            widgets.best_customers = await all(`SELECT i.customer_id, c.name as customer_name, SUM(i.total) as total FROM invoices i LEFT JOIN customers c ON c.id = i.customer_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?) GROUP BY i.customer_id ORDER BY total DESC LIMIT 10`, [start, end]);
         } catch (e) { widgets.best_customers = []; }
         try {
-            widgets.low_stock = all(`SELECT id, name, quantity, min_quantity FROM products WHERE min_quantity > 0 AND quantity < min_quantity LIMIT 15`);
+            widgets.low_stock = await all(`SELECT id, name, quantity, min_quantity FROM products WHERE min_quantity > 0 AND quantity < min_quantity LIMIT 15`);
         } catch (e) { widgets.low_stock = []; }
         try {
-            widgets.invoices_today = (get(`SELECT COUNT(*) as c FROM invoices WHERE date(created_at) = date('now') AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.c || 0;
-            widgets.invoices_week = (get(`SELECT COUNT(*) as c FROM invoices WHERE created_at >= datetime('now', '-7 days') AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.c || 0;
-            widgets.invoices_month = (get(`SELECT COUNT(*) as c FROM invoices WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now') AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.c || 0;
+            widgets.invoices_today = (await get(`SELECT COUNT(*) as c FROM invoices WHERE date(created_at) = CURRENT_DATE AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.c || 0;
+            widgets.invoices_week = (await get(`SELECT COUNT(*) as c FROM invoices WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days' AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.c || 0;
+            widgets.invoices_month = (await get(`SELECT COUNT(*) as c FROM invoices WHERE date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP) AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.c || 0;
         } catch (e) { widgets.invoices_today = 0; widgets.invoices_week = 0; widgets.invoices_month = 0; }
         try {
-            widgets.top_sellers = all(`SELECT u.full_name, SUM(i.total) as total FROM invoices i JOIN users u ON u.id = i.created_by WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?) GROUP BY i.created_by ORDER BY total DESC LIMIT 5`, [start, end]);
+            widgets.top_sellers = await all(`SELECT u.full_name, SUM(i.total) as total FROM invoices i JOIN users u ON u.id = i.created_by WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?) GROUP BY i.created_by ORDER BY total DESC LIMIT 5`, [start, end]);
         } catch (e) { widgets.top_sellers = []; }
         res.json({ success: true, data: widgets });
     } catch (error) {
@@ -829,8 +829,8 @@ router.get('/rep-dashboard', async (req, res) => {
         if (!userId) return res.status(401).json({ success: false, error: 'UNAUTHORIZED' });
         const start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
         const end = new Date().toISOString().slice(0, 10);
-        const my_sales = get(`SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as count FROM invoices WHERE type = 'sale' AND created_by = ? AND status NOT IN ('cancelled', 'voided', 'deleted') AND date(created_at) BETWEEN date(?) AND date(?)`, [userId, start, end]);
-        const overdue_invoices = all(`SELECT id, invoice_number, customer_id, total, due_date FROM invoices WHERE type = 'sale' AND created_by = ? AND payment_status IN ('pending', 'partial') AND due_date < date('now') AND status NOT IN ('cancelled', 'voided', 'deleted') LIMIT 20`, [userId]);
+        const my_sales = await get(`SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as count FROM invoices WHERE type = 'sale' AND created_by = ? AND status NOT IN ('cancelled', 'voided', 'deleted') AND date(created_at) BETWEEN date(?) AND date(?)`, [userId, start, end]);
+        const overdue_invoices = await all(`SELECT id, invoice_number, customer_id, total, due_date FROM invoices WHERE type = 'sale' AND created_by = ? AND payment_status IN ('pending', 'partial') AND due_date < CURRENT_DATE AND status NOT IN ('cancelled', 'voided', 'deleted') LIMIT 20`, [userId]);
         res.json({
             success: true,
             data: {
@@ -858,7 +858,7 @@ router.get('/price-compensation-sale', async (req, res) => {
         const newPriceNum = parseFloat(new_price);
         if (isNaN(newPriceNum)) return res.status(400).json({ success: false, error: 'Invalid new_price' });
 
-        const rows = all(`
+        const rows = await all(`
             SELECT i.customer_id, c.name as customer_name, ii.quantity, ii.unit_price as last_price,
                    (ii.quantity * (ii.unit_price - ?)) as compensation_amount
             FROM invoice_items ii
@@ -888,7 +888,7 @@ router.get('/price-compensation-purchase', async (req, res) => {
         const newPriceNum = parseFloat(new_price);
         if (isNaN(newPriceNum)) return res.status(400).json({ success: false, error: 'Invalid new_price' });
 
-        const rows = all(`
+        const rows = await all(`
             SELECT ii.quantity, ii.unit_price as last_price,
                    (ii.quantity * (ii.unit_price - ?)) as compensation_amount
             FROM invoice_items ii
@@ -898,7 +898,7 @@ router.get('/price-compensation-purchase', async (req, res) => {
             ORDER BY i.created_at DESC
             LIMIT 100
         `, [newPriceNum, product_id, newPriceNum]);
-        const product = get('SELECT id, name, quantity as stock_quantity FROM products WHERE id = ?', [product_id]);
+        const product = await get('SELECT id, name, quantity as stock_quantity FROM products WHERE id = ?', [product_id]);
         res.json({ success: true, data: { product_id, new_price: newPriceNum, product, affected: rows } });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -917,7 +917,7 @@ router.get('/profit-by-product', async (req, res) => {
         if (from) { dateFilter += ` AND i.created_at >= ?`; params.push(from); }
         if (to) { dateFilter += ` AND i.created_at <= ?`; params.push(to); }
 
-        const products = all(`
+        const products = await all(`
             SELECT p.id, p.name, p.code,
                    SUM(ii.quantity) as total_sold,
                    SUM(ii.total) as total_revenue,
@@ -945,13 +945,13 @@ router.get('/profit-by-product', async (req, res) => {
  */
 router.get('/aging-report', async (req, res) => {
     try {
-        const customers = all(`
+        const customers = await all(`
             SELECT c.id, c.name, c.phone, c.balance,
                    (SELECT COUNT(*) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled') as pending_invoices,
                    (SELECT COALESCE(SUM(i.remaining_amount), 0) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled') as total_remaining,
-                   (SELECT COALESCE(SUM(i.remaining_amount), 0) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled' AND i.due_date < date('now')) as overdue_amount,
-                   (SELECT COALESCE(SUM(i.remaining_amount), 0) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled' AND i.due_date >= date('now') AND i.due_date < date('now', '+30 days')) as due_30_days,
-                   (SELECT COALESCE(SUM(i.remaining_amount), 0) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled' AND i.due_date >= date('now', '+30 days')) as due_over_30
+                   (SELECT COALESCE(SUM(i.remaining_amount), 0) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled' AND i.due_date < CURRENT_DATE) as overdue_amount,
+                   (SELECT COALESCE(SUM(i.remaining_amount), 0) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled' AND i.due_date >= CURRENT_DATE AND i.due_date < CURRENT_DATE + INTERVAL '30 days') as due_30_days,
+                   (SELECT COALESCE(SUM(i.remaining_amount), 0) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled' AND i.due_date >= CURRENT_DATE + INTERVAL '30 days') as due_over_30
             FROM customers c
             WHERE c.balance > 0 OR (SELECT COUNT(*) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled') > 0
             ORDER BY total_remaining DESC
@@ -978,14 +978,14 @@ router.get('/aging-report', async (req, res) => {
 router.get('/employee-performance', async (req, res) => {
     try {
         const month = req.query.month || new Date().toISOString().slice(0, 7);
-        const employees = all(`
+        const employees = await all(`
             SELECT u.id, u.full_name, u.role,
-                   (SELECT COUNT(*) FROM invoices i WHERE i.created_by = u.id AND strftime('%Y-%m', i.created_at) = ?) as invoices_created,
-                   (SELECT COALESCE(SUM(i.total), 0) FROM invoices i WHERE i.created_by = u.id AND i.type = 'sale' AND strftime('%Y-%m', i.created_at) = ?) as sales_total,
-                   (SELECT COUNT(*) FROM tasks t WHERE t.assigned_to = u.id AND t.status = 'completed' AND strftime('%Y-%m', t.completed_at) = ?) as tasks_completed,
-                   (SELECT COUNT(*) FROM tasks t WHERE t.assigned_to = u.id AND strftime('%Y-%m', t.created_at) = ?) as tasks_total,
-                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND a.status = 'present' AND strftime('%Y-%m', a.date) = ?) as present_days,
-                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND a.status = 'late' AND strftime('%Y-%m', a.date) = ?) as late_days
+                   (SELECT COUNT(*) FROM invoices i WHERE i.created_by = u.id AND to_char(i.created_at, 'YYYY-MM') = ?) as invoices_created,
+                   (SELECT COALESCE(SUM(i.total), 0) FROM invoices i WHERE i.created_by = u.id AND i.type = 'sale' AND to_char(i.created_at, 'YYYY-MM') = ?) as sales_total,
+                   (SELECT COUNT(*) FROM tasks t WHERE t.assigned_to = u.id AND t.status = 'completed' AND to_char(t.completed_at, 'YYYY-MM') = ?) as tasks_completed,
+                   (SELECT COUNT(*) FROM tasks t WHERE t.assigned_to = u.id AND to_char(t.created_at, 'YYYY-MM') = ?) as tasks_total,
+                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND a.status = 'present' AND to_char(a.date, 'YYYY-MM') = ?) as present_days,
+                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND a.status = 'late' AND to_char(a.date, 'YYYY-MM') = ?) as late_days
             FROM users u
             WHERE u.is_active = 1
             ORDER BY sales_total DESC

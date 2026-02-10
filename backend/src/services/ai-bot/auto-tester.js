@@ -259,44 +259,44 @@ class AutoTester {
         const tests = [
             {
                 name: 'Users table exists',
-                test: () => {
-                    const result = get("SELECT name FROM sqlite_master WHERE type='table' AND name='users'");
+                test: async () => {
+                    const result = await get("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name='users'");
                     return result !== null;
                 }
             },
             {
                 name: 'Admin user exists',
-                test: () => {
-                    const result = get("SELECT id FROM users WHERE email = 'admin@bi-company.com'");
+                test: async () => {
+                    const result = await get("SELECT id FROM users WHERE email = 'admin@bi-company.com'");
                     return result !== null;
                 }
             },
             {
                 name: 'Products table accessible',
-                test: () => {
-                    const result = all("SELECT COUNT(*) as count FROM products");
+                test: async () => {
+                    const result = await all("SELECT COUNT(*) as count FROM products");
                     return result !== undefined;
                 }
             },
             {
                 name: 'Invoices table accessible',
-                test: () => {
-                    const result = all("SELECT COUNT(*) as count FROM invoices");
+                test: async () => {
+                    const result = await all("SELECT COUNT(*) as count FROM invoices");
                     return result !== undefined;
                 }
             },
             {
                 name: 'Foreign keys enabled',
-                test: () => {
-                    const result = get("PRAGMA foreign_keys");
-                    return true; // Just check it doesn't error
+                test: async () => {
+                    await get("SELECT 1 FROM information_schema.tables LIMIT 1");
+                    return true; // Just check DB is reachable
                 }
             },
             {
                 name: 'Audit logs writable',
-                test: () => {
+                test: async () => {
                     try {
-                        run(`
+                        await run(`
                             INSERT INTO audit_logs (id, event_type, action, created_at)
                             VALUES (?, 'test', 'bot_test', ?)
                         `, [generateId(), now()]);

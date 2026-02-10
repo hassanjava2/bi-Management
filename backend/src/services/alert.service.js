@@ -5,9 +5,9 @@
 const { get, all } = require('../config/database');
 const notificationService = require('./notification.service');
 
-function getRules() {
+async function getRules() {
     try {
-        return all('SELECT * FROM alert_rules WHERE is_enabled = 1');
+        return await all('SELECT * FROM alert_rules WHERE is_enabled = 1');
     } catch (e) {
         if (e.message && e.message.includes('no such table')) return [];
         throw e;
@@ -17,13 +17,13 @@ function getRules() {
 async function runChecks() {
     const sent = [];
     try {
-        const rules = getRules();
+        const rules = await getRules();
         for (const rule of rules) {
             if (rule.code === 'low_stock') {
-                const rows = all(`SELECT id, name, quantity, min_quantity FROM products WHERE min_quantity > 0 AND quantity < min_quantity LIMIT 20`);
+                const rows = await all(`SELECT id, name, quantity, min_quantity FROM products WHERE min_quantity > 0 AND quantity < min_quantity LIMIT 20`);
                 if (rows.length > 0) {
                     try {
-                        const admin = get('SELECT id FROM users WHERE role IN ("owner", "admin") LIMIT 1');
+                        const admin = await get('SELECT id FROM users WHERE role IN ("owner", "admin") LIMIT 1');
                         if (admin) {
                             notificationService.create({
                                 user_id: admin.id,
@@ -38,10 +38,10 @@ async function runChecks() {
                 }
             }
             if (rule.code === 'overdue_invoices') {
-                const rows = all(`SELECT COUNT(*) as c FROM invoices WHERE payment_status IN ('pending', 'partial') AND due_date < date('now') AND status NOT IN ('cancelled', 'voided', 'deleted')`);
+                const rows = await all(`SELECT COUNT(*) as c FROM invoices WHERE payment_status IN ('pending', 'partial') AND due_date < CURRENT_DATE AND status NOT IN ('cancelled', 'voided', 'deleted')`);
                 if ((rows[0]?.c || 0) > 0) {
                     try {
-                        const admin = get('SELECT id FROM users WHERE role IN ("owner", "admin") LIMIT 1');
+                        const admin = await get('SELECT id FROM users WHERE role IN ("owner", "admin") LIMIT 1');
                         if (admin) {
                             notificationService.create({
                                 user_id: admin.id,
@@ -57,9 +57,9 @@ async function runChecks() {
             }
             if (rule.code === 'negative_stock') {
                 try {
-                    const rows = all(`SELECT id, name, quantity FROM products WHERE quantity < 0 LIMIT 20`);
+                    const rows = await all(`SELECT id, name, quantity FROM products WHERE quantity < 0 LIMIT 20`);
                     if (rows.length > 0) {
-                        const admin = get('SELECT id FROM users WHERE role IN ("owner", "admin") LIMIT 1');
+                        const admin = await get('SELECT id FROM users WHERE role IN ("owner", "admin") LIMIT 1');
                         if (admin) {
                             notificationService.create({
                                 user_id: admin.id,

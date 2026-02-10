@@ -18,11 +18,11 @@ function setSocketIO(socketIO) {
 /**
  * Create notification
  */
-function create(data) {
+async function create(data) {
     const id = generateId();
 
     try {
-        run(`
+        await run(`
             INSERT INTO notifications (id, recipient_id, recipient_type, type, priority, title, message, entity_type, entity_id, action_url)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
@@ -55,9 +55,9 @@ function create(data) {
 /**
  * Get notification by ID
  */
-function getById(notificationId) {
+async function getById(notificationId) {
     try {
-        const notification = get(`SELECT * FROM notifications WHERE id = ?`, [notificationId]);
+        const notification = await get(`SELECT * FROM notifications WHERE id = ?`, [notificationId]);
         
         if (!notification) return null;
 
@@ -94,7 +94,7 @@ function formatNotification(n) {
 /**
  * Get user notifications
  */
-function getUserNotifications(userId, filters = {}) {
+async function getUserNotifications(userId, filters = {}) {
     try {
         let query = `SELECT * FROM notifications WHERE recipient_id = ?`;
         const params = [userId];
@@ -117,7 +117,7 @@ function getUserNotifications(userId, filters = {}) {
             query += ` LIMIT 50`;
         }
 
-        const notifications = all(query, params);
+        const notifications = await all(query, params);
 
         return notifications.map(formatNotification);
     } catch (error) {
@@ -129,11 +129,11 @@ function getUserNotifications(userId, filters = {}) {
 /**
  * Mark as read
  */
-function markAsRead(notificationId, userId) {
+async function markAsRead(notificationId, userId) {
     try {
-        const result = run(`
+        const result = await run(`
             UPDATE notifications 
-            SET is_read = 1, read_at = datetime('now')
+            SET is_read = 1, read_at = CURRENT_TIMESTAMP
             WHERE id = ? AND recipient_id = ?
         `, [notificationId, userId]);
 
@@ -147,11 +147,11 @@ function markAsRead(notificationId, userId) {
 /**
  * Mark all as read
  */
-function markAllAsRead(userId) {
+async function markAllAsRead(userId) {
     try {
-        const result = run(`
+        const result = await run(`
             UPDATE notifications 
-            SET is_read = 1, read_at = datetime('now')
+            SET is_read = 1, read_at = CURRENT_TIMESTAMP
             WHERE recipient_id = ? AND is_read = 0
         `, [userId]);
 
@@ -165,9 +165,9 @@ function markAllAsRead(userId) {
 /**
  * Get unread count
  */
-function getUnreadCount(userId) {
+async function getUnreadCount(userId) {
     try {
-        const result = get(`
+        const result = await get(`
             SELECT COUNT(*) as count 
             FROM notifications 
             WHERE recipient_id = ? AND is_read = 0
@@ -183,9 +183,9 @@ function getUnreadCount(userId) {
 /**
  * Delete notification
  */
-function deleteNotification(notificationId, userId) {
+async function deleteNotification(notificationId, userId) {
     try {
-        const result = run(`
+        const result = await run(`
             DELETE FROM notifications WHERE id = ? AND recipient_id = ?
         `, [notificationId, userId]);
 
@@ -199,14 +199,14 @@ function deleteNotification(notificationId, userId) {
 /**
  * Delete old notifications (cleanup)
  */
-function deleteOldNotifications(days = 30) {
+async function deleteOldNotifications(days = 30) {
     try {
-        const result = run(`
+        const result = await run(`
             DELETE FROM notifications 
-            WHERE created_at < datetime('now', ?)
-        `, [`-${days} days`]);
+            WHERE created_at < CURRENT_TIMESTAMP - (? * INTERVAL '1 day')
+        `, [days]);
 
-        return { deleted: result.changes };
+        return { deleted: (result && result.changes) || 0 };
     } catch (error) {
         console.error('[Notification] DeleteOld error:', error.message);
         return { deleted: 0 };
@@ -236,9 +236,9 @@ function sendBulk(userIds, data) {
 /**
  * Send to department
  */
-function sendToDepartment(departmentId, data) {
+async function sendToDepartment(departmentId, data) {
     try {
-        const users = all(`SELECT id FROM users WHERE department_id = ? AND is_active = 1`, [departmentId]);
+        const users = await all(`SELECT id FROM users WHERE department_id = ? AND is_active = 1`, [departmentId]);
         return sendBulk(users.map(u => u.id), data);
     } catch (error) {
         console.error('[Notification] SendToDepartment error:', error.message);
@@ -249,9 +249,9 @@ function sendToDepartment(departmentId, data) {
 /**
  * Send to all users
  */
-function sendToAll(data) {
+async function sendToAll(data) {
     try {
-        const users = all(`SELECT id FROM users WHERE is_active = 1`);
+        const users = await all(`SELECT id FROM users WHERE is_active = 1`);
         return sendBulk(users.map(u => u.id), data);
     } catch (error) {
         console.error('[Notification] SendToAll error:', error.message);
@@ -309,7 +309,7 @@ const NOTIFICATION_TYPES = {
  * @param {string} type - نوع التنبيه (من NOTIFICATION_TYPES)
  * @param {Object} context - بيانات السياق
  */
-function notifyEvent(type, context = {}) {
+async function notifyEvent(type, context = {}) {
     const templates = {
         [NOTIFICATION_TYPES.INVOICE_CREATED]: {
             title: 'فاتورة جديدة',
@@ -395,7 +395,7 @@ function notifyEvent(type, context = {}) {
 
     if (context.send_to_admins) {
         try {
-            const admins = all(`SELECT id FROM users WHERE role IN ('owner', 'admin') AND is_active = 1`);
+            const admins = await all(`SELECT id FROM users WHERE role IN ('owner', 'admin') AND is_active = 1`);
             return sendBulk(admins.map(a => a.id), {
                 type,
                 ...template,

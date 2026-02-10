@@ -41,7 +41,7 @@ router.get('/', async (req, res) => {
         
         query += ` ORDER BY d.created_at DESC LIMIT 50`;
         
-        const deliveries = all(query, params);
+        const deliveries = await all(query, params);
         
         res.json({
             success: true,
@@ -62,9 +62,9 @@ router.post('/', async (req, res) => {
         const id = generateId();
         const trackingNumber = `DEL-${Date.now().toString().slice(-8)}`;
         
-        run(`
+        await run(`
             INSERT INTO deliveries (id, tracking_number, invoice_id, customer_id, address, notes, scheduled_date, status, created_by, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, datetime('now'))
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, CURRENT_TIMESTAMP)
         `, [id, trackingNumber, invoice_id, customer_id, address, notes, scheduled_date, req.user?.id]);
         
         res.status(201).json({
@@ -82,7 +82,7 @@ router.post('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
     try {
-        const delivery = get(`
+        const delivery = await get(`
             SELECT d.*, 
                    i.invoice_number, i.total as invoice_total,
                    c.name as customer_name, c.phone as customer_phone
@@ -116,9 +116,9 @@ router.put('/:id/status', async (req, res) => {
     try {
         const { status, notes } = req.body;
         
-        run(`
+        await run(`
             UPDATE deliveries 
-            SET status = ?, status_notes = ?, updated_at = datetime('now')
+            SET status = ?, status_notes = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         `, [status, notes, req.params.id]);
         
@@ -137,7 +137,7 @@ router.put('/:id/status', async (req, res) => {
  */
 router.get('/stats', async (req, res) => {
     try {
-        const stats = get(`
+        const stats = await get(`
             SELECT 
                 COUNT(*) as total,
                 SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,

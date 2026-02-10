@@ -30,7 +30,7 @@ const SUPPLIER_DECISIONS = {
 /**
  * إنشاء طلب ضمان جديد
  */
-function createClaim(data) {
+async function createClaim(data) {
     const {
         device,
         supplier,
@@ -47,7 +47,7 @@ function createClaim(data) {
     const id = uuidv4();
 
     try {
-        run(`
+        await run(`
             INSERT INTO warranty_claims
             (id, claim_number, device_id, device_serial, supplier_id, supplier_name,
              customer_id, customer_name, customer_phone, customer_address,
@@ -78,13 +78,13 @@ function createClaim(data) {
 /**
  * إرسال للمورد
  */
-function sendToSupplier(claimId, sentBy, notes = '') {
+async function sendToSupplier(claimId, sentBy, notes = '') {
     const claim = getById(claimId);
     if (!claim) throw new Error('طلب الضمان غير موجود');
 
     const now = new Date().toISOString();
 
-    run(`
+    await run(`
         UPDATE warranty_claims 
         SET status = ?, sent_to_supplier_at = ?, updated_at = ?
         WHERE id = ?
@@ -103,13 +103,13 @@ function sendToSupplier(claimId, sentBy, notes = '') {
 /**
  * تسجيل استلام المورد
  */
-function markReceivedBySupplier(claimId, receivedBy) {
+async function markReceivedBySupplier(claimId, receivedBy) {
     const claim = getById(claimId);
     if (!claim) throw new Error('طلب الضمان غير موجود');
 
     const now = new Date().toISOString();
 
-    run(`
+    await run(`
         UPDATE warranty_claims 
         SET status = ?, supplier_received_at = ?, updated_at = ?
         WHERE id = ?
@@ -123,7 +123,7 @@ function markReceivedBySupplier(claimId, receivedBy) {
 /**
  * تسجيل رد المورد
  */
-function recordSupplierResponse(claimId, response, recordedBy) {
+async function recordSupplierResponse(claimId, response, recordedBy) {
     const {
         decision,
         notes,
@@ -156,7 +156,7 @@ function recordSupplierResponse(claimId, response, recordedBy) {
 
     const now = new Date().toISOString();
 
-    run(`
+    await run(`
         UPDATE warranty_claims 
         SET status = ?, supplier_response_at = ?, supplier_decision = ?,
             supplier_notes = ?, repair_cost = ?, parts_cost = ?,
@@ -181,13 +181,13 @@ function recordSupplierResponse(claimId, response, recordedBy) {
 /**
  * إشعار الزبون
  */
-function notifyCustomer(claimId, method, message, notifiedBy) {
+async function notifyCustomer(claimId, method, message, notifiedBy) {
     const claim = getById(claimId);
     if (!claim) throw new Error('طلب الضمان غير موجود');
 
     const now = new Date().toISOString();
 
-    run(`
+    await run(`
         UPDATE warranty_claims 
         SET customer_notified = 1, customer_notified_at = ?,
             customer_notification_method = ?, customer_notification_notes = ?,
@@ -207,13 +207,13 @@ function notifyCustomer(claimId, method, message, notifiedBy) {
 /**
  * إغلاق طلب الضمان
  */
-function closeClaim(claimId, closedBy, notes = '') {
+async function closeClaim(claimId, closedBy, notes = '') {
     const claim = getById(claimId);
     if (!claim) throw new Error('طلب الضمان غير موجود');
 
     const now = new Date().toISOString();
 
-    run(`
+    await run(`
         UPDATE warranty_claims 
         SET status = ?, closed_at = ?, updated_at = ?
         WHERE id = ?
@@ -233,9 +233,9 @@ function closeClaim(claimId, closedBy, notes = '') {
 /**
  * إضافة تتبع
  */
-function addTracking(claimId, action, details, performedBy) {
+async function addTracking(claimId, action, details, performedBy) {
     try {
-        run(`
+        await run(`
             INSERT INTO warranty_tracking
             (id, claim_id, action, action_details, performed_by, performed_at)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -264,15 +264,15 @@ function isWarrantyValid(device) {
 /**
  * جلب طلب بالـ ID
  */
-function getById(id) {
-    return get('SELECT * FROM warranty_claims WHERE id = ?', [id]);
+async function getById(id) {
+    return await get('SELECT * FROM warranty_claims WHERE id = ?', [id]);
 }
 
 /**
  * جلب طلبات جهاز معين
  */
-function getByDevice(deviceId) {
-    return all(`
+async function getByDevice(deviceId) {
+    return await all(`
         SELECT * FROM warranty_claims 
         WHERE device_id = ?
         ORDER BY created_at DESC
@@ -282,15 +282,15 @@ function getByDevice(deviceId) {
 /**
  * جلب طلبات مورد معين
  */
-function getBySupplier(supplierId, status = null) {
+async function getBySupplier(supplierId, status = null) {
     if (status) {
-        return all(`
+        return await all(`
             SELECT * FROM warranty_claims 
             WHERE supplier_id = ? AND status = ?
             ORDER BY created_at DESC
         `, [supplierId, status]);
     }
-    return all(`
+    return await all(`
         SELECT * FROM warranty_claims 
         WHERE supplier_id = ?
         ORDER BY created_at DESC
@@ -300,8 +300,8 @@ function getBySupplier(supplierId, status = null) {
 /**
  * جلب الطلبات المعلقة
  */
-function getPending() {
-    return all(`
+async function getPending() {
+    return await all(`
         SELECT wc.*, s.name as supplier_display_name
         FROM warranty_claims wc
         LEFT JOIN suppliers s ON wc.supplier_id = s.id
@@ -317,7 +317,7 @@ function getPending() {
 /**
  * جلب جميع الطلبات
  */
-function getAll(filters = {}) {
+async function getAll(filters = {}) {
     let query = `
         SELECT wc.*, s.name as supplier_display_name
         FROM warranty_claims wc
@@ -343,14 +343,14 @@ function getAll(filters = {}) {
         params.push(filters.limit);
     }
 
-    return all(query, params);
+    return await all(query, params);
 }
 
 /**
  * جلب سجل التتبع
  */
-function getTracking(claimId) {
-    return all(`
+async function getTracking(claimId) {
+    return await all(`
         SELECT wt.*, u.full_name as performed_by_name
         FROM warranty_tracking wt
         LEFT JOIN users u ON wt.performed_by = u.id
@@ -362,10 +362,10 @@ function getTracking(claimId) {
 /**
  * تحديث حالة الجهاز
  */
-function updateDeviceStatus(deviceId, status) {
+async function updateDeviceStatus(deviceId, status) {
     if (!deviceId) return;
     try {
-        run(`
+        await run(`
             UPDATE serial_numbers SET status = ?, updated_at = ?
             WHERE id = ?
         `, [status, new Date().toISOString(), deviceId]);
@@ -405,7 +405,7 @@ function getStatusText(status) {
 /**
  * إحصائيات الضمان
  */
-function getStats(supplierId = null, days = 30) {
+async function getStats(supplierId = null, days = 30) {
     let query = `
         SELECT 
             supplier_name,
@@ -415,7 +415,7 @@ function getStats(supplierId = null, days = 30) {
             SUM(COALESCE(repair_cost, 0)) as total_repair_cost,
             SUM(COALESCE(parts_cost, 0)) as total_parts_cost
         FROM warranty_claims
-        WHERE created_at >= datetime('now', '-' || ? || ' days')
+        WHERE created_at >= CURRENT_TIMESTAMP - (? * INTERVAL '1 day')
     `;
     const params = [days];
 
@@ -426,7 +426,7 @@ function getStats(supplierId = null, days = 30) {
 
     query += ' GROUP BY supplier_name, status, supplier_decision';
 
-    return all(query, params);
+    return await all(query, params);
 }
 
 module.exports = {

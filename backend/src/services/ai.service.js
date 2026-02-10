@@ -74,11 +74,11 @@ class AIService {
     }
 
     /**
-     * توليد مهمة من وصف
+     * توليد مهمة من وصف (يستدعي محرك Python /api/ai/tasks/create)
      */
     async generateTask(description, context = {}) {
         try {
-            const response = await fetch(`${this.baseUrl}/api/ai/tasks/generate`, {
+            const response = await fetch(`${this.baseUrl}/api/ai/tasks/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ description, context })
@@ -96,16 +96,26 @@ class AIService {
     }
 
     /**
-     * اقتراح تعيين مهمة
+     * إنشاء مهمة من وصف (للاستخدام من processUserProblem)
+     * يرجع نفس الشكل المتوقع: title, description, priority, suggested_department, estimated_minutes, tags, steps
+     */
+    async createTaskFromDescription(description, context = {}) {
+        const result = await this.generateTask(description, context);
+        if (result.error) throw new Error(result.error);
+        return result;
+    }
+
+    /**
+     * اقتراح تعيين مهمة لموظف (محرك Python)
      */
     async suggestAssignment(taskDescription, availableEmployees) {
         try {
-            const response = await fetch(`${this.baseUrl}/api/ai/tasks/suggest-assignment`, {
+            const response = await fetch(`${this.baseUrl}/api/ai/tasks/suggest-assignee`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    task_description: taskDescription,
-                    employees: availableEmployees
+                    task: typeof taskDescription === 'object' ? taskDescription : { description: taskDescription },
+                    available_employees: availableEmployees
                 })
             });
 
@@ -118,6 +128,36 @@ class AIService {
             console.error('[AI Service] Assignment suggestion error:', error.message);
             return { error: error.message };
         }
+    }
+
+    /**
+     * اقتراح موظف لمهمة (يستخدم suggestAssignment مع جلب الموظفين من النظام)
+     */
+    async suggestAssignee(task, departmentId) {
+        const { all } = require('../config/database');
+        const employees = await all(`
+            SELECT u.id, u.department_id, u.full_name as full_name, d.name as department_name,
+                   (SELECT COUNT(*) FROM tasks t WHERE t.assigned_to = u.id AND t.status NOT IN ('completed', 'cancelled')) as pending_tasks_count
+            FROM users u
+            LEFT JOIN departments d ON u.department_id = d.id
+            WHERE u.is_active = 1
+            ${departmentId ? ' AND (u.department_id = ? OR u.department_id IS NULL)' : ''}
+        `, departmentId ? [departmentId] : []);
+        const list = (employees || []).map((e) => ({
+            id: e.id,
+            full_name: e.full_name,
+            department_code: e.department_id || e.department_name,
+            pending_tasks_count: e.pending_tasks_count || 0
+        }));
+        const result = await this.suggestAssignment(task, list);
+        const sug = result?.suggestion || result?.data?.suggestion;
+        if (!sug) return null;
+        return {
+            employee_id: sug.employee_id || sug.id,
+            employee_name: sug.employee_name || sug.full_name,
+            reason: sug.reason,
+            department: sug.department
+        };
     }
 
     /**

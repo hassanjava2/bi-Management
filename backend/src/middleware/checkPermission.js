@@ -3,7 +3,7 @@
  * نظام فحص الصلاحيات المرن (600+ صلاحية)
  */
 
-const { getDatabase } = require('../config/database');
+const { getDatabase, get, all } = require('../config/database');
 const { getAuditService, EVENT_CATEGORIES, SEVERITY } = require('../services/audit.service');
 
 /**
@@ -14,7 +14,6 @@ const { getAuditService, EVENT_CATEGORIES, SEVERITY } = require('../services/aud
 function checkPermission(permissionCode, options = {}) {
     return async (req, res, next) => {
         try {
-            const db = getDatabase();
             const userId = req.user?.id;
             const userRole = req.user?.role;
             const userSecurityLevel = req.user?.security_level || 0;
@@ -34,9 +33,7 @@ function checkPermission(permissionCode, options = {}) {
             }
 
             // جلب معلومات الصلاحية
-            const permission = db.prepare(`
-                SELECT * FROM permissions WHERE code = ?
-            `).getAsObject([permissionCode]);
+            const permission = await get('SELECT * FROM permissions WHERE code = ?', [permissionCode]);
 
             if (!permission || !permission.id) {
                 console.warn(`[Permission] Unknown permission code: ${permissionCode}`);
@@ -63,11 +60,11 @@ function checkPermission(permissionCode, options = {}) {
             }
 
             // 1. التحقق من الصلاحيات المخصصة للمستخدم أولاً (Override)
-            const userPermission = db.prepare(`
+            const userPermission = await get(`
                 SELECT * FROM user_permissions 
                 WHERE user_id = ? AND permission_id = ?
-                AND (expires_at IS NULL OR expires_at > datetime('now'))
-            `).getAsObject([userId, permission.id]);
+                AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+            `, [userId, permission.id]);
 
             if (userPermission && userPermission.id) {
                 if (userPermission.is_granted === 0) {
@@ -85,11 +82,11 @@ function checkPermission(permissionCode, options = {}) {
             }
 
             // 2. التحقق من صلاحيات الدور
-            const rolePermission = db.prepare(`
+            const rolePermission = await get(`
                 SELECT rp.* FROM role_permissions rp
                 JOIN users u ON u.role_id = rp.role_id
                 WHERE u.id = ? AND rp.permission_id = ?
-            `).getAsObject([userId, permission.id]);
+            `, [userId, permission.id]);
 
             if (rolePermission && rolePermission.id) {
                 // الصلاحية موجودة في الدور
@@ -123,7 +120,6 @@ function checkPermission(permissionCode, options = {}) {
  */
 function checkAnyPermission(permissionCodes) {
     return async (req, res, next) => {
-        const db = getDatabase();
         const userId = req.user?.id;
         const userRole = req.user?.role;
 
@@ -163,7 +159,6 @@ function checkAnyPermission(permissionCodes) {
  */
 function checkAllPermissions(permissionCodes) {
     return async (req, res, next) => {
-        const db = getDatabase();
         const userId = req.user?.id;
         const userRole = req.user?.role;
 
@@ -233,49 +228,22 @@ function checkSecurityLevel(requiredLevel) {
  */
 async function checkUserHasPermission(userId, permissionCode) {
     try {
-        const db = getDatabase();
+        const permission = await get('SELECT id FROM permissions WHERE code = ?', [permissionCode]);
+        if (!permission) return false;
 
-        // جلب معلومات الصلاحية
-        const stmt1 = db.prepare('SELECT id FROM permissions WHERE code = ?');
-        stmt1.bind([permissionCode]);
-        let permission = null;
-        if (stmt1.step()) {
-            permission = stmt1.getAsObject();
-        }
-        stmt1.free();
-
-        if (!permission) {
-            return false;
-        }
-
-        // التحقق من صلاحيات المستخدم المخصصة
-        const stmt2 = db.prepare(`
+        const userPerm = await get(`
             SELECT is_granted FROM user_permissions 
             WHERE user_id = ? AND permission_id = ?
-            AND (expires_at IS NULL OR expires_at > datetime('now'))
-        `);
-        stmt2.bind([userId, permission.id]);
-        let userPerm = null;
-        if (stmt2.step()) {
-            userPerm = stmt2.getAsObject();
-        }
-        stmt2.free();
+            AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+        `, [userId, permission.id]);
+        if (userPerm) return userPerm.is_granted === 1;
 
-        if (userPerm) {
-            return userPerm.is_granted === 1;
-        }
-
-        // التحقق من صلاحيات الدور
-        const stmt3 = db.prepare(`
+        const rolePerm = await get(`
             SELECT 1 FROM role_permissions rp
             JOIN users u ON u.role_id = rp.role_id
             WHERE u.id = ? AND rp.permission_id = ?
-        `);
-        stmt3.bind([userId, permission.id]);
-        const hasRolePerm = stmt3.step();
-        stmt3.free();
-
-        return hasRolePerm;
+        `, [userId, permission.id]);
+        return !!rolePerm;
     } catch (error) {
         console.error('[Permission] Error in checkUserHasPermission:', error);
         return false;
@@ -289,40 +257,25 @@ async function checkUserHasPermission(userId, permissionCode) {
  */
 async function getUserPermissions(userId) {
     try {
-        const db = getDatabase();
         const permissions = new Set();
-
-        // جلب صلاحيات الدور
-        const rolePerms = db.prepare(`
+        const rolePerms = await all(`
             SELECT p.code FROM permissions p
             JOIN role_permissions rp ON p.id = rp.permission_id
             JOIN users u ON u.role_id = rp.role_id
             WHERE u.id = ?
-        `);
-        rolePerms.bind([userId]);
-        while (rolePerms.step()) {
-            const row = rolePerms.getAsObject();
-            permissions.add(row.code);
-        }
-        rolePerms.free();
+        `, [userId]);
+        rolePerms.forEach(row => permissions.add(row.code));
 
-        // جلب صلاحيات المستخدم المخصصة
-        const userPerms = db.prepare(`
+        const userPerms = await all(`
             SELECT p.code, up.is_granted FROM permissions p
             JOIN user_permissions up ON p.id = up.permission_id
             WHERE up.user_id = ?
-            AND (up.expires_at IS NULL OR up.expires_at > datetime('now'))
-        `);
-        userPerms.bind([userId]);
-        while (userPerms.step()) {
-            const row = userPerms.getAsObject();
-            if (row.is_granted === 1) {
-                permissions.add(row.code);
-            } else {
-                permissions.delete(row.code);
-            }
-        }
-        userPerms.free();
+            AND (up.expires_at IS NULL OR up.expires_at > CURRENT_TIMESTAMP)
+        `, [userId]);
+        userPerms.forEach(row => {
+            if (row.is_granted === 1) permissions.add(row.code);
+            else permissions.delete(row.code);
+        });
 
         return Array.from(permissions);
     } catch (error) {
@@ -354,8 +307,7 @@ async function handleSensitivePermission(req, res, next, permission) {
     // تسجيل استخدام الصلاحية الحساسة
     if (permission.is_sensitive) {
         try {
-            const db = getDatabase();
-            const auditService = getAuditService(db);
+            const auditService = getAuditService();
             auditService.log({
                 eventType: 'sensitive_permission_used',
                 eventCategory: EVENT_CATEGORIES.SECURITY,
@@ -383,8 +335,7 @@ async function handleSensitivePermission(req, res, next, permission) {
  */
 function logAccessDenied(req, permissionCode, reason) {
     try {
-        const db = getDatabase();
-        const auditService = getAuditService(db);
+        const auditService = getAuditService();
         auditService.log({
             eventType: 'access_denied',
             eventCategory: EVENT_CATEGORIES.SECURITY,

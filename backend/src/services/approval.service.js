@@ -33,7 +33,7 @@ const EXPIRY_HOURS = 24;
 /**
  * إنشاء طلب موافقة جديد
  */
-function createRequest(data) {
+async function createRequest(data) {
     const {
         approvalType,
         entityType,
@@ -51,7 +51,7 @@ function createRequest(data) {
     const expiresAt = new Date(Date.now() + EXPIRY_HOURS * 60 * 60 * 1000).toISOString();
 
     try {
-        run(`
+        await run(`
             INSERT INTO approvals 
             (id, approval_number, type, entity_type, entity_id,
              requested_by, request_reason, request_data, status, priority, expires_at, created_at)
@@ -115,8 +115,8 @@ function requestDeletion(entityType, entityId, entityName, reason, requestedBy) 
 /**
  * طلب إلغاء فاتورة
  */
-function requestInvoiceVoid(invoiceId, reason, requestedBy) {
-    const invoice = get('SELECT id, invoice_number, type, status FROM invoices WHERE id = ?', [invoiceId]);
+async function requestInvoiceVoid(invoiceId, reason, requestedBy) {
+    const invoice = await get('SELECT id, invoice_number, type, status FROM invoices WHERE id = ?', [invoiceId]);
     if (!invoice) throw new Error('الفاتورة غير موجودة');
     if (invoice.status === 'cancelled' || invoice.status === 'voided') throw new Error('الفاتورة ملغاة مسبقاً');
     return createRequest({
@@ -155,7 +155,7 @@ function requestQuantityCorrection(entityType, entityId, entityName, oldQty, new
 /**
  * الموافقة على الطلب
  */
-function approve(approvalId, decidedBy, notes = '') {
+async function approve(approvalId, decidedBy, notes = '') {
     const approval = getById(approvalId);
     
     if (!approval) {
@@ -173,7 +173,7 @@ function approve(approvalId, decidedBy, notes = '') {
 
     const decidedAt = now();
 
-    run(`
+    await run(`
         UPDATE approvals 
         SET status = ?, decided_by = ?, decision_reason = ?, decided_at = ?
         WHERE id = ?
@@ -190,7 +190,7 @@ function approve(approvalId, decidedBy, notes = '') {
 /**
  * رفض الطلب
  */
-function reject(approvalId, decidedBy, reason) {
+async function reject(approvalId, decidedBy, reason) {
     const approval = getById(approvalId);
     
     if (!approval) {
@@ -203,7 +203,7 @@ function reject(approvalId, decidedBy, reason) {
 
     const decidedAt = now();
 
-    run(`
+    await run(`
         UPDATE approvals 
         SET status = ?, decided_by = ?, decision_reason = ?, decided_at = ?
         WHERE id = ?
@@ -247,17 +247,17 @@ function executeApproval(approval) {
 /**
  * تنفيذ الحذف (Soft Delete)
  */
-function executeDeletion(entityType, entityId) {
+async function executeDeletion(entityType, entityId) {
     if (entityType === 'invoice') {
         try {
-            run(`
+            await run(`
                 UPDATE invoices 
                 SET status = 'deleted', updated_at = ?, is_deleted = 1, deleted_at = ?
                 WHERE id = ?
             `, [now(), now(), entityId]);
         } catch (e) {
             try {
-                run(`
+                await run(`
                     UPDATE invoices 
                     SET status = 'deleted', updated_at = ?
                     WHERE id = ?
@@ -280,7 +280,7 @@ function executeDeletion(entityType, entityId) {
     if (!table) return;
 
     try {
-        run(`
+        await run(`
             UPDATE ${table} 
             SET is_deleted = 1, deleted_at = ?
             WHERE id = ?
@@ -293,17 +293,17 @@ function executeDeletion(entityType, entityId) {
 /**
  * تنفيذ إلغاء الفاتورة
  */
-function executeInvoiceVoid(invoiceId, reason) {
+async function executeInvoiceVoid(invoiceId, reason) {
     try {
-        run(`
+        await run(`
             UPDATE invoices 
-            SET status = 'cancelled', cancelled_at = datetime('now'),
-                cancelled_reason = ?, updated_at = datetime('now')
+            SET status = 'cancelled', cancelled_at = CURRENT_TIMESTAMP,
+                cancelled_reason = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         `, [reason || null, invoiceId]);
     } catch (e) {
         try {
-            run(`
+            await run(`
                 UPDATE invoices 
                 SET status = 'cancelled', voided_at = ?, void_reason = ?, updated_at = ?
                 WHERE id = ?
@@ -317,10 +317,10 @@ function executeInvoiceVoid(invoiceId, reason) {
 /**
  * تنفيذ تعديل الكمية
  */
-function executeQuantityCorrection(entityType, entityId, newQuantity) {
+async function executeQuantityCorrection(entityType, entityId, newQuantity) {
     if (entityType === 'product') {
         try {
-            run(`
+            await run(`
                 UPDATE products SET quantity = ?, updated_at = ?
                 WHERE id = ?
             `, [newQuantity, now(), entityId]);
@@ -333,20 +333,20 @@ function executeQuantityCorrection(entityType, entityId, newQuantity) {
 /**
  * جلب طلب بالـ ID
  */
-function getById(id) {
-    return get('SELECT * FROM approvals WHERE id = ?', [id]);
+async function getById(id) {
+    return await get('SELECT * FROM approvals WHERE id = ?', [id]);
 }
 
 /**
  * جلب الطلبات المعلقة
  */
-function getPending() {
-    return all(`
+async function getPending() {
+    return await all(`
         SELECT a.*, u.full_name as requester_name
         FROM approvals a
         LEFT JOIN users u ON a.requested_by = u.id
         WHERE a.status = ?
-        AND a.expires_at > datetime('now')
+        AND a.expires_at > CURRENT_TIMESTAMP
         ORDER BY 
             CASE a.priority 
                 WHEN 'urgent' THEN 1 
@@ -361,7 +361,7 @@ function getPending() {
 /**
  * جلب جميع الطلبات
  */
-function getAll(filters = {}) {
+async function getAll(filters = {}) {
     let query = `
         SELECT a.*, u.full_name as requester_name, d.full_name as decider_name
         FROM approvals a
@@ -393,14 +393,14 @@ function getAll(filters = {}) {
         params.push(filters.limit);
     }
 
-    return all(query, params);
+    return await all(query, params);
 }
 
 /**
  * جلب طلبات مستخدم
  */
-function getByUser(userId) {
-    return all(`
+async function getByUser(userId) {
+    return await all(`
         SELECT * FROM approvals 
         WHERE requested_by = ?
         ORDER BY created_at DESC
@@ -410,12 +410,12 @@ function getByUser(userId) {
 /**
  * فحص الطلبات المنتهية
  */
-function expireOldRequests() {
+async function expireOldRequests() {
     try {
-        run(`
+        await run(`
             UPDATE approvals 
             SET status = ?
-            WHERE status = ? AND expires_at < datetime('now')
+            WHERE status = ? AND expires_at < CURRENT_TIMESTAMP
         `, [APPROVAL_STATUS.EXPIRED, APPROVAL_STATUS.PENDING]);
     } catch (error) {
         console.error('Error expiring old requests:', error);
@@ -436,10 +436,10 @@ function generateApprovalNumber() {
 /**
  * عدد الطلبات المعلقة
  */
-function getPendingCount() {
-    const result = get(`
+async function getPendingCount() {
+    const result = await get(`
         SELECT COUNT(*) as count FROM approvals 
-        WHERE status = ? AND expires_at > datetime('now')
+        WHERE status = ? AND expires_at > CURRENT_TIMESTAMP
     `, [APPROVAL_STATUS.PENDING]);
     return result?.count || 0;
 }
@@ -447,14 +447,14 @@ function getPendingCount() {
 /**
  * إحصائيات الموافقات
  */
-function getStats(days = 30) {
-    return all(`
+async function getStats(days = 30) {
+    return await all(`
         SELECT 
             type,
             status,
             COUNT(*) as count
         FROM approvals
-        WHERE created_at >= datetime('now', '-' || ? || ' days')
+        WHERE created_at >= CURRENT_TIMESTAMP - (? * INTERVAL '1 day')
         GROUP BY type, status
     `, [days]);
 }

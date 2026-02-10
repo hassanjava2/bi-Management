@@ -5,16 +5,16 @@
 const { run, get, all } = require('../config/database');
 const { generateId, now } = require('../utils/helpers');
 
-function ensureSuppliersTable() {
+async function ensureSuppliersTable() {
   try {
-    get('SELECT 1 FROM suppliers LIMIT 1');
+    await get('SELECT 1 FROM suppliers LIMIT 1');
     return true;
   } catch {
     return false;
   }
 }
 
-function list(filters = {}) {
+async function list(filters = {}) {
   const { search, type, page = 1, limit = 100 } = filters;
   let query = `SELECT * FROM suppliers WHERE (is_deleted = 0 OR is_deleted IS NULL)`;
   const params = [];
@@ -31,14 +31,14 @@ function list(filters = {}) {
   const limitNum = parseInt(limit, 10) || 100;
   const offset = (parseInt(page, 10) - 1) * limitNum;
   params.push(limitNum, offset);
-  return all(query, params);
+  return await all(query, params);
 }
 
-function getById(id) {
-  return get('SELECT * FROM suppliers WHERE id = ? AND (is_deleted = 0 OR is_deleted IS NULL)', [String(id)]);
+async function getById(id) {
+  return await get('SELECT * FROM suppliers WHERE id = ? AND (is_deleted = 0 OR is_deleted IS NULL)', [String(id)]);
 }
 
-function create(data) {
+async function create(data) {
   const id = data.id || generateId();
   const {
     name,
@@ -56,7 +56,7 @@ function create(data) {
     notes,
   } = data;
   const createdAt = now();
-  run(
+  await run(
     `INSERT INTO suppliers (id, code, name, name_ar, type, contact_person, phone, phone2, email, website, address, city, country, notes, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [id, code || null, name || '', name_ar || null, type, contact_person || null, phone || null, phone2 || null, email || null, website || null, address || null, city || null, country || null, notes || null, createdAt, createdAt]
@@ -64,8 +64,8 @@ function create(data) {
   return getById(id);
 }
 
-function update(id, data) {
-  const existing = get('SELECT * FROM suppliers WHERE id = ?', [String(id)]);
+async function update(id, data) {
+  const existing = await get('SELECT * FROM suppliers WHERE id = ?', [String(id)]);
   if (!existing) return null;
   const allowed = ['name', 'name_ar', 'code', 'type', 'contact_person', 'phone', 'phone2', 'email', 'website', 'address', 'city', 'country', 'notes', 'is_active'];
   const updates = [];
@@ -79,30 +79,30 @@ function update(id, data) {
   updates.push('updated_at = ?');
   params.push(now());
   params.push(String(id));
-  run(`UPDATE suppliers SET ${updates.join(', ')} WHERE id = ?`, params);
+  await run(`UPDATE suppliers SET ${updates.join(', ')} WHERE id = ?`, params);
   return getById(id);
 }
 
-function remove(id) {
-  const existing = get('SELECT id FROM suppliers WHERE id = ?', [String(id)]);
+async function remove(id) {
+  const existing = await get('SELECT id FROM suppliers WHERE id = ?', [String(id)]);
   if (!existing) return false;
-  run(`UPDATE suppliers SET is_deleted = 1, deleted_at = ? WHERE id = ?`, [now(), String(id)]);
+  await run(`UPDATE suppliers SET is_deleted = 1, deleted_at = ? WHERE id = ?`, [now(), String(id)]);
   return true;
 }
 
-function getTransactions(supplierId) {
+async function getTransactions(supplierId) {
   const supplier = getById(supplierId);
   if (!supplier) return [];
   const transactions = [];
   try {
-    const vouchers = all(
+    const vouchers = await all(
       `SELECT id, voucher_number as reference, amount, created_at as date, type FROM vouchers WHERE supplier_id = ? AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
       [supplierId]
     );
     vouchers.forEach((v) => transactions.push({ date: v.date, type: v.type === 'payment' ? 'payment' : 'purchase', amount: v.type === 'payment' ? -parseFloat(v.amount) : parseFloat(v.amount), reference: v.reference }));
   } catch (_) {}
   try {
-    const invoices = all(
+    const invoices = await all(
       `SELECT id, invoice_number as reference, total as amount, created_at as date FROM invoices WHERE supplier_id = ? AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
       [supplierId]
     );
@@ -112,33 +112,33 @@ function getTransactions(supplierId) {
   return transactions.slice(0, 50);
 }
 
-function getReturns(supplierId) {
+async function getReturns(supplierId) {
   const supplier = getById(supplierId);
   if (!supplier) return [];
   try {
-    const rows = all(
+    const rows = await all(
       `SELECT r.id, r.status, r.created_at, ri.serial_number as serial FROM returns r JOIN return_items ri ON ri.return_id = r.id WHERE r.supplier_id = ? ORDER BY r.created_at DESC LIMIT 50`,
       [supplierId]
     );
     return rows;
   } catch (_) {
-    return all(
+    return await all(
       `SELECT id, status, created_at FROM returns WHERE supplier_id = ? ORDER BY created_at DESC LIMIT 50`,
       [supplierId]
     ).catch(() => []);
   }
 }
 
-function getStats(supplierId) {
+async function getStats(supplierId) {
   const supplier = getById(supplierId);
   if (!supplier) return null;
   const total_purchases = parseFloat(supplier.total_purchases) || 0;
   let total_returns = 0;
   let pending_returns = 0;
   try {
-    const r = get('SELECT COUNT(*) as cnt FROM returns WHERE supplier_id = ?', [supplierId]);
+    const r = await get('SELECT COUNT(*) as cnt FROM returns WHERE supplier_id = ?', [supplierId]);
     total_returns = r?.cnt || 0;
-    const p = get(`SELECT COUNT(*) as cnt FROM returns WHERE supplier_id = ? AND status NOT IN ('received', 'cancelled')`, [supplierId]);
+    const p = await get(`SELECT COUNT(*) as cnt FROM returns WHERE supplier_id = ? AND status NOT IN ('received', 'cancelled')`, [supplierId]);
     pending_returns = p?.cnt || 0;
   } catch (_) {}
   return {

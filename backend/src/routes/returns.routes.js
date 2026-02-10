@@ -19,7 +19,7 @@ router.get('/by-invoice/:invoiceNumber', auth, async (req, res) => {
     if (!invoiceNumber) {
       return res.status(400).json({ success: false, error: 'invoiceNumber required' });
     }
-    const invoice = get(`
+    const invoice = await get(`
       SELECT i.*, c.name as customer_name, c.phone as customer_phone, c.address as customer_address,
              s.name as supplier_name, s.phone as supplier_phone
       FROM invoices i
@@ -30,7 +30,7 @@ router.get('/by-invoice/:invoiceNumber', auth, async (req, res) => {
     if (!invoice) {
       return res.status(404).json({ success: false, error: 'INVOICE_NOT_FOUND' });
     }
-    const items = all(`
+    const items = await all(`
       SELECT ii.*, p.name as product_name, p.sku
       FROM invoice_items ii
       LEFT JOIN products p ON ii.product_id = p.id

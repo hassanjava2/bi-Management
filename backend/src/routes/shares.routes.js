@@ -11,39 +11,41 @@ const { generateId } = require('../utils/helpers');
 router.use(auth);
 
 // Ensure shareholders table exists
-try {
-    run(`CREATE TABLE IF NOT EXISTS shareholders (
-        id TEXT PRIMARY KEY,
-        code TEXT,
-        name TEXT NOT NULL,
-        phone TEXT,
-        share_percentage REAL DEFAULT 0,
-        share_value REAL DEFAULT 0,
-        monthly_profit REAL DEFAULT 0,
-        is_active INTEGER DEFAULT 1,
-        created_at TEXT DEFAULT (datetime('now'))
-    )`);
-    run(`CREATE TABLE IF NOT EXISTS share_distributions (
-        id TEXT PRIMARY KEY,
-        period TEXT,
-        total_profit REAL DEFAULT 0,
-        distributed_at TEXT DEFAULT (datetime('now')),
-        distributed_by TEXT,
-        notes TEXT
-    )`);
-    run(`CREATE TABLE IF NOT EXISTS share_distribution_items (
-        id TEXT PRIMARY KEY,
-        distribution_id TEXT,
-        shareholder_id TEXT,
-        percentage REAL DEFAULT 0,
-        amount REAL DEFAULT 0
-    )`);
-} catch (_) {}
+(async () => {
+    try {
+        await run(`CREATE TABLE IF NOT EXISTS shareholders (
+            id TEXT PRIMARY KEY,
+            code TEXT,
+            name TEXT NOT NULL,
+            phone TEXT,
+            share_percentage NUMERIC DEFAULT 0,
+            share_value NUMERIC DEFAULT 0,
+            monthly_profit NUMERIC DEFAULT 0,
+            is_active INTEGER DEFAULT 1,
+            created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        )`);
+        await run(`CREATE TABLE IF NOT EXISTS share_distributions (
+            id TEXT PRIMARY KEY,
+            period TEXT,
+            total_profit NUMERIC DEFAULT 0,
+            distributed_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+            distributed_by TEXT,
+            notes TEXT
+        )`);
+        await run(`CREATE TABLE IF NOT EXISTS share_distribution_items (
+            id TEXT PRIMARY KEY,
+            distribution_id TEXT,
+            shareholder_id TEXT,
+            percentage NUMERIC DEFAULT 0,
+            amount NUMERIC DEFAULT 0
+        )`);
+    } catch (_) {}
+})();
 
 router.get('/config', async (req, res) => {
     try {
-        const row = get(`SELECT value FROM settings WHERE key = 'share_system_type'`);
-        const shareValue = get(`SELECT value FROM settings WHERE key = 'share_value'`);
+        const row = await get(`SELECT value FROM settings WHERE key = 'share_system_type'`);
+        const shareValue = await get(`SELECT value FROM settings WHERE key = 'share_value'`);
         const share_system_type = row?.value || 'fixed_value_variable_count';
         res.json({
             success: true,
@@ -60,7 +62,7 @@ router.get('/config', async (req, res) => {
 
 router.get('/summary', async (req, res) => {
     try {
-        const shareholders = all(`SELECT * FROM shareholders ORDER BY name LIMIT 100`);
+        const shareholders = await all(`SELECT * FROM shareholders ORDER BY name LIMIT 100`);
         const totalShares = shareholders.reduce((s, sh) => s + (parseFloat(sh.share_percentage) || 0), 0);
         const totalValue = shareholders.reduce((s, sh) => s + (parseFloat(sh.share_value) || 0), 0);
         res.json({ success: true, data: { shareholders, total_shares: totalShares, total_value: totalValue } });
@@ -76,10 +78,10 @@ router.post('/shareholders', async (req, res) => {
         const { name, code, phone, share_percentage, share_value, monthly_profit, is_active } = req.body;
         if (!name) return res.status(400).json({ success: false, error: 'الاسم مطلوب' });
         const id = generateId();
-        run(`INSERT INTO shareholders (id, code, name, phone, share_percentage, share_value, monthly_profit, is_active)
+        await run(`INSERT INTO shareholders (id, code, name, phone, share_percentage, share_value, monthly_profit, is_active)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [id, code || null, name, phone || null, share_percentage || 0, share_value || 0, monthly_profit || 0, is_active !== false ? 1 : 0]);
-        res.status(201).json({ success: true, data: get(`SELECT * FROM shareholders WHERE id = ?`, [id]) });
+        res.status(201).json({ success: true, data: await get(`SELECT * FROM shareholders WHERE id = ?`, [id]) });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
     }
@@ -88,7 +90,7 @@ router.post('/shareholders', async (req, res) => {
 // Update shareholder
 router.put('/shareholders/:id', async (req, res) => {
     try {
-        const existing = get(`SELECT id FROM shareholders WHERE id = ?`, [req.params.id]);
+        const existing = await get(`SELECT id FROM shareholders WHERE id = ?`, [req.params.id]);
         if (!existing) return res.status(404).json({ success: false, error: 'المساهم غير موجود' });
         const { name, code, phone, share_percentage, share_value, monthly_profit, is_active } = req.body;
         const updates = [];
@@ -102,9 +104,9 @@ router.put('/shareholders/:id', async (req, res) => {
         if (is_active !== undefined) { updates.push('is_active = ?'); params.push(is_active ? 1 : 0); }
         if (updates.length > 0) {
             params.push(req.params.id);
-            run(`UPDATE shareholders SET ${updates.join(', ')} WHERE id = ?`, params);
+            await run(`UPDATE shareholders SET ${updates.join(', ')} WHERE id = ?`, params);
         }
-        res.json({ success: true, data: get(`SELECT * FROM shareholders WHERE id = ?`, [req.params.id]) });
+        res.json({ success: true, data: await get(`SELECT * FROM shareholders WHERE id = ?`, [req.params.id]) });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
     }
@@ -113,7 +115,7 @@ router.put('/shareholders/:id', async (req, res) => {
 // Delete shareholder
 router.delete('/shareholders/:id', async (req, res) => {
     try {
-        run(`DELETE FROM shareholders WHERE id = ?`, [req.params.id]);
+        await run(`DELETE FROM shareholders WHERE id = ?`, [req.params.id]);
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
@@ -126,12 +128,12 @@ router.post('/distribute', async (req, res) => {
         const { total_profit, period, distribution } = req.body;
         if (!total_profit || !period) return res.status(400).json({ success: false, error: 'total_profit and period required' });
         const distId = generateId();
-        run(`INSERT INTO share_distributions (id, period, total_profit, distributed_by) VALUES (?, ?, ?, ?)`,
+        await run(`INSERT INTO share_distributions (id, period, total_profit, distributed_by) VALUES (?, ?, ?, ?)`,
             [distId, period, total_profit, req.user?.id]);
         if (Array.isArray(distribution)) {
             for (const d of distribution) {
                 const itemId = generateId();
-                run(`INSERT INTO share_distribution_items (id, distribution_id, shareholder_id, percentage, amount) VALUES (?, ?, ?, ?, ?)`,
+                await run(`INSERT INTO share_distribution_items (id, distribution_id, shareholder_id, percentage, amount) VALUES (?, ?, ?, ?, ?)`,
                     [itemId, distId, d.id, d.share_percentage || 0, d.share || 0]);
             }
         }
@@ -144,7 +146,7 @@ router.post('/distribute', async (req, res) => {
 // Get distribution history
 router.get('/distributions', async (req, res) => {
     try {
-        const distributions = all(`SELECT * FROM share_distributions ORDER BY distributed_at DESC LIMIT 50`);
+        const distributions = await all(`SELECT * FROM share_distributions ORDER BY distributed_at DESC LIMIT 50`);
         res.json({ success: true, data: distributions });
     } catch (e) {
         res.json({ success: true, data: [] });
