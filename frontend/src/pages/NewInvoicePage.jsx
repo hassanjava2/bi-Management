@@ -477,6 +477,14 @@ export default function NewInvoicePage() {
   const [platform, setPlatform] = useState('aqsaty')
   const [showBuyPrice, setShowBuyPrice] = useState(false)
 
+  // الإكسسوارات القياسية (تُضاف تلقائياً مع كل لابتوب)
+  const standardAccessories = [
+    { id: 'acc-bag', name: 'جنطة خط أحمر', cost: 5000, auto: true },
+    { id: 'acc-mouse', name: 'ماوس واير', cost: 3000, auto: true },
+    { id: 'acc-pad', name: 'باد ماوس', cost: 1500, auto: true },
+    { id: 'acc-pillow', name: 'وسادة', cost: 2000, auto: true },
+  ]
+
   // إضافة منتج
   const addProduct = (product) => {
     const existingIndex = items.findIndex(i => i.product_id === product.id)
@@ -486,15 +494,57 @@ export default function NewInvoicePage() {
       newItems[existingIndex].quantity += 1
       setItems(newItems)
     } else {
-      setItems([...items, {
+      const newItems = [...items, {
         product_id: product.id,
         name: product.name,
         group_name: product.group_name,
         buy_price: product.buy_price,
         unit_price: product.sale_price,
         quantity: 1,
-      }])
+        upgrades: [],  // ترقيات
+      }]
+
+      // إضافة إكسسوارات تلقائية لفواتير البيع (لابتوبات)
+      if (invoiceType !== 'purchase' && items.length === 0) {
+        for (const acc of standardAccessories) {
+          if (!newItems.find(i => i.product_id === acc.id)) {
+            newItems.push({
+              product_id: acc.id,
+              name: acc.name,
+              group_name: 'إكسسوارات',
+              buy_price: acc.cost,
+              unit_price: 0,  // مجاناً مع الجهاز
+              quantity: 1,
+              is_accessory: true,
+            })
+          }
+        }
+      }
+
+      setItems(newItems)
     }
+  }
+
+  // إضافة ترقية لمنتج معين
+  const addUpgrade = (itemIndex, upgrade) => {
+    const newItems = [...items]
+    const item = newItems[itemIndex]
+    if (!item.upgrades) item.upgrades = []
+    item.upgrades.push(upgrade)
+    // تحديث السعر بتكلفة الترقية
+    item.unit_price = (item.unit_price || 0) + (upgrade.cost || 0)
+    setItems(newItems)
+  }
+
+  // حذف ترقية
+  const removeUpgrade = (itemIndex, upgradeIndex) => {
+    const newItems = [...items]
+    const item = newItems[itemIndex]
+    if (item.upgrades && item.upgrades[upgradeIndex]) {
+      item.unit_price = (item.unit_price || 0) - (item.upgrades[upgradeIndex].cost || 0)
+      item.upgrades.splice(upgradeIndex, 1)
+    }
+    setItems(newItems)
   }
 
   // تحديث بند

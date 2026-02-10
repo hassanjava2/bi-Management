@@ -153,6 +153,8 @@ export default function AccountingPage() {
             { id: 'payables', label: 'ذمم الموردين', icon: Building2 },
             { id: 'vouchers', label: 'السندات', icon: Receipt },
             { id: 'expenses', label: 'المصاريف', icon: TrendingDown },
+            { id: 'statements', label: 'كشوفات', icon: FileText },
+            { id: 'reconciliation', label: 'المطابقة', icon: Calculator },
             { id: 'reports', label: 'التقارير', icon: FileText },
           ].map(tab => (
             <button
@@ -319,6 +321,16 @@ export default function AccountingPage() {
       {/* Cashbox Tab */}
       {activeTab === 'cashbox' && (
         <CashboxTab />
+      )}
+
+      {/* Statements Tab - كشوفات الحسابات */}
+      {activeTab === 'statements' && (
+        <AccountStatementsTab />
+      )}
+
+      {/* Reconciliation Tab - المطابقة اليومية */}
+      {activeTab === 'reconciliation' && (
+        <DailyReconciliationTab />
       )}
 
       {/* Reports Tab */}
@@ -703,6 +715,189 @@ function TransferCashForm({ cashBoxes, onClose, onSuccess }) {
         <Button type="submit" disabled={transferMutation.isPending}>{transferMutation.isPending ? 'جاري...' : 'تحويل'}</Button>
       </div>
     </form>
+  )
+}
+
+// تبويب كشوفات الحسابات
+function AccountStatementsTab() {
+  const [entityType, setEntityType] = useState('customer') // customer or supplier
+  const [entityId, setEntityId] = useState('')
+
+  const { data: customersRes } = useQuery({ queryKey: ['customers-list'], queryFn: () => customersAPI.getCustomers({ limit: 500 }) })
+  const { data: suppliersRes } = useQuery({ queryKey: ['suppliers-list'], queryFn: () => suppliersAPI.getSuppliers({ limit: 500 }) })
+  const customers = customersRes?.data?.data || []
+  const suppliers = suppliersRes?.data?.data || []
+  const entityList = entityType === 'customer' ? customers : suppliers
+
+  const { data: statementData, isLoading } = useQuery({
+    queryKey: ['account-statement', entityType, entityId],
+    queryFn: () => accountingAPI.getStatement
+      ? accountingAPI.getStatement(entityType, entityId)
+      : import('../services/api').then(m => m.default.get(`/accounting/statement/${entityType}/${entityId}`)),
+    enabled: !!entityId,
+  })
+
+  const statement = statementData?.data?.data || {}
+  const movements = statement.movements || []
+  const formatNum = (n) => new Intl.NumberFormat('ar-IQ').format(Math.round(n || 0))
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap gap-4 items-end">
+        <div>
+          <label className="block text-sm font-medium mb-1">نوع الحساب</label>
+          <div className="flex gap-2">
+            <button onClick={() => { setEntityType('customer'); setEntityId('') }}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${entityType === 'customer' ? 'bg-primary-600 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'}`}>
+              <Users className="w-4 h-4 inline ml-1" /> عميل
+            </button>
+            <button onClick={() => { setEntityType('supplier'); setEntityId('') }}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${entityType === 'supplier' ? 'bg-primary-600 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'}`}>
+              <Building2 className="w-4 h-4 inline ml-1" /> مورد
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-sm font-medium mb-1">{entityType === 'customer' ? 'اختر العميل' : 'اختر المورد'}</label>
+          <select value={entityId} onChange={(e) => setEntityId(e.target.value)}
+            className="w-full px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-white dark:bg-neutral-800">
+            <option value="">-- اختر --</option>
+            {(Array.isArray(entityList) ? entityList : []).map(e => (
+              <option key={e.id} value={e.id}>{e.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {isLoading && entityId && (
+        <div className="flex justify-center py-8"><Spinner size="md" /></div>
+      )}
+
+      {!isLoading && entityId && movements.length > 0 && (
+        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+          {/* ملخص */}
+          <div className="grid grid-cols-3 gap-4 p-4 bg-neutral-50 dark:bg-neutral-700/50">
+            <div className="text-center">
+              <p className="text-xs text-neutral-500">مدين</p>
+              <p className="text-lg font-bold text-red-600">{formatNum(statement.total_debit)} د.ع</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-neutral-500">دائن</p>
+              <p className="text-lg font-bold text-green-600">{formatNum(statement.total_credit)} د.ع</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-neutral-500">الرصيد</p>
+              <p className={`text-lg font-bold ${statement.final_balance >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                {formatNum(Math.abs(statement.final_balance))} د.ع
+                <span className="text-xs mr-1">{statement.final_balance >= 0 ? '(لنا)' : '(علينا)'}</span>
+              </p>
+            </div>
+          </div>
+          {/* جدول الحركات */}
+          <table className="w-full text-sm">
+            <thead className="bg-neutral-50 dark:bg-neutral-700">
+              <tr>
+                <th className="px-3 py-2 text-right text-xs text-neutral-500">التاريخ</th>
+                <th className="px-3 py-2 text-right text-xs text-neutral-500">البيان</th>
+                <th className="px-3 py-2 text-center text-xs text-neutral-500">مدين</th>
+                <th className="px-3 py-2 text-center text-xs text-neutral-500">دائن</th>
+                <th className="px-3 py-2 text-center text-xs text-neutral-500">الرصيد</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
+              {movements.map((m, i) => (
+                <tr key={i} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/30">
+                  <td className="px-3 py-2 text-neutral-500 text-xs">{m.date ? new Date(m.date).toLocaleDateString('ar-IQ') : '—'}</td>
+                  <td className="px-3 py-2 font-medium">{m.description}</td>
+                  <td className="px-3 py-2 text-center text-red-600">{m.debit > 0 ? formatNum(m.debit) : '—'}</td>
+                  <td className="px-3 py-2 text-center text-green-600">{m.credit > 0 ? formatNum(m.credit) : '—'}</td>
+                  <td className="px-3 py-2 text-center font-medium">{formatNum(Math.abs(m.balance))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {!isLoading && entityId && movements.length === 0 && (
+        <div className="text-center py-8 text-neutral-500">لا توجد حركات لهذا الحساب</div>
+      )}
+
+      {!entityId && (
+        <div className="text-center py-12 text-neutral-400">
+          <FileText className="w-16 h-16 mx-auto mb-3 opacity-30" />
+          <p>اختر عميل أو مورد لعرض كشف الحساب</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// تبويب المطابقة اليومية
+function DailyReconciliationTab() {
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+
+  const { data: reconData, isLoading } = useQuery({
+    queryKey: ['reconciliation', date],
+    queryFn: () => accountingAPI.getReconciliation
+      ? accountingAPI.getReconciliation(date)
+      : import('../services/api').then(m => m.default.get(`/accounting/reconciliation?date=${date}`)),
+  })
+
+  const data = reconData?.data?.data || {}
+  const formatNum = (n) => new Intl.NumberFormat('ar-IQ').format(Math.round(n || 0))
+
+  const sections = [
+    { label: 'المبيعات', icon: TrendingUp, count: data.sales?.count || 0, total: data.sales?.total || 0, paid: data.sales?.paid || 0, color: 'emerald' },
+    { label: 'المشتريات', icon: TrendingDown, count: data.purchases?.count || 0, total: data.purchases?.total || 0, color: 'amber' },
+    { label: 'سندات القبض', icon: ArrowDownRight, count: data.receipts?.count || 0, total: data.receipts?.total || 0, color: 'green' },
+    { label: 'سندات الدفع', icon: ArrowUpRight, count: data.payments?.count || 0, total: data.payments?.total || 0, color: 'red' },
+    { label: 'المصاريف', icon: CreditCard, count: data.expenses?.count || 0, total: data.expenses?.total || 0, color: 'purple' },
+  ]
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">تاريخ المطابقة</label>
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
+            className="px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-xl bg-white dark:bg-neutral-800" />
+        </div>
+        <div className="text-sm text-neutral-500 mt-5">
+          {new Date(date).toLocaleDateString('ar-IQ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-8"><Spinner size="md" /></div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {sections.map((s, i) => (
+              <div key={i} className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <s.icon className={`w-5 h-5 text-${s.color}-600`} />
+                  <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">{s.label}</span>
+                </div>
+                <p className="text-xl font-bold">{formatNum(s.total)} <span className="text-xs text-neutral-400 font-normal">د.ع</span></p>
+                <p className="text-xs text-neutral-500">{s.count} عملية</p>
+              </div>
+            ))}
+          </div>
+
+          {/* صافي اليوم */}
+          <div className={`rounded-xl p-6 text-center ${(data.net_cash || 0) >= 0 ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'}`}>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-1">صافي الحركة النقدية لليوم</p>
+            <p className={`text-4xl font-bold ${(data.net_cash || 0) >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}>
+              {formatNum(data.net_cash || 0)} <span className="text-lg">د.ع</span>
+            </p>
+            <p className="text-sm text-neutral-500 mt-2">
+              المقبوضات: {formatNum((data.sales?.paid || 0) + (data.receipts?.total || 0))} — المدفوعات: {formatNum((data.payments?.total || 0) + (data.expenses?.total || 0))}
+            </p>
+          </div>
+        </>
+      )}
+    </div>
   )
 }
 

@@ -260,6 +260,12 @@ export const accountingAPI = {
   getProfitLoss: (params) => api.get('/accounting/reports/profit-loss', { params }),
   getCashFlow: (params) => api.get('/accounting/reports/cash-flow', { params }),
   getDebtReport: (params) => api.get('/accounting/reports/debts', { params }),
+
+  // Account Statements - كشوفات الحسابات
+  getStatement: (entityType, entityId) => api.get(`/accounting/statement/${entityType}/${entityId}`),
+
+  // Daily Reconciliation - المطابقة اليومية
+  getReconciliation: (date) => api.get(`/accounting/reconciliation`, { params: { date } }),
 }
 
 // Suppliers API - إدارة الموردين
