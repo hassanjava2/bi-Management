@@ -164,4 +164,204 @@ router.get('/reports/debts', auth, authorize(['admin']), async (req, res) => {
   }
 });
 
+// ============================================
+// Account Statements - كشوفات الحسابات
+// ============================================
+
+router.get('/statement/customer/:id', auth, authorize(['admin']), async (req, res) => {
+  try {
+    const { run, get, all } = require('../config/database');
+    const cust = get('SELECT id, name, phone, balance FROM customers WHERE id = ?', [req.params.id]);
+    if (!cust) return res.status(404).json({ success: false, error: 'العميل غير موجود' });
+
+    // فواتير العميل
+    const invoices = all(`
+      SELECT id, invoice_number, type, total, paid_amount, remaining_amount, payment_status, created_at
+      FROM invoices WHERE customer_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)
+      ORDER BY created_at DESC
+    `, [req.params.id]);
+
+    // سندات القبض/الدفع المرتبطة
+    let vouchers = [];
+    try {
+      vouchers = all(`
+        SELECT id, voucher_number, type, amount, description, created_at
+        FROM vouchers WHERE customer_id = ? ORDER BY created_at DESC
+      `, [req.params.id]);
+    } catch (_) { /* vouchers table might not exist */ }
+
+    // بناء كشف الحساب
+    const movements = [];
+    for (const inv of invoices) {
+      movements.push({
+        date: inv.created_at,
+        description: `فاتورة ${inv.invoice_number} (${inv.type === 'sale' ? 'بيع' : inv.type === 'sale_return' ? 'مرتجع' : inv.type})`,
+        debit: inv.type.includes('return') ? 0 : inv.total,
+        credit: inv.type.includes('return') ? inv.total : 0,
+        reference: inv.invoice_number,
+      });
+    }
+    for (const v of vouchers) {
+      movements.push({
+        date: v.created_at,
+        description: `سند ${v.type === 'receipt' ? 'قبض' : 'دفع'} ${v.voucher_number}`,
+        debit: v.type === 'payment' ? v.amount : 0,
+        credit: v.type === 'receipt' ? v.amount : 0,
+        reference: v.voucher_number,
+      });
+    }
+    movements.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // حساب الرصيد التراكمي
+    let balance = 0;
+    for (const m of movements) {
+      balance += (m.debit || 0) - (m.credit || 0);
+      m.balance = balance;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        customer: cust,
+        movements,
+        total_debit: movements.reduce((s, m) => s + (m.debit || 0), 0),
+        total_credit: movements.reduce((s, m) => s + (m.credit || 0), 0),
+        final_balance: balance,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get('/statement/supplier/:id', auth, authorize(['admin']), async (req, res) => {
+  try {
+    const { run, get, all } = require('../config/database');
+    const sup = get('SELECT id, name, phone, balance FROM suppliers WHERE id = ?', [req.params.id]);
+    if (!sup) return res.status(404).json({ success: false, error: 'المورد غير موجود' });
+
+    const invoices = all(`
+      SELECT id, invoice_number, type, total, paid_amount, remaining_amount, payment_status, created_at
+      FROM invoices WHERE supplier_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)
+      ORDER BY created_at DESC
+    `, [req.params.id]);
+
+    let vouchers = [];
+    try {
+      vouchers = all(`
+        SELECT id, voucher_number, type, amount, description, created_at
+        FROM vouchers WHERE supplier_id = ? ORDER BY created_at DESC
+      `, [req.params.id]);
+    } catch (_) { /* vouchers table might not exist */ }
+
+    const movements = [];
+    for (const inv of invoices) {
+      movements.push({
+        date: inv.created_at,
+        description: `فاتورة ${inv.invoice_number} (${inv.type === 'purchase' ? 'شراء' : inv.type === 'purchase_return' ? 'مرتجع شراء' : inv.type})`,
+        debit: inv.type.includes('return') ? inv.total : 0,
+        credit: inv.type.includes('return') ? 0 : inv.total,
+        reference: inv.invoice_number,
+      });
+    }
+    for (const v of vouchers) {
+      movements.push({
+        date: v.created_at,
+        description: `سند ${v.type === 'receipt' ? 'قبض' : 'دفع'} ${v.voucher_number}`,
+        debit: v.type === 'receipt' ? v.amount : 0,
+        credit: v.type === 'payment' ? v.amount : 0,
+        reference: v.voucher_number,
+      });
+    }
+    movements.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    let balance = 0;
+    for (const m of movements) {
+      balance += (m.debit || 0) - (m.credit || 0);
+      m.balance = balance;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        supplier: sup,
+        movements,
+        total_debit: movements.reduce((s, m) => s + (m.debit || 0), 0),
+        total_credit: movements.reduce((s, m) => s + (m.credit || 0), 0),
+        final_balance: balance,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ============================================
+// Daily Reconciliation - المطابقة اليومية
+// ============================================
+
+router.get('/reconciliation', auth, authorize(['admin']), async (req, res) => {
+  try {
+    const { run, get, all } = require('../config/database');
+    const date = req.query.date || new Date().toISOString().split('T')[0];
+
+    // مبيعات اليوم
+    const sales = get(`
+      SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as total, COALESCE(SUM(paid_amount), 0) as paid
+      FROM invoices WHERE type IN ('sale', 'sale_credit', 'sale_installment') AND date(created_at) = ?
+    `, [date]);
+
+    // مشتريات اليوم
+    const purchases = get(`
+      SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as total
+      FROM invoices WHERE type = 'purchase' AND date(created_at) = ?
+    `, [date]);
+
+    // سندات القبض
+    let receipts = { count: 0, total: 0 };
+    try {
+      receipts = get(`
+        SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
+        FROM vouchers WHERE type = 'receipt' AND date(created_at) = ?
+      `, [date]) || receipts;
+    } catch (_) {}
+
+    // سندات الدفع
+    let payments = { count: 0, total: 0 };
+    try {
+      payments = get(`
+        SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
+        FROM vouchers WHERE type = 'payment' AND date(created_at) = ?
+      `, [date]) || payments;
+    } catch (_) {}
+
+    // مصاريف اليوم
+    let expenses = { count: 0, total: 0 };
+    try {
+      expenses = get(`
+        SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
+        FROM expenses WHERE date(expense_date) = ? OR date(created_at) = ?
+      `, [date, date]) || expenses;
+    } catch (_) {}
+
+    // صافي اليوم
+    const netCash = (sales?.paid || 0) + (receipts?.total || 0) - (payments?.total || 0) - (expenses?.total || 0);
+
+    res.json({
+      success: true,
+      data: {
+        date,
+        sales: { count: sales?.count || 0, total: sales?.total || 0, paid: sales?.paid || 0 },
+        purchases: { count: purchases?.count || 0, total: purchases?.total || 0 },
+        receipts: { count: receipts?.count || 0, total: receipts?.total || 0 },
+        payments: { count: payments?.count || 0, total: payments?.total || 0 },
+        expenses: { count: expenses?.count || 0, total: expenses?.total || 0 },
+        net_cash: netCash,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 module.exports = router;
