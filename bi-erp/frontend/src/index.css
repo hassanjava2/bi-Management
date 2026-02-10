@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== Base Styles ===== */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-neutral-50 text-neutral-900 transition-colors duration-smooth;
+  }
+
+  .dark body {
+    @apply bg-neutral-950 text-neutral-100;
+  }
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-neutral-300 dark:bg-neutral-700 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-neutral-400 dark:bg-neutral-600;
+}
+
+/* ===== RTL Support ===== */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* Logical margins for RTL */
+[dir="rtl"] .ms-auto { margin-inline-start: auto; }
+[dir="rtl"] .me-auto { margin-inline-end: auto; }
+
+/* ===== Global Transitions ===== */
+@layer utilities {
+  .transition-smooth {
+    @apply transition-all duration-smooth ease-smooth;
+  }
+  .transition-modal {
+    @apply transition-all duration-modal ease-out-expo;
+  }
+}
+
+/* ===== Component Layer ===== */
+.glass {
+  @apply bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, theme('colors.primary.500'), theme('colors.primary.600'), theme('colors.primary.700'));
+}
+
+/* Skeleton loading shimmer */
+.skeleton {
+  @apply rounded-input;
+  background: linear-gradient(90deg, theme('colors.neutral.200') 25%, theme('colors.neutral.100') 50%, theme('colors.neutral.200') 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+.dark .skeleton {
+  background: linear-gradient(90deg, theme('colors.neutral.800') 25%, theme('colors.neutral.700') 50%, theme('colors.neutral.800') 75%);
+  background-size: 200% 100%;
+}
+
+/* ===== Utilities ===== */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ===== Sidebar ===== */
+.sidebar-nav {
+  overflow-y: auto;
+  overflow-x: visible !important;
+}
+
+@keyframes slideInFromRight {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-flyout {
+  animation: slideInFromRight 0.2s ease-out forwards;
+}
+
+/* Focus ring (accessibility) */
+.focus-ring {
+  @apply outline-none ring-2 ring-primary-500/40 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900;
+}
+
+/* Button ripple (optional use via class) */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.3) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.btn-ripple:active::after {
+  opacity: 1;
+}
+
+/* Stagger animation for lists */
+@layer utilities {
+  .stagger-children > * {
+    animation: fadeSlideUp 0.3s ease-out both;
+  }
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 250ms; }
+  .stagger-children > *:nth-child(7) { animation-delay: 300ms; }
+  .stagger-children > *:nth-child(8) { animation-delay: 350ms; }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

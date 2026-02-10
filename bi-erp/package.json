@@ -1,0 +1,16 @@
+{
+  "name": "bi-erp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BI ERP - Node.js + React + PostgreSQL",
+  "dependencies": {
+    "dotenv": "^16.3.1"
+  },
+  "scripts": {
+    "dev:api": "cd backend && npm run dev",
+    "start:api": "cd backend && npm start",
+    "db:migrate": "cd backend && node database/migrate.js",
+    "db:seed": "cd backend && node database/seed.js",
+    "db:init": "cd backend && node database/migrate.js && node database/seed.js"
+  }
+}
