@@ -9,7 +9,8 @@ import { clsx } from 'clsx'
 import {
   Receipt, Search, Plus, Minus, Trash2, User, Phone, MapPin,
   CreditCard, Wallet, Calculator, ArrowLeftRight, Save, Printer,
-  X, Check, AlertCircle, Package, ChevronDown, Loader2, ShoppingCart, Building2
+  X, Check, AlertCircle, Package, ChevronDown, Loader2, ShoppingCart, Building2,
+  Clock
 } from 'lucide-react'
 import api from '../services/api'
 import { customersAPI, suppliersAPI } from '../services/api'
@@ -22,6 +23,7 @@ const invoiceTypes = {
   installment: { name: 'أقساط', icon: Calculator, color: 'purple' },
   exchange: { name: 'استبدال', icon: ArrowLeftRight, color: 'amber' },
   purchase: { name: 'شراء', icon: ShoppingCart, color: 'amber' },
+  quote: { name: 'عرض أسعار', icon: Receipt, color: 'cyan' },
 }
 
 // منصات الأقساط
@@ -567,14 +569,18 @@ export default function NewInvoicePage() {
     },
   })
 
-  const handleSave = () => {
-    if (items.length === 0) {
-      toast.warning('أضف منتج واحد على الأقل')
-      return
+  const buildInvoiceData = (overrides = {}) => {
+    const typeMap = {
+      purchase: 'purchase',
+      cash: 'sale',
+      credit: 'sale',
+      installment: 'sale',
+      exchange: 'exchange',
+      quote: 'sale',
     }
-
-    const invoiceData = {
-      type: invoiceType === 'purchase' ? 'purchase' : invoiceType === 'cash' ? 'sale' : invoiceType === 'credit' ? 'sale_credit' : invoiceType === 'installment' ? 'sale_installment' : 'exchange',
+    return {
+      type: typeMap[invoiceType] || 'sale',
+      payment_type: invoiceType === 'credit' ? 'credit' : invoiceType === 'installment' ? 'installment' : 'cash',
       customer_id: invoiceType === 'purchase' ? undefined : customer?.id,
       supplier_id: invoiceType === 'purchase' ? supplier?.id : undefined,
       items: items.map(item => ({
@@ -590,9 +596,26 @@ export default function NewInvoicePage() {
       platform_fee: platformFee,
       down_payment: downPayment,
       notes,
+      sub_type: invoiceType === 'quote' ? 'quotation' : undefined,
+      ...overrides,
     }
+  }
 
-    saveMutation.mutate(invoiceData)
+  const handleSave = (overrides = {}) => {
+    if (items.length === 0) {
+      toast.warning('أضف منتج واحد على الأقل')
+      return
+    }
+    saveMutation.mutate(buildInvoiceData(overrides))
+  }
+
+  // حفظ كمسودة (بدون أسعار — للموظفين في فواتير الشراء)
+  const handleSaveAsDraft = () => {
+    if (items.length === 0) {
+      toast.warning('أضف منتج واحد على الأقل')
+      return
+    }
+    saveMutation.mutate(buildInvoiceData({ sub_type: 'waiting', payment_status: 'pending' }))
   }
 
   const typeConfig = invoiceTypes[invoiceType] || invoiceTypes.cash
@@ -945,24 +968,48 @@ export default function NewInvoicePage() {
             </div>
 
             {/* أزرار الإجراءات */}
-            <div className="flex gap-3">
+            <div className="space-y-3">
+              {/* زر الحفظ الرئيسي */}
               <button
-                onClick={handleSave}
-                disabled={items.length === 0}
+                onClick={() => handleSave()}
+                disabled={items.length === 0 || saveMutation.isPending}
                 className={clsx(
-                  'flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all',
+                  'w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all',
                   items.length > 0
                     ? 'bg-emerald-600 text-white hover:bg-emerald-700'
                     : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
                 )}
               >
-                <Check className="w-6 h-6" />
-                حفظ
+                {saveMutation.isPending ? <Loader2 className="w-6 h-6 animate-spin" /> : <Check className="w-6 h-6" />}
+                {invoiceType === 'quote' ? 'حفظ عرض الأسعار' : 'حفظ وإكمال'}
               </button>
-              <button className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg bg-blue-600 text-white hover:bg-blue-700 transition-all">
-                <Printer className="w-6 h-6" />
-                طباعة
-              </button>
+
+              {/* أزرار إضافية لفاتورة الشراء */}
+              {invoiceType === 'purchase' && (
+                <button
+                  onClick={handleSaveAsDraft}
+                  disabled={items.length === 0 || saveMutation.isPending}
+                  className={clsx(
+                    'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-all border-2',
+                    items.length > 0
+                      ? 'border-amber-500 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20'
+                      : 'border-neutral-200 text-neutral-400 cursor-not-allowed'
+                  )}
+                >
+                  <Clock className="w-5 h-5" />
+                  حفظ بانتظار الأسعار (مسودة)
+                </button>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => window.print()}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all"
+                >
+                  <Printer className="w-5 h-5" />
+                  طباعة
+                </button>
+              </div>
             </div>
           </div>
         </div>

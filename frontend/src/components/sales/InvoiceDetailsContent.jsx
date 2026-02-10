@@ -1,19 +1,22 @@
+import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Printer, XCircle } from 'lucide-react'
+import { Printer, XCircle, FileText, Receipt } from 'lucide-react'
 import Spinner from '../common/Spinner'
 import Button from '../common/Button'
 import { salesAPI } from '../../services/api'
 import { invoiceTypes, invoiceStatuses } from './salesConstants'
+import { printInvoice } from '../print/InvoicePrintTemplate'
 
 export default function InvoiceDetailsContent({ invoiceId, onClose, onCancel, onPrinted }) {
   const queryClient = useQueryClient()
+  const [printTemplate, setPrintTemplate] = useState('a4')
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['invoice', invoiceId],
     queryFn: () => salesAPI.getInvoice(invoiceId),
     enabled: !!invoiceId,
   })
-  const invoice = data?.data?.invoice || data?.data
-  const items = data?.data?.items || []
+  const invoice = data?.data?.invoice || data?.data?.data?.invoice || data?.data
+  const items = data?.data?.items || data?.data?.data?.items || []
   const type = invoice ? (invoiceTypes[invoice.type] || invoiceTypes.sale) : null
   const status = invoice ? (invoiceStatuses[invoice.status] || invoiceStatuses.draft) : null
   const canWorkflow = invoice && ['draft', 'waiting', 'confirmed'].includes(invoice.status)
@@ -23,13 +26,10 @@ export default function InvoiceDetailsContent({ invoiceId, onClose, onCancel, on
     fn(invoiceId).then(() => { queryClient.invalidateQueries({ queryKey: ['invoices'] }); refetch(); onPrinted?.() }).catch(() => {})
   }
 
-  const handlePrint = () => {
+  const handlePrint = (template = 'a4') => {
     salesAPI.printInvoice(invoiceId).then((res) => {
       const { invoice: inv, items: its, company } = res?.data?.data || res?.data || {}
-      const printWindow = window.open('', '_blank')
-      if (!printWindow) return
-      printWindow.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="utf-8"><title>فاتورة ${inv?.invoice_number || ''}</title><style>body{font-family:system-ui;padding:20px;max-width:800px;margin:0 auto}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:right}.header{text-align:center;margin-bottom:24px}.total{font-weight:bold;font-size:1.2em}</style></head><body><div class="header"><h2>${company?.name || 'BI'}</h2><p>${company?.address || ''} | ${company?.phone || ''}</p></div><h3>فاتورة رقم: ${inv?.invoice_number || ''}</h3><p>الزبون: ${inv?.customer_name || inv?.supplier_name || '-'} | التاريخ: ${inv?.created_at ? new Date(inv.created_at).toLocaleDateString('ar-IQ') : ''}</p><table><thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr></thead><tbody>${(its || []).map(i => `<tr><td>${i.product_name || '-'}</td><td>${i.quantity || 0}</td><td>${(i.unit_price || 0).toLocaleString()}</td><td>${((i.quantity || 0) * (i.unit_price || 0)).toLocaleString()}</td></tr>`).join('')}</tbody></table><p class="total">الإجمالي: ${(inv?.total || 0).toLocaleString()} د.ع</p></body></html>`)
-      printWindow.document.close(); printWindow.focus(); printWindow.print()
+      printInvoice(inv, its, company, template)
       onPrinted?.()
     }).catch(() => {})
   }
@@ -71,7 +71,8 @@ export default function InvoiceDetailsContent({ invoiceId, onClose, onCancel, on
         </div>
       )}
       <div className="flex flex-wrap gap-2 pt-4 border-t">
-        <Button variant="outline" onClick={handlePrint}><Printer className="w-4 h-4 ml-2" /> طباعة</Button>
+        <Button variant="outline" onClick={() => handlePrint('a4')}><FileText className="w-4 h-4 ml-2" /> طباعة A4</Button>
+        <Button variant="outline" onClick={() => handlePrint('thermal')}><Receipt className="w-4 h-4 ml-2" /> طباعة حرارية</Button>
         {invoice.status !== 'cancelled' && <Button variant="danger" onClick={onCancel}><XCircle className="w-4 h-4 ml-2" /> إلغاء الفاتورة</Button>}
         <Button variant="outline" onClick={onClose}>إغلاق</Button>
       </div>

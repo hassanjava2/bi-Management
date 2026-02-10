@@ -281,4 +281,139 @@ router.post('/devices/:id/transfer', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/inventory/devices/:id/custody
+ * تسجيل/تحرير ذمة جهاز
+ */
+router.post('/devices/:id/custody', async (req, res) => {
+    try {
+        const existing = get(`SELECT id, serial_number FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
+        const { action, reason } = req.body; // action: 'take' or 'release'
+        if (action === 'take') {
+            run(`UPDATE serial_numbers SET custody_employee_id = ?, custody_date = datetime('now') WHERE id = ?`, [req.user?.id, req.params.id]);
+        } else if (action === 'release') {
+            run(`UPDATE serial_numbers SET custody_employee_id = NULL, custody_date = NULL WHERE id = ?`, [req.params.id]);
+        }
+        // Log to history
+        try {
+            const hId = generateId();
+            run(`INSERT INTO serial_number_history (id, device_id, action_type, action_details, employee_id, created_at)
+                 VALUES (?, ?, ?, ?, ?, datetime('now'))`,
+                [hId, req.params.id, action === 'take' ? 'custody_taken' : 'custody_released', reason || null, req.user?.id]);
+        } catch (_) { /* history table might not exist */ }
+        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        res.json({ success: true, data: row });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/inventory/devices/:id/inspect
+ * تسجيل نتيجة فحص جهاز
+ */
+router.post('/devices/:id/inspect', async (req, res) => {
+    try {
+        const existing = get(`SELECT id, serial_number FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
+        const { result, actual_specs, discrepancies, condition_notes, photos } = req.body;
+        // result: 'pass' | 'pass_with_notes' | 'fail' | 'return_to_supplier'
+        let newStatus = 'available';
+        if (result === 'fail') newStatus = 'defective';
+        if (result === 'return_to_supplier') newStatus = 'return_to_supplier';
+        if (result === 'pass' || result === 'pass_with_notes') newStatus = 'ready_for_prep';
+
+        run(`UPDATE serial_numbers SET status = ?, inspection_result = ?, inspection_notes = ?, inspected_by = ?, inspected_at = datetime('now') WHERE id = ?`,
+            [newStatus, result || null, condition_notes || null, req.user?.id, req.params.id]);
+
+        // Log to history
+        try {
+            const hId = generateId();
+            run(`INSERT INTO serial_number_history (id, device_id, action_type, action_details, employee_id, created_at)
+                 VALUES (?, ?, 'inspected', ?, ?, datetime('now'))`,
+                [hId, req.params.id, JSON.stringify({ result, discrepancies: discrepancies || null }), req.user?.id]);
+        } catch (_) { /* history table might not exist */ }
+
+        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        res.json({ success: true, data: row });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/inventory/generate-serial
+ * توليد سيريال جديد
+ */
+router.post('/generate-serial', async (req, res) => {
+    try {
+        const year = new Date().getFullYear();
+        const lastSerial = get(`SELECT serial_number FROM serial_numbers WHERE serial_number LIKE ? ORDER BY serial_number DESC LIMIT 1`, [`BI-${year}-%`]);
+        let nextNum = 1;
+        if (lastSerial && lastSerial.serial_number) {
+            const parts = lastSerial.serial_number.split('-');
+            const lastNum = parseInt(parts[parts.length - 1]);
+            if (!isNaN(lastNum)) nextNum = lastNum + 1;
+        }
+        const serial = `BI-${year}-${String(nextNum).padStart(6, '0')}`;
+        res.json({ success: true, data: { serial_number: serial } });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/inventory/low-stock
+ * المنتجات منخفضة المخزون
+ */
+router.get('/low-stock', async (req, res) => {
+    try {
+        const items = all(`SELECT * FROM products WHERE quantity < min_quantity AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY quantity ASC LIMIT 50`);
+        res.json({ success: true, data: items });
+    } catch (error) {
+        res.json({ success: true, data: [] });
+    }
+});
+
+/**
+ * GET /api/inventory/parts
+ * القطع والإكسسوارات
+ */
+router.get('/parts', async (req, res) => {
+    try {
+        let rows = [];
+        try {
+            rows = all(`SELECT * FROM parts WHERE (is_active = 1 OR is_active IS NULL) ORDER BY name LIMIT 200`);
+        } catch (e) {
+            // parts table might not exist
+            rows = [];
+        }
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        res.json({ success: true, data: [] });
+    }
+});
+
+/**
+ * POST /api/inventory/parts
+ * إضافة قطعة/إكسسوار
+ */
+router.post('/parts', async (req, res) => {
+    try {
+        const { name, category, quantity, cost_price, selling_price, warehouse_id } = req.body;
+        if (!name) return res.status(400).json({ success: false, error: 'name مطلوب' });
+        const id = generateId();
+        run(`INSERT INTO parts (id, name, category, quantity, cost_price, selling_price, warehouse_id, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+            [id, name, category || null, quantity || 0, cost_price || 0, selling_price || 0, warehouse_id || null]);
+        res.status(201).json({ success: true, data: { id, name } });
+    } catch (error) {
+        if (error.message && error.message.includes('no such table')) {
+            return res.status(501).json({ success: false, error: 'parts table not found' });
+        }
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 module.exports = router;
