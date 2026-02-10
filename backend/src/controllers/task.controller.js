@@ -57,6 +57,20 @@ const getById = asyncHandler(async (req, res) => {
 const create = asyncHandler(async (req, res) => {
     const task = taskService.createTask(req.body, req.user.id);
 
+    // تنبيه المهمة الجديدة
+    try {
+        const notifService = require('../services/notification.service');
+        if (task && task.assigned_to && notifService.notifyEvent) {
+            notifService.notifyEvent(notifService.NOTIFICATION_TYPES.TASK_ASSIGNED, {
+                recipient_id: task.assigned_to,
+                task_title: task.title || task.description,
+                entity_type: 'task',
+                entity_id: task.id,
+                action_url: `/tasks`,
+            });
+        }
+    } catch (_) {}
+
     res.status(201).json({
         success: true,
         data: task

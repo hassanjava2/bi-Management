@@ -773,6 +773,14 @@ router.post('/:id/cancel', async (req, res) => {
             `, [reason || null, id]);
             const cancelled = get(`SELECT * FROM invoices WHERE id = ?`, [id]);
             logInvoiceAudit(req, 'invoice_cancelled', id, existing.invoice_number, { status: existing.status }, { status: 'cancelled', reason: reason || null }, { reason: reason || null, bypass: true });
+            // تنبيه إلغاء
+            try {
+                if (notificationService?.notifyEvent) {
+                    notificationService.notifyEvent(notificationService.NOTIFICATION_TYPES.INVOICE_CANCELLED, {
+                        invoice_number: existing.invoice_number, send_to_admins: true, entity_type: 'invoice', entity_id: id,
+                    });
+                }
+            } catch (_) {}
             return res.json({ success: true, data: cancelled });
         }
 
