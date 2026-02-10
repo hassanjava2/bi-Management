@@ -23,7 +23,7 @@ const list = asyncHandler(async (req, res) => {
         offset: (parseInt(page) - 1) * parseInt(limit)
     };
 
-    const tasks = taskService.getTasks(filters);
+    const tasks = await taskService.getTasks(filters);
 
     res.json({
         success: true,
@@ -35,7 +35,7 @@ const list = asyncHandler(async (req, res) => {
  * GET /api/tasks/:id
  */
 const getById = asyncHandler(async (req, res) => {
-    const task = taskService.getTask(req.params.id);
+    const task = await taskService.getTask(req.params.id);
 
     if (!task) {
         return res.status(404).json({
@@ -55,7 +55,7 @@ const getById = asyncHandler(async (req, res) => {
  * POST /api/tasks
  */
 const create = asyncHandler(async (req, res) => {
-    const task = taskService.createTask(req.body, req.user.id);
+    const task = await taskService.createTask(req.body, req.user.id);
 
     // تنبيه المهمة الجديدة
     try {
@@ -81,7 +81,7 @@ const create = asyncHandler(async (req, res) => {
  * PUT /api/tasks/:id
  */
 const update = asyncHandler(async (req, res) => {
-    const existingTask = taskService.getTask(req.params.id);
+    const existingTask = await taskService.getTask(req.params.id);
 
     if (!existingTask) {
         return res.status(404).json({
@@ -91,7 +91,7 @@ const update = asyncHandler(async (req, res) => {
         });
     }
 
-    const task = taskService.updateTask(req.params.id, req.body);
+    const task = await taskService.updateTask(req.params.id, req.body);
 
     res.json({
         success: true,
@@ -105,7 +105,7 @@ const update = asyncHandler(async (req, res) => {
 const updateStatus = asyncHandler(async (req, res) => {
     const { status, delay_reason } = req.body;
 
-    const existingTask = taskService.getTask(req.params.id);
+    const existingTask = await taskService.getTask(req.params.id);
 
     if (!existingTask) {
         return res.status(404).json({
@@ -115,7 +115,7 @@ const updateStatus = asyncHandler(async (req, res) => {
         });
     }
 
-    const task = taskService.updateTaskStatus(req.params.id, status, req.user.id, delay_reason);
+    const task = await taskService.updateTaskStatus(req.params.id, status, req.user.id, delay_reason);
 
     res.json({
         success: true,
@@ -129,7 +129,7 @@ const updateStatus = asyncHandler(async (req, res) => {
 const addComment = asyncHandler(async (req, res) => {
     const { comment } = req.body;
 
-    const existingTask = taskService.getTask(req.params.id);
+    const existingTask = await taskService.getTask(req.params.id);
 
     if (!existingTask) {
         return res.status(404).json({
@@ -139,7 +139,7 @@ const addComment = asyncHandler(async (req, res) => {
         });
     }
 
-    const newComment = taskService.addComment(req.params.id, req.user.id, comment);
+    const newComment = await taskService.addComment(req.params.id, req.user.id, comment);
 
     res.status(201).json({
         success: true,
@@ -151,7 +151,7 @@ const addComment = asyncHandler(async (req, res) => {
  * DELETE /api/tasks/:id
  */
 const remove = asyncHandler(async (req, res) => {
-    const existingTask = taskService.getTask(req.params.id);
+    const existingTask = await taskService.getTask(req.params.id);
 
     if (!existingTask) {
         return res.status(404).json({
@@ -161,7 +161,7 @@ const remove = asyncHandler(async (req, res) => {
         });
     }
 
-    taskService.deleteTask(req.params.id);
+    await taskService.deleteTask(req.params.id);
 
     res.json({
         success: true,
@@ -175,7 +175,7 @@ const remove = asyncHandler(async (req, res) => {
 const myTasks = asyncHandler(async (req, res) => {
     const { status, priority } = req.query;
 
-    const tasks = taskService.getTasks({
+    const tasks = await taskService.getTasks({
         assigned_to: req.user.id,
         status,
         priority
@@ -193,7 +193,7 @@ const myTasks = asyncHandler(async (req, res) => {
 const stats = asyncHandler(async (req, res) => {
     const { assigned_to, department_id } = req.query;
 
-    const taskStats = taskService.getTaskStats({
+    const taskStats = await taskService.getTaskStats({
         assigned_to,
         department_id
     });
@@ -210,7 +210,7 @@ const stats = asyncHandler(async (req, res) => {
 const todayTasks = asyncHandler(async (req, res) => {
     const today = new Date().toISOString().split('T')[0];
     
-    const tasks = taskService.getTasks({
+    const tasks = await taskService.getTasks({
         assigned_to: req.user.id,
         due_date: today,
         limit: 50
