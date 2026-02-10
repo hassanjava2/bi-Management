@@ -58,6 +58,7 @@ async function seedPermissions() {
 }
 
 if (require.main === module) {
+    require('dotenv').config({ path: require('path').join(__dirname, '../../.env') });
     seedPermissions().then(success => process.exit(success ? 0 : 1));
 }
 

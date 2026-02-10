@@ -114,6 +114,7 @@ async function initializeDatabase() {
 }
 
 if (require.main === module) {
+    require('dotenv').config({ path: require('path').join(__dirname, '../../.env') });
     initializeDatabase().then(success => {
         process.exit(success ? 0 : 1);
     });

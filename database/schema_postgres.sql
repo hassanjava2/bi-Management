@@ -75,12 +75,12 @@ CREATE TABLE IF NOT EXISTS users (
     department_id TEXT,
     position_id TEXT,
     salary_encrypted TEXT,
-    hire_date TEXT,
+    hire_date TIMESTAMPTZ,
     created_by TEXT,
     failed_login_attempts INTEGER DEFAULT 0,
-    locked_until TEXT,
-    last_login_at TEXT,
-    last_login TEXT,
+    locked_until TIMESTAMPTZ,
+    last_login_at TIMESTAMPTZ,
+    last_login TIMESTAMPTZ,
     total_points INTEGER DEFAULT 0,
     monthly_points INTEGER DEFAULT 0,
     current_level INTEGER DEFAULT 1,
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS user_permissions (
     is_granted INTEGER DEFAULT 1,
     granted_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     granted_by TEXT,
-    expires_at TEXT,
+    expires_at TIMESTAMPTZ,
     reason TEXT
 );
 
@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     user_id TEXT NOT NULL,
     token_hash TEXT,
     ip_address TEXT,
-    expires_at TEXT,
+    expires_at TIMESTAMPTZ,
     is_active INTEGER DEFAULT 1
 );
 
@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS products (
     warranty_months INTEGER DEFAULT 0,
     is_active INTEGER DEFAULT 1,
     is_deleted INTEGER DEFAULT 0,
-    deleted_at TEXT,
+    deleted_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by TEXT
@@ -183,7 +183,7 @@ CREATE TABLE IF NOT EXISTS serial_numbers (
     status TEXT DEFAULT 'available',
     warehouse_id TEXT DEFAULT 'main',
     is_deleted INTEGER DEFAULT 0,
-    deleted_at TEXT,
+    deleted_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by TEXT,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
@@ -216,7 +216,7 @@ CREATE TABLE IF NOT EXISTS devices (
     purchase_cost DOUBLE PRECISION DEFAULT 0,
     supplier_id TEXT,
     is_deleted INTEGER DEFAULT 0,
-    deleted_at TEXT,
+    deleted_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by TEXT
@@ -267,8 +267,8 @@ CREATE TABLE IF NOT EXISTS customers (
     is_blocked INTEGER DEFAULT 0,
     blocked_reason TEXT,
     is_deleted INTEGER DEFAULT 0,
-    deleted_at TEXT,
-    last_purchase_at TEXT,
+    deleted_at TIMESTAMPTZ,
+    last_purchase_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by TEXT
@@ -295,7 +295,7 @@ CREATE TABLE IF NOT EXISTS suppliers (
     pending_returns INTEGER DEFAULT 0,
     is_active INTEGER DEFAULT 1,
     is_deleted INTEGER DEFAULT 0,
-    deleted_at TEXT,
+    deleted_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -324,19 +324,19 @@ CREATE TABLE IF NOT EXISTS invoices (
     discount_percent DOUBLE PRECISION DEFAULT 0,
     shipping_cost DOUBLE PRECISION DEFAULT 0,
     sub_type TEXT,
-    due_date TEXT,
+    due_date TIMESTAMPTZ,
     auditor_id TEXT,
-    audited_at TEXT,
+    audited_at TIMESTAMPTZ,
     preparer_id TEXT,
-    prepared_at TEXT,
+    prepared_at TIMESTAMPTZ,
     created_by TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     is_deleted INTEGER DEFAULT 0,
-    deleted_at TEXT,
-    cancelled_at TEXT,
+    deleted_at TIMESTAMPTZ,
+    cancelled_at TIMESTAMPTZ,
     cancelled_reason TEXT,
-    voided_at TEXT,
+    voided_at TIMESTAMPTZ,
     void_reason TEXT
 );
 
@@ -378,7 +378,7 @@ CREATE TABLE IF NOT EXISTS invoice_workflow_log (
 CREATE TABLE IF NOT EXISTS pending_invoice_reminders (
     id TEXT PRIMARY KEY,
     invoice_id TEXT NOT NULL,
-    remind_at TEXT,
+    remind_at TIMESTAMPTZ,
     remind_count INTEGER DEFAULT 0,
     notify_creator INTEGER DEFAULT 1,
     notify_supervisor INTEGER DEFAULT 0,
@@ -413,7 +413,7 @@ CREATE TABLE IF NOT EXISTS returns (
     notes TEXT,
     images TEXT,
     destination_warehouse_id TEXT,
-    processed_at TEXT,
+    processed_at TIMESTAMPTZ,
     created_by TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -485,7 +485,7 @@ CREATE TABLE IF NOT EXISTS cash_transactions (
 CREATE TABLE IF NOT EXISTS journal_entries (
     id TEXT PRIMARY KEY,
     entry_number TEXT,
-    entry_date TEXT,
+    entry_date TIMESTAMPTZ,
     description TEXT,
     total_debit DOUBLE PRECISION DEFAULT 0,
     total_credit DOUBLE PRECISION DEFAULT 0,
@@ -519,11 +519,11 @@ CREATE TABLE IF NOT EXISTS tasks (
     category TEXT,
     source TEXT,
     source_reference TEXT,
-    due_date TEXT,
+    due_date TIMESTAMPTZ,
     estimated_minutes INTEGER,
     actual_minutes INTEGER,
-    started_at TEXT,
-    completed_at TEXT,
+    started_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
     delay_reason TEXT,
     attachments TEXT,
     notes TEXT,
@@ -555,9 +555,9 @@ CREATE TABLE IF NOT EXISTS task_templates (
 CREATE TABLE IF NOT EXISTS attendance (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
-    date TEXT NOT NULL,
-    check_in TEXT,
-    check_out TEXT,
+    date DATE NOT NULL,
+    check_in TIMESTAMPTZ,
+    check_out TIMESTAMPTZ,
     check_in_location TEXT,
     check_out_location TEXT,
     check_in_method TEXT DEFAULT 'manual',
@@ -576,8 +576,8 @@ CREATE TABLE IF NOT EXISTS vacations (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     type TEXT DEFAULT 'annual',
-    start_date TEXT,
-    end_date TEXT,
+    start_date DATE,
+    end_date DATE,
     reason TEXT,
     status TEXT DEFAULT 'pending',
     approved_by TEXT,
@@ -601,7 +601,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     action_url TEXT,
     data TEXT,
     is_read INTEGER DEFAULT 0,
-    read_at TEXT,
+    read_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -638,7 +638,7 @@ CREATE TABLE IF NOT EXISTS security_events (
     details TEXT,
     resolved INTEGER DEFAULT 0,
     resolved_by TEXT,
-    resolved_at TEXT,
+    resolved_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -654,10 +654,10 @@ CREATE TABLE IF NOT EXISTS approvals (
     request_data TEXT,
     status TEXT DEFAULT 'pending',
     priority TEXT DEFAULT 'normal',
-    expires_at TEXT,
+    expires_at TIMESTAMPTZ,
     decided_by TEXT,
     decision_reason TEXT,
-    decided_at TEXT,
+    decided_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -689,21 +689,21 @@ CREATE TABLE IF NOT EXISTS warranty_claims (
     issue_description TEXT,
     issue_category TEXT,
     status TEXT DEFAULT 'pending',
-    sent_to_supplier_at TEXT,
-    supplier_received_at TEXT,
-    supplier_response_at TEXT,
+    sent_to_supplier_at TIMESTAMPTZ,
+    supplier_received_at TIMESTAMPTZ,
+    supplier_response_at TIMESTAMPTZ,
     supplier_decision TEXT,
     supplier_notes TEXT,
     repair_cost DOUBLE PRECISION DEFAULT 0,
     parts_cost DOUBLE PRECISION DEFAULT 0,
     replacement_device_id TEXT,
     paid_by TEXT,
-    returned_at TEXT,
+    returned_at TIMESTAMPTZ,
     customer_notified INTEGER DEFAULT 0,
-    customer_notified_at TEXT,
+    customer_notified_at TIMESTAMPTZ,
     customer_notification_method TEXT,
     customer_notification_notes TEXT,
-    closed_at TEXT,
+    closed_at TIMESTAMPTZ,
     created_by TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
@@ -726,8 +726,8 @@ CREATE TABLE IF NOT EXISTS deliveries (
     customer_name TEXT,
     address TEXT,
     notes TEXT,
-    scheduled_date TEXT,
-    delivered_date TEXT,
+    scheduled_date TIMESTAMPTZ,
+    delivered_date TIMESTAMPTZ,
     status TEXT DEFAULT 'pending',
     driver_id TEXT,
     created_by TEXT,
@@ -791,11 +791,11 @@ CREATE TABLE IF NOT EXISTS employee_training (
     id TEXT PRIMARY KEY,
     employee_id TEXT NOT NULL,
     plan_id TEXT,
-    started_at TEXT,
+    started_at TIMESTAMPTZ,
     progress INTEGER DEFAULT 0,
     current_day INTEGER DEFAULT 1,
     status TEXT DEFAULT 'active',
-    completed_at TEXT
+    completed_at TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS training_progress (
@@ -803,7 +803,7 @@ CREATE TABLE IF NOT EXISTS training_progress (
     training_id TEXT NOT NULL,
     task_index INTEGER,
     completed INTEGER DEFAULT 0,
-    completed_at TEXT,
+    completed_at TIMESTAMPTZ,
     score DOUBLE PRECISION,
     notes TEXT
 );
