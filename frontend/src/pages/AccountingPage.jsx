@@ -410,15 +410,30 @@ function VouchersTab({ onNewReceipt, onNewPayment }) {
                 <th className="px-3 py-2 text-right">النوع</th>
                 <th className="px-3 py-2 text-right">المبلغ</th>
                 <th className="px-3 py-2 text-right">البيان</th>
+                <th className="px-3 py-2 text-center w-16"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
               {list.map((v) => (
-                <tr key={v.id}>
+                <tr key={v.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/30">
                   <td className="px-3 py-2">{v.created_at ? new Date(v.created_at).toLocaleDateString('ar-IQ') : '-'}</td>
-                  <td className="px-3 py-2">{v.type === 'receipt' ? 'قبض' : 'دفع'}</td>
-                  <td className="px-3 py-2 font-medium">{(v.amount || 0).toLocaleString()}</td>
+                  <td className="px-3 py-2">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${v.type === 'receipt' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                      {v.type === 'receipt' ? 'قبض' : 'دفع'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 font-bold">{(v.amount || 0).toLocaleString()} د.ع</td>
                   <td className="px-3 py-2">{v.description || '-'}</td>
+                  <td className="px-3 py-2 text-center">
+                    <button type="button" onClick={() => {
+                      import('../components/print/VoucherPrintTemplate').then(mod => {
+                        const co = localStorage.getItem('bi-print-config') ? JSON.parse(localStorage.getItem('bi-print-config')) : {}
+                        mod.printVoucher(v, { name: co.company_name || 'BI Company', address: co.company_address || '', phone: co.company_phone || '' })
+                      })
+                    }} className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-600 text-neutral-500" title="طباعة">
+                      <Receipt className="w-4 h-4" />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

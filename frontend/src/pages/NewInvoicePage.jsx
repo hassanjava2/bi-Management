@@ -621,7 +621,12 @@ export default function NewInvoicePage() {
   
   // تعدد العملات
   const [currency, setCurrency] = useState('IQD')
-  const [exchangeRate, setExchangeRate] = useState(1480) // سعر صرف الدولار
+  const [exchangeRate, setExchangeRate] = useState(1480)
+  
+  // خيارات إضافية
+  const [internalNotes, setInternalNotes] = useState('')
+  const [paidAmount, setPaidAmount] = useState(0)
+  const [shippingAddress, setShippingAddress] = useState('')
 
   // الإكسسوارات القياسية (تُضاف تلقائياً مع كل لابتوب)
   const standardAccessories = [
@@ -793,9 +798,13 @@ export default function NewInvoicePage() {
       platform_fee: platformFee,
       down_payment: downPayment,
       notes,
+      internal_notes: internalNotes || undefined,
+      paid_amount: paidAmount || 0,
+      payment_status: paidAmount >= total ? 'paid' : paidAmount > 0 ? 'partial' : (invoiceType === 'cash' ? 'paid' : 'pending'),
+      shipping_address: shippingAddress || undefined,
       currency,
       exchange_rate: currency === 'USD' ? exchangeRate : null,
-      sub_type: invoiceType === 'quote' ? 'quotation' : undefined,
+      sub_type: invoiceType === 'quote' ? 'quotation' : invoiceType === 'scrap' ? 'scrap' : undefined,
       ...overrides,
     }
   }
@@ -1185,16 +1194,42 @@ export default function NewInvoicePage() {
               </div>
             </div>
 
-            {/* ملاحظات */}
-            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm">
-              <h3 className="font-bold text-neutral-900 dark:text-white mb-4">ملاحظات</h3>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 border border-neutral-300 rounded-xl resize-none focus:ring-2 focus:ring-primary-500"
-                placeholder="ملاحظات إضافية..."
-              />
+            {/* ملاحظات + خيارات إضافية */}
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm space-y-4">
+              <h3 className="font-bold text-neutral-900 dark:text-white">ملاحظات وخيارات</h3>
+              <div>
+                <label className="block text-sm text-neutral-500 mb-1">ملاحظات (تظهر بالفاتورة)</label>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl resize-none text-sm" placeholder="ملاحظات للزبون..." />
+              </div>
+              <div>
+                <label className="block text-sm text-neutral-500 mb-1">ملاحظات داخلية (لا تظهر)</label>
+                <textarea value={internalNotes} onChange={(e) => setInternalNotes(e.target.value)} rows={2}
+                  className="w-full px-3 py-2 border border-amber-300 dark:border-amber-600 rounded-xl resize-none text-sm bg-amber-50 dark:bg-amber-900/10" placeholder="ملاحظات داخلية للفريق..." />
+              </div>
+              {/* دفع جزئي */}
+              {invoiceType !== 'purchase' && invoiceType !== 'quote' && (
+                <div>
+                  <label className="block text-sm text-neutral-500 mb-1">المبلغ المدفوع الآن</label>
+                  <div className="flex gap-2">
+                    <input type="number" value={paidAmount} onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
+                      className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl text-center font-medium" placeholder="0" min="0" />
+                    <button type="button" onClick={() => setPaidAmount(total)}
+                      className="px-3 py-2 bg-emerald-100 text-emerald-700 rounded-xl text-sm font-medium hover:bg-emerald-200">كامل</button>
+                  </div>
+                  {paidAmount > 0 && paidAmount < total && (
+                    <p className="text-xs text-amber-600 mt-1">متبقي: {formatNumber(total - paidAmount)} — ستُسجل كفاتورة آجلة</p>
+                  )}
+                </div>
+              )}
+              {/* عنوان الشحن */}
+              {invoiceType !== 'purchase' && invoiceType !== 'quote' && (
+                <div>
+                  <label className="block text-sm text-neutral-500 mb-1">عنوان الشحن (اختياري)</label>
+                  <input type="text" value={shippingAddress} onChange={(e) => setShippingAddress(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl text-sm" placeholder="المحافظة / المنطقة / التفاصيل" />
+                </div>
+              )}
             </div>
 
             {/* أزرار الإجراءات */}

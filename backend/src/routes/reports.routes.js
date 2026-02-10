@@ -905,4 +905,96 @@ router.get('/price-compensation-purchase', async (req, res) => {
     }
 });
 
+/**
+ * GET /api/reports/profit-by-product
+ * تقرير الربح حسب المنتج
+ */
+router.get('/profit-by-product', async (req, res) => {
+    try {
+        const { from, to } = req.query;
+        let dateFilter = '';
+        const params = [];
+        if (from) { dateFilter += ` AND i.created_at >= ?`; params.push(from); }
+        if (to) { dateFilter += ` AND i.created_at <= ?`; params.push(to); }
+
+        const products = all(`
+            SELECT p.id, p.name, p.code,
+                   SUM(ii.quantity) as total_sold,
+                   SUM(ii.total) as total_revenue,
+                   SUM(ii.quantity * COALESCE(ii.cost_price, p.cost_price, 0)) as total_cost,
+                   SUM(ii.total) - SUM(ii.quantity * COALESCE(ii.cost_price, p.cost_price, 0)) as profit
+            FROM invoice_items ii
+            JOIN invoices i ON i.id = ii.invoice_id
+            LEFT JOIN products p ON ii.product_id = p.id
+            WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted')
+            ${dateFilter}
+            GROUP BY ii.product_id
+            ORDER BY profit DESC
+            LIMIT 100
+        `, params);
+
+        res.json({ success: true, data: products });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/reports/aging-report
+ * تقرير أعمار الديون
+ */
+router.get('/aging-report', async (req, res) => {
+    try {
+        const customers = all(`
+            SELECT c.id, c.name, c.phone, c.balance,
+                   (SELECT COUNT(*) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled') as pending_invoices,
+                   (SELECT COALESCE(SUM(i.remaining_amount), 0) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled') as total_remaining,
+                   (SELECT COALESCE(SUM(i.remaining_amount), 0) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled' AND i.due_date < date('now')) as overdue_amount,
+                   (SELECT COALESCE(SUM(i.remaining_amount), 0) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled' AND i.due_date >= date('now') AND i.due_date < date('now', '+30 days')) as due_30_days,
+                   (SELECT COALESCE(SUM(i.remaining_amount), 0) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled' AND i.due_date >= date('now', '+30 days')) as due_over_30
+            FROM customers c
+            WHERE c.balance > 0 OR (SELECT COUNT(*) FROM invoices i WHERE i.customer_id = c.id AND i.payment_status IN ('pending', 'partial') AND i.status != 'cancelled') > 0
+            ORDER BY total_remaining DESC
+            LIMIT 200
+        `);
+
+        const totals = {
+            total_receivable: customers.reduce((s, c) => s + (parseFloat(c.total_remaining) || 0), 0),
+            total_overdue: customers.reduce((s, c) => s + (parseFloat(c.overdue_amount) || 0), 0),
+            total_due_30: customers.reduce((s, c) => s + (parseFloat(c.due_30_days) || 0), 0),
+            customers_count: customers.length,
+        };
+
+        res.json({ success: true, data: { customers, totals } });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/reports/employee-performance
+ * تقرير أداء الموظفين
+ */
+router.get('/employee-performance', async (req, res) => {
+    try {
+        const month = req.query.month || new Date().toISOString().slice(0, 7);
+        const employees = all(`
+            SELECT u.id, u.full_name, u.role,
+                   (SELECT COUNT(*) FROM invoices i WHERE i.created_by = u.id AND strftime('%Y-%m', i.created_at) = ?) as invoices_created,
+                   (SELECT COALESCE(SUM(i.total), 0) FROM invoices i WHERE i.created_by = u.id AND i.type = 'sale' AND strftime('%Y-%m', i.created_at) = ?) as sales_total,
+                   (SELECT COUNT(*) FROM tasks t WHERE t.assigned_to = u.id AND t.status = 'completed' AND strftime('%Y-%m', t.completed_at) = ?) as tasks_completed,
+                   (SELECT COUNT(*) FROM tasks t WHERE t.assigned_to = u.id AND strftime('%Y-%m', t.created_at) = ?) as tasks_total,
+                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND a.status = 'present' AND strftime('%Y-%m', a.date) = ?) as present_days,
+                   (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND a.status = 'late' AND strftime('%Y-%m', a.date) = ?) as late_days
+            FROM users u
+            WHERE u.is_active = 1
+            ORDER BY sales_total DESC
+        `, [month, month, month, month, month, month]);
+
+        res.json({ success: true, data: { month, employees } });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 module.exports = router;
