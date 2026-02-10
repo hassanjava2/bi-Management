@@ -22,7 +22,7 @@ router.get('/', auth, async (req, res) => {
       return res.json({ success: true, data: demoCustomers });
     }
     const { search, type, page, limit } = req.query;
-    const customers = customerService.list({ search, type, page, limit });
+    const customers = await customerService.list({ search, type, page, limit });
     res.json({ success: true, data: customers });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -38,7 +38,7 @@ router.get('/stats', auth, async (req, res) => {
         data: { total: 156, with_balance: 23, total_receivables: 25000000, vip_count: 8, new_this_month: 12, by_type: { retail: 128, wholesale: 28 }, by_tier: { bronze: 95, silver: 38, gold: 15, platinum: 8 } },
       });
     }
-    const stats = customerService.getStats();
+    const stats = await customerService.getStats();
     res.json({ success: true, data: stats });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -54,7 +54,7 @@ router.get('/:id', auth, async (req, res) => {
       if (!c) return res.status(404).json({ success: false, message: 'العميل غير موجود' });
       return res.json({ success: true, data: { ...c, addresses: [{ label: 'المنزل', address: 'بغداد - المنصور', is_default: true }] } });
     }
-    const customer = customerService.getById(id);
+    const customer = await customerService.getById(id);
     if (!customer) return res.status(404).json({ success: false, message: 'العميل غير موجود' });
     let addresses = [];
     try {
@@ -72,7 +72,7 @@ router.post('/', auth, async (req, res) => {
     if (!customerService.ensureCustomersTable()) {
       return res.status(503).json({ success: false, message: 'جدول العملاء غير متوفر. قم بتشغيل تهيئة قاعدة البيانات أولاً.' });
     }
-    const created = customerService.create({ ...req.body, created_by: req.user?.id });
+    const created = await customerService.create({ ...req.body, created_by: req.user?.id });
     res.status(201).json({ success: true, data: created });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -85,7 +85,7 @@ router.put('/:id', auth, async (req, res) => {
     if (!customerService.ensureCustomersTable()) {
       return res.status(503).json({ success: false, message: 'جدول العملاء غير متوفر.' });
     }
-    const updated = customerService.update(req.params.id, req.body);
+    const updated = await customerService.update(req.params.id, req.body);
     if (!updated) return res.status(404).json({ success: false, message: 'العميل غير موجود' });
     res.json({ success: true, data: updated });
   } catch (error) {
@@ -99,7 +99,7 @@ router.delete('/:id', auth, authorize(['admin', 'manager']), async (req, res) =>
     if (!customerService.ensureCustomersTable()) {
       return res.status(503).json({ success: false, message: 'جدول العملاء غير متوفر.' });
     }
-    const ok = customerService.remove(req.params.id);
+    const ok = await customerService.remove(req.params.id);
     if (!ok) return res.status(404).json({ success: false, message: 'العميل غير موجود' });
     res.json({ success: true, message: 'تم حذف العميل بنجاح' });
   } catch (error) {
@@ -113,7 +113,7 @@ router.get('/:id/transactions', auth, async (req, res) => {
     if (!customerService.ensureCustomersTable()) {
       return res.json({ success: true, data: [{ date: '2025-01-28', type: 'invoice', amount: 1500000, reference: 'INV-2025-0025', balance: 1200000 }] });
     }
-    const data = customerService.getTransactions(req.params.id);
+    const data = await customerService.getTransactions(req.params.id);
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -126,7 +126,7 @@ router.get('/:id/invoices', auth, async (req, res) => {
     if (!customerService.ensureCustomersTable()) {
       return res.json({ success: true, data: [{ id: '1', number: 'INV-2025-0025', date: '2025-01-28', total: 1500000, status: 'completed', type: 'sale' }] });
     }
-    const data = customerService.getInvoices(req.params.id);
+    const data = await customerService.getInvoices(req.params.id);
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -141,7 +141,7 @@ router.post('/:id/adjust-balance', auth, authorize(['admin', 'manager']), async 
     }
     const { id } = req.params;
     const { amount, reason, reference } = req.body;
-    const updated = customerService.adjustBalance(id, amount, reason, reference, req.user?.id);
+    const updated = await customerService.adjustBalance(id, amount, reason, reference, req.user?.id);
     if (!updated) return res.status(404).json({ success: false, message: 'العميل غير موجود' });
     res.json({ success: true, message: 'تم تعديل الرصيد بنجاح', data: updated });
   } catch (error) {

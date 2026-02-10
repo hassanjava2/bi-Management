@@ -91,7 +91,7 @@ router.post('/start/:employeeId', auth, hasSecurityLevel(4), asyncHandler(async 
  * تقرير التدريب
  */
 router.get('/report', auth, hasSecurityLevel(3), asyncHandler(async (req, res) => {
-    const report = onboardingService.getTrainingReport();
+    const report = await onboardingService.getTrainingReport();
 
     res.json({
         success: true,
@@ -117,7 +117,7 @@ router.get('/employee/:id', auth, hasSecurityLevel(3), asyncHandler(async (req, 
  * قائمة خطط التدريب
  */
 router.get('/plans', auth, hasSecurityLevel(3), asyncHandler(async (req, res) => {
-    const plans = onboardingService.listTrainingPlans();
+    const plans = await onboardingService.listTrainingPlans();
 
     res.json({
         success: true,
@@ -140,7 +140,7 @@ router.post('/plans', auth, hasSecurityLevel(4), asyncHandler(async (req, res) =
         });
     }
 
-    const plan = onboardingService.createTrainingPlan({
+    const plan = await onboardingService.createTrainingPlan({
         name,
         description,
         position_id,
@@ -160,7 +160,7 @@ router.post('/plans', auth, hasSecurityLevel(4), asyncHandler(async (req, res) =
  * إرسال تذكيرات التدريب (للـ scheduler)
  */
 router.post('/send-reminders', auth, hasSecurityLevel(5), asyncHandler(async (req, res) => {
-    const report = onboardingService.getTrainingReport();
+    const report = await onboardingService.getTrainingReport();
 
     for (const trainee of report.trainees) {
         await onboardingService.sendDailyTrainingReminder(trainee.employee_id);

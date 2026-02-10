@@ -14,7 +14,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
  * نقاطي
  */
 router.get('/my-points', auth, asyncHandler(async (req, res) => {
-    const points = goalsService.getUserPoints(req.user.id);
+    const points = await goalsService.getUserPoints(req.user.id);
     
     res.json({
         success: true,
@@ -29,7 +29,7 @@ router.get('/my-points', auth, asyncHandler(async (req, res) => {
 router.get('/my-history', auth, asyncHandler(async (req, res) => {
     const { limit = 20, offset = 0 } = req.query;
     
-    const history = goalsService.getPointsHistory(
+    const history = await goalsService.getPointsHistory(
         req.user.id, 
         parseInt(limit), 
         parseInt(offset)
@@ -48,7 +48,7 @@ router.get('/my-history', auth, asyncHandler(async (req, res) => {
 router.get('/my-stats', auth, asyncHandler(async (req, res) => {
     const { period = 'month' } = req.query;
     
-    const stats = goalsService.getUserStats(req.user.id, period);
+    const stats = await goalsService.getUserStats(req.user.id, period);
     
     res.json({
         success: true,
@@ -61,7 +61,7 @@ router.get('/my-stats', auth, asyncHandler(async (req, res) => {
  * شاراتي
  */
 router.get('/my-badges', auth, asyncHandler(async (req, res) => {
-    const badges = goalsService.getUserBadges(req.user.id);
+    const badges = await goalsService.getUserBadges(req.user.id);
     
     res.json({
         success: true,
@@ -76,7 +76,7 @@ router.get('/my-badges', auth, asyncHandler(async (req, res) => {
 router.get('/leaderboard', auth, asyncHandler(async (req, res) => {
     const { period = 'monthly', department_id, limit = 10 } = req.query;
     
-    const leaderboard = goalsService.getLeaderboard(
+    const leaderboard = await goalsService.getLeaderboard(
         period, 
         department_id || null, 
         parseInt(limit)
@@ -93,7 +93,7 @@ router.get('/leaderboard', auth, asyncHandler(async (req, res) => {
  * المكافآت المتاحة
  */
 router.get('/rewards', auth, asyncHandler(async (req, res) => {
-    const rewards = goalsService.getAvailableRewards();
+    const rewards = await goalsService.getAvailableRewards();
     
     res.json({
         success: true,
@@ -108,7 +108,7 @@ router.get('/rewards', auth, asyncHandler(async (req, res) => {
 router.post('/rewards/:id/redeem', auth, asyncHandler(async (req, res) => {
     const { id } = req.params;
     
-    const redemption = goalsService.redeemReward(req.user.id, id);
+    const redemption = await goalsService.redeemReward(req.user.id, id);
     
     res.json({
         success: true,
@@ -159,7 +159,7 @@ router.post('/award', auth, hasSecurityLevel(4), asyncHandler(async (req, res) =
         });
     }
 
-    const transaction = goalsService.awardPoints(
+    const transaction = await goalsService.awardPoints(
         user_id, 
         reason || 'manual_bonus', 
         parseInt(points)
@@ -187,7 +187,7 @@ router.post('/deduct', auth, hasSecurityLevel(4), asyncHandler(async (req, res) 
         });
     }
 
-    const transaction = goalsService.deductPoints(
+    const transaction = await goalsService.deductPoints(
         user_id, 
         reason || 'manual_deduction', 
         parseInt(points),
@@ -208,9 +208,9 @@ router.post('/deduct', auth, hasSecurityLevel(4), asyncHandler(async (req, res) 
 router.get('/user/:id', auth, hasSecurityLevel(3), asyncHandler(async (req, res) => {
     const { id } = req.params;
     
-    const points = goalsService.getUserPoints(id);
-    const stats = goalsService.getUserStats(id, 'month');
-    const badges = goalsService.getUserBadges(id);
+    const points = await goalsService.getUserPoints(id);
+    const stats = await goalsService.getUserStats(id, 'month');
+    const badges = await goalsService.getUserBadges(id);
     
     res.json({
         success: true,
@@ -230,7 +230,7 @@ router.get('/user/:id/history', auth, hasSecurityLevel(4), asyncHandler(async (r
     const { id } = req.params;
     const { limit = 50, offset = 0 } = req.query;
     
-    const history = goalsService.getPointsHistory(id, parseInt(limit), parseInt(offset));
+    const history = await goalsService.getPointsHistory(id, parseInt(limit), parseInt(offset));
     
     res.json({
         success: true,

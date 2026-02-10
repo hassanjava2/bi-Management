@@ -52,7 +52,7 @@ router.get('/', auth, async (req, res) => {
   try {
     const { search, supplier, supplier_id, status, page, limit } = req.query;
     const sid = supplier || supplier_id;
-    if (!returnService.ensureReturnsTable()) {
+    if (!(await returnService.ensureReturnsTable())) {
       const mock = [
         { id: '1', return_number: 'RTN-2025-0001', product_name: 'Dell Latitude 5530', serial_number: 'BI-2025-000123', supplier_id: 'arabi', supplier_name: 'سيد أحمد - العربي', reason_details: 'عيب بالشاشة', created_at: '2025-01-17', status: 'in_repair', notes: 'تم إرسال الجهاز للصيانة' },
         { id: '2', return_number: 'RTN-2025-0002', product_name: 'HP EliteBook 450 G9', serial_number: 'BI-2025-000456', supplier_id: 'tamimi', supplier_name: 'سليم التميمي', reason_details: 'اختلاف مواصفات', created_at: '2025-01-05', status: 'pending', notes: 'بانتظار الرد' },
@@ -66,7 +66,7 @@ router.get('/', auth, async (req, res) => {
       }
       return res.json({ success: true, data: filtered, pagination: { page: 1, limit: 50, total: filtered.length } });
     }
-    const result = returnService.list({ search, supplier_id: sid, status, page, limit });
+    const result = await returnService.list({ search, supplier_id: sid, status, page, limit });
     const enriched = result.rows.map((r) => ({ ...r, reason: r.reason_details, sent_date: r.created_at }));
     res.json({ success: true, data: enriched, pagination: { page: result.page, limit: result.limit, total: result.total } });
   } catch (error) {
@@ -78,10 +78,10 @@ router.get('/', auth, async (req, res) => {
 // إحصائيات المرتجعات (قبل /:id)
 router.get('/stats', auth, async (req, res) => {
   try {
-    if (!returnService.ensureReturnsTable()) {
+    if (!(await returnService.ensureReturnsTable())) {
       return res.json({ success: true, data: { total_pending: 8, over_7_days: 5, over_14_days: 2, over_30_days: 1, by_supplier: { arabi: 4, tamimi: 3 }, by_status: { pending: 2, sent: 3, in_repair: 2 } } });
     }
-    const stats = returnService.getStats();
+    const stats = await returnService.getStats();
     res.json({ success: true, data: stats });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -91,10 +91,10 @@ router.get('/stats', auth, async (req, res) => {
 // المرتجعات المتأخرة
 router.get('/overdue', auth, async (req, res) => {
   try {
-    if (!returnService.ensureReturnsTable()) {
+    if (!(await returnService.ensureReturnsTable())) {
       return res.json({ success: true, data: [{ id: '2', return_number: 'RTN-2025-0002', product_name: 'HP EliteBook 450 G9', serial_number: 'BI-2025-000456', supplier_name: 'سليم التميمي', sent_date: '2025-01-05', days: 27, alert_level: 'critical' }] });
     }
-    const data = returnService.getOverdue();
+    const data = await returnService.getOverdue();
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -104,10 +104,10 @@ router.get('/overdue', auth, async (req, res) => {
 // التنبيهات
 router.get('/alerts', auth, async (req, res) => {
   try {
-    if (!returnService.ensureReturnsTable()) {
+    if (!(await returnService.ensureReturnsTable())) {
       return res.json({ success: true, data: [{ type: 'critical', message: 'مرتجع HP 450 G9 متأخر أكثر من 14 يوم!', return_id: '2' }] });
     }
-    const data = returnService.getAlerts();
+    const data = await returnService.getAlerts();
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -118,10 +118,10 @@ router.get('/alerts', auth, async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
-    if (!returnService.ensureReturnsTable()) {
+    if (!(await returnService.ensureReturnsTable())) {
       return res.json({ success: true, data: { id, return_number: 'RTN-2025-0001', product_name: 'Dell Latitude 5530', serial_number: 'BI-2025-000123', supplier_name: 'سيد أحمد - العربي', reason: 'عيب بالشاشة', sent_date: '2025-01-17', status: 'in_repair', follow_ups: [] } });
     }
-    const data = returnService.getById(id);
+    const data = await returnService.getById(id);
     if (!data) return res.status(404).json({ success: false, message: 'المرتجع غير موجود' });
     res.json({ success: true, data: { ...data, reason: data.reason_details, sent_date: data.created_at, follow_ups: [] } });
   } catch (error) {
@@ -132,11 +132,11 @@ router.get('/:id', auth, async (req, res) => {
 // إنشاء مرتجع جديد
 router.post('/', auth, authorize(['admin', 'manager', 'inventory']), async (req, res) => {
   try {
-    if (!returnService.ensureReturnsTable()) {
+    if (!(await returnService.ensureReturnsTable())) {
       return res.status(503).json({ success: false, message: 'جدول المرتجعات غير متوفر.' });
     }
     const { items = [], supplier_id, reason, reason_details, reason_category, notes, type } = req.body;
-    const created = returnService.create({
+    const created = await returnService.create({
       type: type || 'purchase_return',
       supplier_id,
       reason_details: reason_details || reason,
@@ -154,12 +154,12 @@ router.post('/', auth, authorize(['admin', 'manager', 'inventory']), async (req,
 // تحديث حالة المرتجع
 router.post('/:id/status', auth, authorize(['admin', 'manager', 'inventory']), async (req, res) => {
   try {
-    if (!returnService.ensureReturnsTable()) {
+    if (!(await returnService.ensureReturnsTable())) {
       return res.status(503).json({ success: false, message: 'جدول المرتجعات غير متوفر.' });
     }
     const { id } = req.params;
     const { status, notes } = req.body;
-    const updated = returnService.updateStatus(id, status, notes);
+    const updated = await returnService.updateStatus(id, status, notes);
     if (!updated) return res.status(404).json({ success: false, message: 'المرتجع غير موجود' });
     res.json({ success: true, message: 'تم تحديث الحالة بنجاح', data: updated });
   } catch (error) {
@@ -170,12 +170,12 @@ router.post('/:id/status', auth, authorize(['admin', 'manager', 'inventory']), a
 // إضافة متابعة
 router.post('/:id/follow-up', auth, async (req, res) => {
   try {
-    if (!returnService.ensureReturnsTable()) {
+    if (!(await returnService.ensureReturnsTable())) {
       return res.status(503).json({ success: false, message: 'جدول المرتجعات غير متوفر.' });
     }
     const { id } = req.params;
     const { action, notes } = req.body;
-    const updated = returnService.addFollowUp(id, action || 'متابعة', notes);
+    const updated = await returnService.addFollowUp(id, action || 'متابعة', notes);
     if (!updated) return res.status(404).json({ success: false, message: 'المرتجع غير موجود' });
     res.status(201).json({ success: true, message: 'تمت إضافة المتابعة بنجاح', data: updated });
   } catch (error) {
@@ -186,11 +186,11 @@ router.post('/:id/follow-up', auth, async (req, res) => {
 // استلام المرتجع
 router.post('/:id/receive', auth, authorize(['admin', 'manager', 'inventory']), async (req, res) => {
   try {
-    if (!returnService.ensureReturnsTable()) {
+    if (!(await returnService.ensureReturnsTable())) {
       return res.status(503).json({ success: false, message: 'جدول المرتجعات غير متوفر.' });
     }
     const { id } = req.params;
-    const updated = returnService.receive(id, req.body);
+    const updated = await returnService.receive(id, req.body);
     if (!updated) return res.status(404).json({ success: false, message: 'المرتجع غير موجود' });
     res.json({ success: true, message: 'تم استلام المرتجع بنجاح', data: updated });
   } catch (error) {

@@ -67,7 +67,7 @@ router.get('/', auth, async (req, res) => {
       });
     }
     const { search, group_id, category_id, page, limit } = req.query;
-    const result = productService.list({ search, group_id, category_id, page, limit });
+    const result = await productService.list({ search, group_id, category_id, page, limit });
     const enrichedProducts = result.rows.map((p) => ({
       ...p,
       group_id: p.category_id ? parseInt(p.category_id, 10) : 1,
@@ -101,7 +101,7 @@ router.get('/search', auth, async (req, res) => {
         .map((p) => ({ id: p.id, name: p.name, buy_price: p.buy_price, sale_price: p.sale_price, group_id: p.group_id, group_name: productGroups[p.group_id]?.name || 'عام' }));
       return res.json({ success: true, data: results });
     }
-    const data = productService.search(q, limit);
+    const data = await productService.search(q, limit);
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -118,7 +118,7 @@ router.get('/meta/groups', auth, async (req, res) => {
       const groups = Object.values(productGroups).map((g) => ({ ...g, count: groupCounts[parseInt(g.id, 10)] || 0 }));
       return res.json({ success: true, data: groups });
     }
-    const groups = productService.getGroups();
+    const groups = await productService.getGroups();
     res.json({ success: true, data: groups });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

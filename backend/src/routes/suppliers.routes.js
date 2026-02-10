@@ -27,7 +27,7 @@ router.get('/', auth, async (req, res) => {
       return res.json({ success: true, data: list });
     }
     const { search, type, page, limit } = req.query;
-    const suppliers = supplierService.list({ search, type, page, limit });
+    const suppliers = await supplierService.list({ search, type, page, limit });
     res.json({ success: true, data: suppliers });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -42,7 +42,7 @@ router.get('/:id', auth, async (req, res) => {
       if (!s) return res.status(404).json({ success: false, message: 'المورد غير موجود' });
       return res.json({ success: true, data: { ...s, pending_returns: 4 } });
     }
-    const supplier = supplierService.getById(id);
+    const supplier = await supplierService.getById(id);
     if (!supplier) return res.status(404).json({ success: false, message: 'المورد غير موجود' });
     res.json({ success: true, data: supplier });
   } catch (error) {
@@ -55,7 +55,7 @@ router.post('/', auth, authorize(['admin', 'manager']), async (req, res) => {
     if (!supplierService.ensureSuppliersTable()) {
       return res.status(503).json({ success: false, message: 'جدول الموردين غير متوفر. قم بتشغيل تهيئة قاعدة البيانات أولاً.' });
     }
-    const created = supplierService.create({ ...req.body, created_by: req.user?.id });
+    const created = await supplierService.create({ ...req.body, created_by: req.user?.id });
     res.status(201).json({ success: true, data: created });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -67,7 +67,7 @@ router.put('/:id', auth, authorize(['admin', 'manager']), async (req, res) => {
     if (!supplierService.ensureSuppliersTable()) {
       return res.status(503).json({ success: false, message: 'جدول الموردين غير متوفر.' });
     }
-    const updated = supplierService.update(req.params.id, req.body);
+    const updated = await supplierService.update(req.params.id, req.body);
     if (!updated) return res.status(404).json({ success: false, message: 'المورد غير موجود' });
     res.json({ success: true, data: updated });
   } catch (error) {
@@ -80,7 +80,7 @@ router.delete('/:id', auth, authorize(['admin']), async (req, res) => {
     if (!supplierService.ensureSuppliersTable()) {
       return res.status(503).json({ success: false, message: 'جدول الموردين غير متوفر.' });
     }
-    const ok = supplierService.remove(req.params.id);
+    const ok = await supplierService.remove(req.params.id);
     if (!ok) return res.status(404).json({ success: false, message: 'المورد غير موجود' });
     res.json({ success: true, message: 'تم حذف المورد بنجاح' });
   } catch (error) {
@@ -93,7 +93,7 @@ router.get('/:id/transactions', auth, async (req, res) => {
     if (!supplierService.ensureSuppliersTable()) {
       return res.json({ success: true, data: [{ date: '2025-01-28', type: 'purchase', amount: 5000000, reference: 'PUR-2025-0015', balance: -3500000 }] });
     }
-    const data = supplierService.getTransactions(req.params.id);
+    const data = await supplierService.getTransactions(req.params.id);
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -105,7 +105,7 @@ router.get('/:id/returns', auth, async (req, res) => {
     if (!supplierService.ensureSuppliersTable()) {
       return res.json({ success: true, data: [{ id: '1', status: 'in_repair', serial: 'BI-2025-000123', product: 'Dell 5530', days: 14 }] });
     }
-    const data = supplierService.getReturns(req.params.id);
+    const data = await supplierService.getReturns(req.params.id);
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -117,7 +117,7 @@ router.get('/:id/stats', auth, async (req, res) => {
     if (!supplierService.ensureSuppliersTable()) {
       return res.json({ success: true, data: { total_purchases: 85000000, total_returns: 15, resolved_returns: 11, pending_returns: 4, avg_return_time: 10, last_purchase: '2025-01-28', quality_score: 4.5 } });
     }
-    const data = supplierService.getStats(req.params.id);
+    const data = await supplierService.getStats(req.params.id);
     if (!data) return res.status(404).json({ success: false, message: 'المورد غير موجود' });
     res.json({ success: true, data });
   } catch (error) {

@@ -22,8 +22,8 @@ const list = asyncHandler(async (req, res) => {
         offset: (parseInt(page) - 1) * parseInt(limit)
     };
 
-    const users = userService.getUsers(filters, req.user.security_level);
-    const total = userService.getUserCount(filters);
+    const users = await userService.getUsers(filters, req.user.security_level);
+    const total = await userService.getUserCount(filters);
 
     res.json({
         success: true,
@@ -35,7 +35,7 @@ const list = asyncHandler(async (req, res) => {
  * GET /api/users/:id
  */
 const getById = asyncHandler(async (req, res) => {
-    const user = userService.getUser(req.params.id, req.user.security_level);
+    const user = await userService.getUser(req.params.id, req.user.security_level);
 
     if (!user) {
         return res.status(404).json({
@@ -67,7 +67,7 @@ const create = asyncHandler(async (req, res) => {
  * PUT /api/users/:id
  */
 const update = asyncHandler(async (req, res) => {
-    const existingUser = userService.getUser(req.params.id);
+    const existingUser = await userService.getUser(req.params.id);
 
     if (!existingUser) {
         return res.status(404).json({
@@ -77,7 +77,7 @@ const update = asyncHandler(async (req, res) => {
         });
     }
 
-    const user = userService.updateUser(req.params.id, req.body, req.user.id);
+    const user = await userService.updateUser(req.params.id, req.body, req.user.id);
 
     res.json({
         success: true,
@@ -89,7 +89,7 @@ const update = asyncHandler(async (req, res) => {
  * DELETE /api/users/:id
  */
 const remove = asyncHandler(async (req, res) => {
-    const existingUser = userService.getUser(req.params.id);
+    const existingUser = await userService.getUser(req.params.id);
 
     if (!existingUser) {
         return res.status(404).json({
@@ -99,7 +99,7 @@ const remove = asyncHandler(async (req, res) => {
         });
     }
 
-    userService.deleteUser(req.params.id);
+    await userService.deleteUser(req.params.id);
 
     res.json({
         success: true,
@@ -113,7 +113,7 @@ const remove = asyncHandler(async (req, res) => {
 const getUserTasks = asyncHandler(async (req, res) => {
     const { status, priority, limit = 50 } = req.query;
 
-    const tasks = taskService.getTasks({
+    const tasks = await taskService.getTasks({
         assigned_to: req.params.id,
         status,
         priority,

@@ -20,7 +20,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
 router.get('/audit-logs', auth, hasSecurityLevel(4), asyncHandler(async (req, res) => {
     const { user_id, action, table_name, from_date, to_date, limit = 50, offset = 0 } = req.query;
 
-    const logs = auditService.getLogs({
+    const logs = await auditService.getLogs({
         user_id,
         action,
         table_name,
@@ -43,7 +43,7 @@ router.get('/audit-logs', auth, hasSecurityLevel(4), asyncHandler(async (req, re
 router.get('/audit-logs/record/:table/:id', auth, hasSecurityLevel(4), asyncHandler(async (req, res) => {
     const { table, id } = req.params;
 
-    const history = auditService.getRecordHistory(table, id);
+    const history = await auditService.getRecordHistory(table, id);
 
     res.json({
         success: true,
@@ -60,7 +60,7 @@ router.get('/audit-logs/record/:table/:id', auth, hasSecurityLevel(4), asyncHand
 router.get('/events', auth, hasSecurityLevel(5), asyncHandler(async (req, res) => {
     const { user_id, event_type, severity, unresolved_only, limit = 50, offset = 0 } = req.query;
 
-    const events = auditService.getSecurityEvents({
+    const events = await auditService.getSecurityEvents({
         user_id,
         event_type,
         severity,
@@ -83,7 +83,7 @@ router.post('/events/:id/resolve', auth, hasSecurityLevel(5), asyncHandler(async
     const { id } = req.params;
     const { notes } = req.body;
 
-    auditService.resolveSecurityEvent(id, req.user.id, notes);
+    await auditService.resolveSecurityEvent(id, req.user.id, notes);
 
     // Log the resolution
     auditService.log({
@@ -107,7 +107,7 @@ router.post('/events/:id/resolve', auth, hasSecurityLevel(5), asyncHandler(async
 router.get('/stats', auth, hasSecurityLevel(4), asyncHandler(async (req, res) => {
     const { days = 7 } = req.query;
 
-    const stats = auditService.getSecurityStats(parseInt(days));
+    const stats = await auditService.getSecurityStats(parseInt(days));
 
     res.json({
         success: true,
@@ -132,7 +132,7 @@ router.post('/encrypt', auth, hasSecurityLevel(5), asyncHandler(async (req, res)
         });
     }
 
-    const encrypted = encryptionService.encryptField(text);
+    const encrypted = await encryptionService.encryptField(text);
 
     res.json({
         success: true,
@@ -158,7 +158,7 @@ router.post('/decrypt', auth, hasSecurityLevel(5), asyncHandler(async (req, res)
         });
     }
 
-    const decrypted = encryptionService.decryptField(encrypted);
+    const decrypted = await encryptionService.decryptField(encrypted);
 
     res.json({
         success: true,
@@ -173,7 +173,7 @@ router.post('/decrypt', auth, hasSecurityLevel(5), asyncHandler(async (req, res)
 router.post('/generate-key', auth, hasSecurityLevel(5), asyncHandler(async (req, res) => {
     const { bytes = 32 } = req.body;
 
-    const key = encryptionService.generateKey(parseInt(bytes));
+    const key = await encryptionService.generateKey(parseInt(bytes));
 
     // Log this action
     auditService.logSecurityEvent({
@@ -203,12 +203,12 @@ router.get('/user/:id/activity', auth, hasSecurityLevel(4), asyncHandler(async (
     const { id } = req.params;
     const { days = 7 } = req.query;
 
-    const logs = auditService.getLogs({
+    const logs = await auditService.getLogs({
         user_id: id,
         limit: 100
     });
 
-    const securityEvents = auditService.getSecurityEvents({
+    const securityEvents = await auditService.getSecurityEvents({
         user_id: id,
         limit: 50
     });
@@ -229,7 +229,7 @@ router.get('/user/:id/activity', auth, hasSecurityLevel(4), asyncHandler(async (
 router.post('/cleanup', auth, hasSecurityLevel(5), asyncHandler(async (req, res) => {
     const { days_to_keep = 90 } = req.body;
 
-    const deleted = auditService.cleanOldLogs(parseInt(days_to_keep));
+    const deleted = await auditService.cleanOldLogs(parseInt(days_to_keep));
 
     auditService.log({
         user_id: req.user.id,

@@ -9,7 +9,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
  * POST /api/attendance/check-in
  */
 const checkIn = asyncHandler(async (req, res) => {
-    const result = attendanceService.checkIn(req.user.id, req.body);
+    const result = await attendanceService.checkIn(req.user.id, req.body);
 
     if (result.error) {
         return res.status(400).json({
@@ -30,7 +30,7 @@ const checkIn = asyncHandler(async (req, res) => {
  * POST /api/attendance/check-out
  */
 const checkOut = asyncHandler(async (req, res) => {
-    const result = attendanceService.checkOut(req.user.id, req.body);
+    const result = await attendanceService.checkOut(req.user.id, req.body);
 
     if (result.error) {
         return res.status(400).json({
@@ -50,7 +50,7 @@ const checkOut = asyncHandler(async (req, res) => {
  * GET /api/attendance/today
  */
 const today = asyncHandler(async (req, res) => {
-    const records = attendanceService.getTodayAttendance();
+    const records = await attendanceService.getTodayAttendance();
 
     res.json({
         success: true,
@@ -69,7 +69,7 @@ const myRecord = asyncHandler(async (req, res) => {
     const defaultFrom = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
     const defaultTo = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
 
-    const records = attendanceService.getAttendanceReport({
+    const records = await attendanceService.getAttendanceReport({
         user_id: req.user.id,
         from_date: from_date || defaultFrom,
         to_date: to_date || defaultTo
@@ -87,7 +87,7 @@ const myRecord = asyncHandler(async (req, res) => {
 const report = asyncHandler(async (req, res) => {
     const { user_id, department_id, from_date, to_date, status, limit = 100 } = req.query;
 
-    const records = attendanceService.getAttendanceReport({
+    const records = await attendanceService.getAttendanceReport({
         user_id,
         department_id,
         from_date,
@@ -106,7 +106,7 @@ const report = asyncHandler(async (req, res) => {
  * POST /api/attendance/manual
  */
 const manual = asyncHandler(async (req, res) => {
-    const record = attendanceService.manualAttendance(req.body, req.user.id);
+    const record = await attendanceService.manualAttendance(req.body, req.user.id);
 
     res.status(201).json({
         success: true,
@@ -120,7 +120,7 @@ const manual = asyncHandler(async (req, res) => {
 const stats = asyncHandler(async (req, res) => {
     const { date } = req.query;
 
-    const attendanceStats = attendanceService.getAttendanceStats(date);
+    const attendanceStats = await attendanceService.getAttendanceStats(date);
 
     res.json({
         success: true,
@@ -134,7 +134,7 @@ const stats = asyncHandler(async (req, res) => {
  */
 const status = asyncHandler(async (req, res) => {
     const today = new Date().toISOString().split('T')[0];
-    const todayRecord = attendanceService.getTodayRecordForUser(req.user.id);
+    const todayRecord = await attendanceService.getTodayRecordForUser(req.user.id);
     
     res.json({
         success: true,

@@ -32,7 +32,7 @@ const login = asyncHandler(async (req, res) => {
  * POST /api/auth/logout
  */
 const logout = asyncHandler(async (req, res) => {
-    const result = authService.logout(req.user.id, req.token, req.ip);
+    const result = await authService.logout(req.user.id, req.token, req.ip);
 
     res.json({
         success: true,
@@ -54,7 +54,7 @@ const refreshToken = asyncHandler(async (req, res) => {
         });
     }
 
-    const result = authService.refreshToken(refresh_token);
+    const result = await authService.refreshToken(refresh_token);
 
     if (result.error) {
         return res.status(401).json({

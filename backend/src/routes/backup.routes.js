@@ -19,8 +19,8 @@ router.get('/',
     async (req, res) => {
         try {
             const backupService = getBackupService();
-            const backups = backupService.listBackups();
-            const totalSize = backupService.getTotalBackupSize();
+            const backups = await backupService.listBackups();
+            const totalSize = await backupService.getTotalBackupSize();
 
             res.json({
                 success: true,
@@ -110,7 +110,7 @@ router.delete('/:filename',
         try {
             const { filename } = req.params;
             const backupService = getBackupService();
-            const result = backupService.deleteBackup(filename);
+            const result = await backupService.deleteBackup(filename);
 
             res.json({
                 success: true,

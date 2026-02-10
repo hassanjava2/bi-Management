@@ -52,9 +52,9 @@ router.get('/:id/salary',
     canViewSensitive,
     sensitiveLimiter,
     auditSensitiveAccess('salary'),
-    (req, res) => {
+    async (req, res) => {
         const userService = require('../services/user.service');
-        const user = userService.getUser(req.params.id, req.user.security_level);
+        const user = await userService.getUser(req.params.id, req.user.security_level);
         
         if (!user) {
             return res.status(404).json({ success: false, error: 'NOT_FOUND' });

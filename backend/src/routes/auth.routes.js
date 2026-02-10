@@ -58,10 +58,10 @@ router.post('/login', async (req, res) => {
  * POST /api/auth/logout
  * تسجيل الخروج
  */
-router.post('/logout', auth, (req, res) => {
+router.post('/logout', auth, async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
-        authService.logout(req.user.id, token, req.ip);
+        await authService.logout(req.user.id, token, req.ip);
 
         res.json({
             success: true,
@@ -79,7 +79,7 @@ router.post('/logout', auth, (req, res) => {
  * POST /api/auth/refresh-token
  * تجديد التوكن
  */
-router.post('/refresh-token', (req, res) => {
+router.post('/refresh-token', async (req, res) => {
     try {
         const { refresh_token } = req.body;
 
@@ -90,7 +90,7 @@ router.post('/refresh-token', (req, res) => {
             });
         }
 
-        const result = authService.refreshToken(refresh_token);
+        const result = await authService.refreshToken(refresh_token);
 
         if (result.error) {
             return res.status(401).json({
@@ -118,9 +118,9 @@ router.post('/refresh-token', (req, res) => {
  * GET /api/auth/me
  * جلب بيانات المستخدم الحالي
  */
-router.get('/me', auth, (req, res) => {
+router.get('/me', auth, async (req, res) => {
     try {
-        const user = userService.getUser(req.user.id);
+        const user = await userService.getUser(req.user.id);
 
         if (!user) {
             return res.status(404).json({
@@ -198,11 +198,11 @@ router.put('/change-password', auth, async (req, res) => {
  * PUT /api/auth/update-profile
  * تحديث الملف الشخصي
  */
-router.put('/update-profile', auth, (req, res) => {
+router.put('/update-profile', auth, async (req, res) => {
     try {
         const { full_name, phone, avatar_url } = req.body;
         
-        const result = userService.updateUser(req.user.id, {
+        const result = await userService.updateUser(req.user.id, {
             full_name,
             phone,
             avatar_url

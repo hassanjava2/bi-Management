@@ -134,7 +134,7 @@ router.post('/invoice-void', requirePermission('approvals.request'), async (req,
             });
         }
         const approvalService = getApprovalService(req.db);
-        const approval = approvalService.requestInvoiceVoid(invoice_id, reason, req.user);
+        const approval = await approvalService.requestInvoiceVoid(invoice_id, reason, req.user);
         getAuditService().log({
             eventType: 'approval_requested',
             eventCategory: EVENT_CATEGORIES.APPROVAL,

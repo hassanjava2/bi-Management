@@ -14,7 +14,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
  * List all cameras
  */
 router.get('/', auth, hasSecurityLevel(3), asyncHandler(async (req, res) => {
-    const cameras = cameraService.listCameras();
+    const cameras = await cameraService.listCameras();
     
     // Get status for each camera
     const camerasWithStatus = await Promise.all(
@@ -64,7 +64,7 @@ router.post('/', auth, hasSecurityLevel(4), asyncHandler(async (req, res) => {
  * Get camera details
  */
 router.get('/:id', auth, hasSecurityLevel(3), asyncHandler(async (req, res) => {
-    const camera = cameraService.getCamera(req.params.id);
+    const camera = await cameraService.getCamera(req.params.id);
 
     if (!camera) {
         return res.status(404).json({
@@ -87,7 +87,7 @@ router.get('/:id', auth, hasSecurityLevel(3), asyncHandler(async (req, res) => {
  * Update camera
  */
 router.put('/:id', auth, hasSecurityLevel(4), asyncHandler(async (req, res) => {
-    const camera = cameraService.updateCamera(req.params.id, req.body);
+    const camera = await cameraService.updateCamera(req.params.id, req.body);
 
     if (!camera) {
         return res.status(404).json({
@@ -109,7 +109,7 @@ router.put('/:id', auth, hasSecurityLevel(4), asyncHandler(async (req, res) => {
  * Delete camera
  */
 router.delete('/:id', auth, hasSecurityLevel(5), asyncHandler(async (req, res) => {
-    cameraService.deleteCamera(req.params.id);
+    await cameraService.deleteCamera(req.params.id);
 
     res.json({
         success: true,
@@ -164,7 +164,7 @@ router.get('/:id/snapshot', auth, hasSecurityLevel(3), asyncHandler(async (req, 
  */
 router.get('/:id/detections', auth, hasSecurityLevel(3), asyncHandler(async (req, res) => {
     const { limit = 50 } = req.query;
-    const detections = cameraService.getDetections(req.params.id, parseInt(limit));
+    const detections = await cameraService.getDetections(req.params.id, parseInt(limit));
 
     res.json({
         success: true,
@@ -178,7 +178,7 @@ router.get('/:id/detections', auth, hasSecurityLevel(3), asyncHandler(async (req
  */
 router.get('/detections/all', auth, hasSecurityLevel(3), asyncHandler(async (req, res) => {
     const { limit = 100 } = req.query;
-    const detections = cameraService.getAllDetections(parseInt(limit));
+    const detections = await cameraService.getAllDetections(parseInt(limit));
 
     res.json({
         success: true,
@@ -191,7 +191,7 @@ router.get('/detections/all', auth, hasSecurityLevel(3), asyncHandler(async (req
  * Get camera statistics
  */
 router.get('/statistics', auth, hasSecurityLevel(3), asyncHandler(async (req, res) => {
-    const stats = cameraService.getStatistics();
+    const stats = await cameraService.getStatistics();
 
     res.json({
         success: true,
@@ -218,7 +218,7 @@ router.post('/webhook', asyncHandler(async (req, res) => {
     
     const { camera_id, detection_type, severity, location, image_path, task_id } = req.body;
 
-    const detection = cameraService.saveDetection({
+    const detection = await cameraService.saveDetection({
         camera_id,
         detection_type,
         severity,

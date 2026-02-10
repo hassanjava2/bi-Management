@@ -120,17 +120,17 @@ router.use('/settings', settingsRoutes);
 router.use('/bot', botRoutes);
 
 // Dashboard stats
-router.get('/dashboard', require('../middleware/auth').auth, (req, res) => {
+router.get('/dashboard', require('../middleware/auth').auth, async (req, res) => {
     const taskService = require('../services/task.service');
     const attendanceService = require('../services/attendance.service');
     const userService = require('../services/user.service');
     const notificationService = require('../services/notification.service');
 
-    const taskStats = taskService.getTaskStats(
+    const taskStats = await taskService.getTaskStats(
         req.user.role === 'admin' ? {} : { assigned_to: req.user.id }
     );
-    const attendanceStats = attendanceService.getAttendanceStats();
-    const unreadNotifications = notificationService.getUnreadCount(req.user.id);
+    const attendanceStats = await attendanceService.getAttendanceStats();
+    const unreadNotifications = await notificationService.getUnreadCount(req.user.id);
 
     res.json({
         success: true,
