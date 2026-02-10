@@ -343,6 +343,37 @@ router.post('/devices/:id/inspect', async (req, res) => {
 });
 
 /**
+ * POST /api/inventory/devices/:id/prepare
+ * بدء/إكمال تجهيز جهاز
+ */
+router.post('/devices/:id/prepare', async (req, res) => {
+    try {
+        const existing = get(`SELECT id, serial_number, status FROM serial_numbers WHERE id = ?`, [req.params.id]);
+        if (!existing) return res.status(404).json({ success: false, error: 'الجهاز غير موجود' });
+        const { action, checklist, notes } = req.body;
+        // action: 'start' or 'complete'
+        if (action === 'start') {
+            run(`UPDATE serial_numbers SET status = 'preparing', prep_started_at = datetime('now'), prep_employee_id = ? WHERE id = ?`,
+                [req.user?.id, req.params.id]);
+        } else if (action === 'complete') {
+            run(`UPDATE serial_numbers SET status = 'ready_to_sell', warehouse_id = 'main', prep_completed_at = datetime('now'), prep_notes = ? WHERE id = ?`,
+                [notes || null, req.params.id]);
+        }
+        // Log
+        try {
+            const hId = generateId();
+            run(`INSERT INTO serial_number_history (id, device_id, action_type, action_details, employee_id, created_at)
+                 VALUES (?, ?, ?, ?, ?, datetime('now'))`,
+                [hId, req.params.id, action === 'start' ? 'prep_started' : 'prep_completed', JSON.stringify({ checklist, notes }), req.user?.id]);
+        } catch (_) {}
+        const row = get(`SELECT sn.*, p.name as product_name FROM serial_numbers sn LEFT JOIN products p ON sn.product_id = p.id WHERE sn.id = ?`, [req.params.id]);
+        res.json({ success: true, data: row });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
  * POST /api/inventory/generate-serial
  * توليد سيريال جديد
  */

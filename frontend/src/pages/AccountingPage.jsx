@@ -793,6 +793,20 @@ function AccountStatementsTab() {
               </p>
             </div>
           </div>
+          {/* زر طباعة */}
+          <div className="px-4 py-2 flex justify-end border-b border-neutral-200 dark:border-neutral-700">
+            <button type="button" onClick={() => {
+              import('../components/print/VoucherPrintTemplate').then(mod => {
+                mod.printAccountStatement(statement, entityType, {
+                  name: localStorage.getItem('bi-print-config') ? JSON.parse(localStorage.getItem('bi-print-config')).company_name || 'BI Company' : 'BI Company',
+                  address: localStorage.getItem('bi-print-config') ? JSON.parse(localStorage.getItem('bi-print-config')).company_address || '' : '',
+                  phone: localStorage.getItem('bi-print-config') ? JSON.parse(localStorage.getItem('bi-print-config')).company_phone || '' : '',
+                })
+              })
+            }} className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1">
+              <FileText className="w-4 h-4" /> طباعة كشف الحساب
+            </button>
+          </div>
           {/* جدول الحركات */}
           <table className="w-full text-sm">
             <thead className="bg-neutral-50 dark:bg-neutral-700">
