@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Printer, XCircle, FileText, Receipt } from 'lucide-react'
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
+import { Printer, XCircle, FileText, Receipt, Copy, Loader2 } from 'lucide-react'
 import Spinner from '../common/Spinner'
 import Button from '../common/Button'
 import { salesAPI } from '../../services/api'
 import { invoiceTypes, invoiceStatuses } from './salesConstants'
 import { printInvoice } from '../print/InvoicePrintTemplate'
+import api from '../../services/api'
 
 export default function InvoiceDetailsContent({ invoiceId, onClose, onCancel, onPrinted }) {
   const queryClient = useQueryClient()
@@ -25,6 +26,15 @@ export default function InvoiceDetailsContent({ invoiceId, onClose, onCancel, on
     const fn = action === 'prepare' ? salesAPI.prepareInvoice : action === 'convert' ? salesAPI.convertInvoiceToActive : (id) => salesAPI.transitionInvoice(id, {})
     fn(invoiceId).then(() => { queryClient.invalidateQueries({ queryKey: ['invoices'] }); refetch(); onPrinted?.() }).catch(() => {})
   }
+
+  // نسخ فاتورة
+  const copyMutation = useMutation({
+    mutationFn: () => api.post('/invoices/copy-items', { source_invoice_id: invoiceId, type: invoice?.type || 'sale' }),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      onPrinted?.()
+    },
+  })
 
   const handlePrint = (template = 'a4') => {
     salesAPI.printInvoice(invoiceId).then((res) => {
@@ -73,6 +83,9 @@ export default function InvoiceDetailsContent({ invoiceId, onClose, onCancel, on
       <div className="flex flex-wrap gap-2 pt-4 border-t">
         <Button variant="outline" onClick={() => handlePrint('a4')}><FileText className="w-4 h-4 ml-2" /> طباعة A4</Button>
         <Button variant="outline" onClick={() => handlePrint('thermal')}><Receipt className="w-4 h-4 ml-2" /> طباعة حرارية</Button>
+        <Button variant="outline" onClick={() => copyMutation.mutate()} disabled={copyMutation.isPending}>
+          {copyMutation.isPending ? <Loader2 className="w-4 h-4 ml-2 animate-spin" /> : <Copy className="w-4 h-4 ml-2" />} نسخ الفاتورة
+        </Button>
         {invoice.status !== 'cancelled' && <Button variant="danger" onClick={onCancel}><XCircle className="w-4 h-4 ml-2" /> إلغاء الفاتورة</Button>}
         <Button variant="outline" onClick={onClose}>إغلاق</Button>
       </div>

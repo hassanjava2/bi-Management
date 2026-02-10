@@ -15,6 +15,8 @@ const { getAuditService, EVENT_CATEGORIES, SEVERITY } = require('../services/aud
 const { requirePermission, checkPermission } = require('../middleware/protection');
 const { requestInvoiceVoid, requestDeletion } = require('../services/approval.service');
 const invoiceWorkflow = require('../services/invoiceWorkflow.service');
+let notificationService;
+try { notificationService = require('../services/notification.service'); } catch (e) { /* optional */ }
 
 router.use(auth);
 
@@ -402,6 +404,33 @@ router.post('/', (req, res, next) => {
             total: createdInvoice.total,
             status: createdInvoice.status
         });
+
+        // إرسال تنبيهات
+        try {
+            if (notificationService && notificationService.notifyEvent) {
+                const NT = notificationService.NOTIFICATION_TYPES;
+                notificationService.notifyEvent(NT.INVOICE_CREATED, {
+                    invoice_number: createdInvoice.invoice_number,
+                    total: createdInvoice.total,
+                    send_to_admins: true,
+                    entity_type: 'invoice',
+                    entity_id: id,
+                    action_url: `/sales?invoice=${id}`,
+                });
+
+                if (req.body.sub_type === 'waiting') {
+                    notificationService.notifyEvent(NT.INVOICE_WAITING_PRICES, {
+                        invoice_number: createdInvoice.invoice_number,
+                        supplier_name: createdInvoice.supplier_name || '',
+                        send_to_admins: true,
+                        entity_type: 'invoice',
+                        entity_id: id,
+                    });
+                }
+            }
+        } catch (notifErr) {
+            console.error('[Invoices] Notification error:', notifErr.message);
+        }
 
         if (req.body.sub_type && createdInvoice) {
             try {

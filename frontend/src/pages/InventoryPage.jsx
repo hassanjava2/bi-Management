@@ -9,7 +9,8 @@ import {
   Package, Search, Plus, Filter, Download, Upload,
   QrCode, MapPin, AlertTriangle, CheckCircle2, Clock,
   Boxes, Warehouse as WarehouseIcon, ScanLine, History,
-  ChevronDown, MoreVertical, Eye, Edit, Trash2
+  ChevronDown, MoreVertical, Eye, Edit, Trash2,
+  ClipboardCheck, UserCheck
 } from 'lucide-react'
 import Spinner from '../components/common/Spinner'
 import Button from '../components/common/Button'
@@ -23,9 +24,11 @@ import FilterSelect from '../components/common/FilterSelect'
 import StatsGrid from '../components/common/StatsGrid'
 import { deviceStatuses, warehouses } from '../components/inventory/inventoryConstants'
 import { AddDeviceForm, EditDeviceForm, TransferDeviceForm, DeleteDeviceConfirm, DeviceDetails } from '../components/inventory/InventoryForms'
+import InspectionForm from '../components/inventory/InspectionForm'
 import api from '../services/api'
 import { inventoryAPI } from '../services/api'
 import { exportToCSV } from '../utils/helpers'
+import { printSerialSticker } from '../components/print/SerialSticker'
 
 const INVENTORY_TABS = [
   { id: 'devices', label: 'الأجهزة' },
@@ -51,8 +54,16 @@ export default function InventoryPage() {
   const [deviceToEdit, setDeviceToEdit] = useState(null)
   const [deviceToDelete, setDeviceToDelete] = useState(null)
   const [deviceToTransfer, setDeviceToTransfer] = useState(null)
+  const [showInspectModal, setShowInspectModal] = useState(false)
+  const [deviceToInspect, setDeviceToInspect] = useState(null)
   const [viewMode, setViewMode] = useState('table')
   const queryClient = useQueryClient()
+
+  // Custody mutation
+  const custodyMutation = useMutation({
+    mutationFn: ({ id, action, reason }) => inventoryAPI.updateCustody(id, { action, reason }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['inventory'] }),
+  })
 
   // جلب بيانات المخزون
   const { data: inventoryData, isLoading } = useQuery({
@@ -132,8 +143,10 @@ export default function InventoryPage() {
     { key: 'actions', label: 'إجراءات', render: (d) => (
       <div className="flex items-center gap-1">
         <button type="button" onClick={() => handleViewDevice(d)} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="عرض"><Eye className="w-4 h-4 text-neutral-500" /></button>
+        <button type="button" onClick={(e) => { e.stopPropagation(); setDeviceToInspect(d); setShowInspectModal(true); }} className="p-1.5 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 text-orange-600" title="فحص"><ClipboardCheck className="w-4 h-4" /></button>
+        <button type="button" onClick={(e) => { e.stopPropagation(); custodyMutation.mutate({ id: d.id, action: d.custody_employee_id ? 'release' : 'take', reason: 'manual' }); }} className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600" title={d.custody_employee_id ? 'تحرير ذمة' : 'استلام بذمة'}><UserCheck className="w-4 h-4" /></button>
+        <button type="button" onClick={(e) => { e.stopPropagation(); printSerialSticker(d); }} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="طباعة ستيكر"><QrCode className="w-4 h-4 text-neutral-500" /></button>
         <button type="button" onClick={(e) => { e.stopPropagation(); handleEditDevice(d); }} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="تعديل"><Edit className="w-4 h-4 text-neutral-500" /></button>
-        <button type="button" onClick={() => handleViewDevice(d)} className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" title="السجل"><History className="w-4 h-4 text-neutral-500" /></button>
         <button type="button" onClick={(e) => { e.stopPropagation(); handleDeleteDevice(d); }} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600" title="حذف"><Trash2 className="w-4 h-4" /></button>
       </div>
     ), className: 'max-w-[1%]' },
@@ -296,6 +309,10 @@ export default function InventoryPage() {
       {/* Transfer Device Modal */}
       <Modal isOpen={showTransferModal} onClose={handleCloseTransfer} title="نقل جهاز" size="md">
         {deviceToTransfer && <TransferDeviceForm device={deviceToTransfer} onClose={handleCloseTransfer} onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['inventory'] }); handleCloseTransfer() }} />}
+      </Modal>
+
+      <Modal isOpen={showInspectModal} onClose={() => { setShowInspectModal(false); setDeviceToInspect(null) }} title="فحص الجهاز" size="lg">
+        {deviceToInspect && <InspectionForm device={deviceToInspect} onClose={() => { setShowInspectModal(false); setDeviceToInspect(null) }} onSuccess={() => queryClient.invalidateQueries({ queryKey: ['inventory'] })} />}
       </Modal>
     </PageShell>
   )
