@@ -39,7 +39,7 @@ const productGroups = productService.PRODUCT_GROUPS;
 // الحصول على كل المنتجات
 router.get('/', auth, async (req, res) => {
   try {
-    if (!productService.ensureProductsTable()) {
+    if (!(await productService.ensureProductsTable())) {
       const data = loadProductsFromJson();
       let products = [...(data.products || [])];
       const { search, group_id, page = 1, limit = 50 } = req.query;
@@ -91,7 +91,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/search', auth, async (req, res) => {
   try {
     const { q, limit = 20 } = req.query;
-    if (!productService.ensureProductsTable()) {
+    if (!(await productService.ensureProductsTable())) {
       const data = loadProductsFromJson();
       if (!q || q.length < 2) return res.json({ success: true, data: [] });
       const term = (q || '').toLowerCase();
@@ -111,7 +111,7 @@ router.get('/search', auth, async (req, res) => {
 // الحصول على منتج واحد
 router.get('/meta/groups', auth, async (req, res) => {
   try {
-    if (!productService.ensureProductsTable()) {
+    if (!(await productService.ensureProductsTable())) {
       const data = loadProductsFromJson();
       const groupCounts = {};
       (data.products || []).forEach((p) => { groupCounts[p.group_id] = (groupCounts[p.group_id] || 0) + 1; });
@@ -128,7 +128,7 @@ router.get('/meta/groups', auth, async (req, res) => {
 // إحصائيات المنتجات
 router.get('/meta/stats', auth, async (req, res) => {
   try {
-    if (!productService.ensureProductsTable()) {
+    if (!(await productService.ensureProductsTable())) {
       const data = loadProductsFromJson();
       const products = data.products || [];
       const total = products.length;
@@ -144,7 +144,7 @@ router.get('/meta/stats', auth, async (req, res) => {
         data: { total, by_group, avg_buy_price: total ? Math.round(totalBuy / total) : 0, avg_sale_price: total ? Math.round(totalSale / total) : 0, total_value: 0 },
       });
     }
-    const stats = productService.getStats();
+    const stats = await productService.getStats();
     res.json({ success: true, data: stats });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -155,13 +155,13 @@ router.get('/meta/stats', auth, async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
-    if (!productService.ensureProductsTable()) {
+    if (!(await productService.ensureProductsTable())) {
       const data = loadProductsFromJson();
       const product = (data.products || []).find((p) => p.id === parseInt(id, 10));
       if (!product) return res.status(404).json({ success: false, message: 'المنتج غير موجود' });
       return res.json({ success: true, data: { ...product, group_name: productGroups[product.group_id]?.name || 'عام' } });
     }
-    const product = productService.getById(id);
+    const product = await productService.getById(id);
     if (!product) return res.status(404).json({ success: false, message: 'المنتج غير موجود' });
     res.json({ success: true, data: product });
   } catch (error) {
@@ -172,10 +172,10 @@ router.get('/:id', auth, async (req, res) => {
 // إنشاء منتج
 router.post('/', auth, async (req, res) => {
   try {
-    if (!productService.ensureProductsTable()) {
+    if (!(await productService.ensureProductsTable())) {
       return res.status(503).json({ success: false, message: 'جدول المنتجات غير متوفر. قم بتشغيل تهيئة قاعدة البيانات أولاً.' });
     }
-    const created = productService.create({ ...req.body, created_by: req.user?.id });
+    const created = await productService.create({ ...req.body, created_by: req.user?.id });
     res.status(201).json({ success: true, data: created });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -185,10 +185,10 @@ router.post('/', auth, async (req, res) => {
 // تحديث منتج
 router.put('/:id', auth, async (req, res) => {
   try {
-    if (!productService.ensureProductsTable()) {
+    if (!(await productService.ensureProductsTable())) {
       return res.status(503).json({ success: false, message: 'جدول المنتجات غير متوفر.' });
     }
-    const updated = productService.update(req.params.id, req.body);
+    const updated = await productService.update(req.params.id, req.body);
     if (!updated) return res.status(404).json({ success: false, message: 'المنتج غير موجود' });
     res.json({ success: true, data: updated });
   } catch (error) {
@@ -199,10 +199,10 @@ router.put('/:id', auth, async (req, res) => {
 // حذف منتج (soft delete)
 router.delete('/:id', auth, async (req, res) => {
   try {
-    if (!productService.ensureProductsTable()) {
+    if (!(await productService.ensureProductsTable())) {
       return res.status(503).json({ success: false, message: 'جدول المنتجات غير متوفر.' });
     }
-    const ok = productService.remove(req.params.id);
+    const ok = await productService.remove(req.params.id);
     if (!ok) return res.status(404).json({ success: false, message: 'المنتج غير موجود' });
     res.json({ success: true, message: 'تم الحذف' });
   } catch (error) {
@@ -213,13 +213,13 @@ router.delete('/:id', auth, async (req, res) => {
 // استيراد من JSON (للمسؤول - seed)
 router.post('/seed', auth, async (req, res) => {
   try {
-    if (!productService.ensureProductsTable()) {
+    if (!(await productService.ensureProductsTable())) {
       return res.status(503).json({ success: false, message: 'جدول المنتجات غير متوفر.' });
     }
     const data = loadProductsFromJson();
     const products = data.products || [];
     if (!products.length) return res.json({ success: true, message: 'لا توجد بيانات للاستيراد', imported: 0 });
-    const imported = productService.seedFromJson(products);
+    const imported = await productService.seedFromJson(products);
     res.json({ success: true, message: `تم استيراد ${imported} منتج`, imported });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

@@ -16,7 +16,7 @@ const demoSuppliers = [
 
 router.get('/', auth, async (req, res) => {
   try {
-    if (!supplierService.ensureSuppliersTable()) {
+    if (!(await supplierService.ensureSuppliersTable())) {
       let list = [...demoSuppliers];
       const { search, type } = req.query;
       if (search) {
@@ -37,7 +37,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
-    if (!supplierService.ensureSuppliersTable()) {
+    if (!(await supplierService.ensureSuppliersTable())) {
       const s = demoSuppliers.find((x) => x.id === id);
       if (!s) return res.status(404).json({ success: false, message: 'المورد غير موجود' });
       return res.json({ success: true, data: { ...s, pending_returns: 4 } });
@@ -52,7 +52,7 @@ router.get('/:id', auth, async (req, res) => {
 
 router.post('/', auth, authorize(['admin', 'manager']), async (req, res) => {
   try {
-    if (!supplierService.ensureSuppliersTable()) {
+    if (!(await supplierService.ensureSuppliersTable())) {
       return res.status(503).json({ success: false, message: 'جدول الموردين غير متوفر. قم بتشغيل تهيئة قاعدة البيانات أولاً.' });
     }
     const created = await supplierService.create({ ...req.body, created_by: req.user?.id });
@@ -64,7 +64,7 @@ router.post('/', auth, authorize(['admin', 'manager']), async (req, res) => {
 
 router.put('/:id', auth, authorize(['admin', 'manager']), async (req, res) => {
   try {
-    if (!supplierService.ensureSuppliersTable()) {
+    if (!(await supplierService.ensureSuppliersTable())) {
       return res.status(503).json({ success: false, message: 'جدول الموردين غير متوفر.' });
     }
     const updated = await supplierService.update(req.params.id, req.body);
@@ -77,7 +77,7 @@ router.put('/:id', auth, authorize(['admin', 'manager']), async (req, res) => {
 
 router.delete('/:id', auth, authorize(['admin']), async (req, res) => {
   try {
-    if (!supplierService.ensureSuppliersTable()) {
+    if (!(await supplierService.ensureSuppliersTable())) {
       return res.status(503).json({ success: false, message: 'جدول الموردين غير متوفر.' });
     }
     const ok = await supplierService.remove(req.params.id);
@@ -90,7 +90,7 @@ router.delete('/:id', auth, authorize(['admin']), async (req, res) => {
 
 router.get('/:id/transactions', auth, async (req, res) => {
   try {
-    if (!supplierService.ensureSuppliersTable()) {
+    if (!(await supplierService.ensureSuppliersTable())) {
       return res.json({ success: true, data: [{ date: '2025-01-28', type: 'purchase', amount: 5000000, reference: 'PUR-2025-0015', balance: -3500000 }] });
     }
     const data = await supplierService.getTransactions(req.params.id);
@@ -102,7 +102,7 @@ router.get('/:id/transactions', auth, async (req, res) => {
 
 router.get('/:id/returns', auth, async (req, res) => {
   try {
-    if (!supplierService.ensureSuppliersTable()) {
+    if (!(await supplierService.ensureSuppliersTable())) {
       return res.json({ success: true, data: [{ id: '1', status: 'in_repair', serial: 'BI-2025-000123', product: 'Dell 5530', days: 14 }] });
     }
     const data = await supplierService.getReturns(req.params.id);
@@ -114,7 +114,7 @@ router.get('/:id/returns', auth, async (req, res) => {
 
 router.get('/:id/stats', auth, async (req, res) => {
   try {
-    if (!supplierService.ensureSuppliersTable()) {
+    if (!(await supplierService.ensureSuppliersTable())) {
       return res.json({ success: true, data: { total_purchases: 85000000, total_returns: 15, resolved_returns: 11, pending_returns: 4, avg_return_time: 10, last_purchase: '2025-01-28', quality_score: 4.5 } });
     }
     const data = await supplierService.getStats(req.params.id);

@@ -18,7 +18,7 @@ const demoCustomers = [
 // الحصول على قائمة العملاء
 router.get('/', auth, async (req, res) => {
   try {
-    if (!customerService.ensureCustomersTable()) {
+    if (!(await customerService.ensureCustomersTable())) {
       return res.json({ success: true, data: demoCustomers });
     }
     const { search, type, page, limit } = req.query;
@@ -32,7 +32,7 @@ router.get('/', auth, async (req, res) => {
 // إحصائيات العملاء (يجب أن يكون قبل /:id)
 router.get('/stats', auth, async (req, res) => {
   try {
-    if (!customerService.ensureCustomersTable()) {
+    if (!(await customerService.ensureCustomersTable())) {
       return res.json({
         success: true,
         data: { total: 156, with_balance: 23, total_receivables: 25000000, vip_count: 8, new_this_month: 12, by_type: { retail: 128, wholesale: 28 }, by_tier: { bronze: 95, silver: 38, gold: 15, platinum: 8 } },
@@ -49,7 +49,7 @@ router.get('/stats', auth, async (req, res) => {
 router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
-    if (!customerService.ensureCustomersTable()) {
+    if (!(await customerService.ensureCustomersTable())) {
       const c = demoCustomers.find((x) => x.id === id);
       if (!c) return res.status(404).json({ success: false, message: 'العميل غير موجود' });
       return res.json({ success: true, data: { ...c, addresses: [{ label: 'المنزل', address: 'بغداد - المنصور', is_default: true }] } });
@@ -69,7 +69,7 @@ router.get('/:id', auth, async (req, res) => {
 // إنشاء عميل جديد
 router.post('/', auth, async (req, res) => {
   try {
-    if (!customerService.ensureCustomersTable()) {
+    if (!(await customerService.ensureCustomersTable())) {
       return res.status(503).json({ success: false, message: 'جدول العملاء غير متوفر. قم بتشغيل تهيئة قاعدة البيانات أولاً.' });
     }
     const created = await customerService.create({ ...req.body, created_by: req.user?.id });
@@ -82,7 +82,7 @@ router.post('/', auth, async (req, res) => {
 // تحديث عميل
 router.put('/:id', auth, async (req, res) => {
   try {
-    if (!customerService.ensureCustomersTable()) {
+    if (!(await customerService.ensureCustomersTable())) {
       return res.status(503).json({ success: false, message: 'جدول العملاء غير متوفر.' });
     }
     const updated = await customerService.update(req.params.id, req.body);
@@ -96,7 +96,7 @@ router.put('/:id', auth, async (req, res) => {
 // حذف عميل
 router.delete('/:id', auth, authorize(['admin', 'manager']), async (req, res) => {
   try {
-    if (!customerService.ensureCustomersTable()) {
+    if (!(await customerService.ensureCustomersTable())) {
       return res.status(503).json({ success: false, message: 'جدول العملاء غير متوفر.' });
     }
     const ok = await customerService.remove(req.params.id);
@@ -110,7 +110,7 @@ router.delete('/:id', auth, authorize(['admin', 'manager']), async (req, res) =>
 // سجل التعاملات
 router.get('/:id/transactions', auth, async (req, res) => {
   try {
-    if (!customerService.ensureCustomersTable()) {
+    if (!(await customerService.ensureCustomersTable())) {
       return res.json({ success: true, data: [{ date: '2025-01-28', type: 'invoice', amount: 1500000, reference: 'INV-2025-0025', balance: 1200000 }] });
     }
     const data = await customerService.getTransactions(req.params.id);
@@ -123,7 +123,7 @@ router.get('/:id/transactions', auth, async (req, res) => {
 // فواتير العميل
 router.get('/:id/invoices', auth, async (req, res) => {
   try {
-    if (!customerService.ensureCustomersTable()) {
+    if (!(await customerService.ensureCustomersTable())) {
       return res.json({ success: true, data: [{ id: '1', number: 'INV-2025-0025', date: '2025-01-28', total: 1500000, status: 'completed', type: 'sale' }] });
     }
     const data = await customerService.getInvoices(req.params.id);
@@ -136,7 +136,7 @@ router.get('/:id/invoices', auth, async (req, res) => {
 // تعديل الرصيد
 router.post('/:id/adjust-balance', auth, authorize(['admin', 'manager']), async (req, res) => {
   try {
-    if (!customerService.ensureCustomersTable()) {
+    if (!(await customerService.ensureCustomersTable())) {
       return res.status(503).json({ success: false, message: 'جدول العملاء غير متوفر.' });
     }
     const { id } = req.params;
