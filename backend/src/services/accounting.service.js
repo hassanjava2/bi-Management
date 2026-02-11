@@ -21,23 +21,23 @@ async function getOverview() {
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
 
   if (hasTable('invoices')) {
-    const todayRow = await get(`SELECT COALESCE(SUM(CASE WHEN type LIKE 'sale%' THEN total ELSE 0 END), 0) as sales, COALESCE(SUM(CASE WHEN type LIKE 'purchase%' THEN total ELSE 0 END), 0) as purchases FROM invoices WHERE date(created_at) = ? AND (is_deleted = 0 OR is_deleted IS NULL)`, [today]);
+    const todayRow = await get(`SELECT COALESCE(SUM(CASE WHEN type LIKE 'sale%' THEN total ELSE 0 END), 0) as sales, COALESCE(SUM(CASE WHEN type LIKE 'purchase%' THEN total ELSE 0 END), 0) as purchases FROM invoices WHERE created_at::date = ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)`, [today]);
     today_sales = parseFloat(todayRow?.sales) || 0;
     today_purchases = parseFloat(todayRow?.purchases) || 0;
-    const monthRow = await get(`SELECT COALESCE(SUM(CASE WHEN type LIKE 'sale%' THEN total ELSE 0 END), 0) as sales, COALESCE(SUM(CASE WHEN type LIKE 'purchase%' THEN total ELSE 0 END), 0) as purchases FROM invoices WHERE date(created_at) >= ? AND (is_deleted = 0 OR is_deleted IS NULL)`, [monthStart]);
+    const monthRow = await get(`SELECT COALESCE(SUM(CASE WHEN type LIKE 'sale%' THEN total ELSE 0 END), 0) as sales, COALESCE(SUM(CASE WHEN type LIKE 'purchase%' THEN total ELSE 0 END), 0) as purchases FROM invoices WHERE created_at::date >= ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)`, [monthStart]);
     month_sales = parseFloat(monthRow?.sales) || 0;
     month_purchases = parseFloat(monthRow?.purchases) || 0;
   }
   if (hasTable('customers')) {
-    const r = await get('SELECT COALESCE(SUM(balance), 0) as total FROM customers WHERE balance > 0 AND (is_deleted = 0 OR is_deleted IS NULL)');
+    const r = await get('SELECT COALESCE(SUM(balance), 0) as total FROM customers WHERE balance > 0 AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)');
     receivables = parseFloat(r?.total) || 0;
   }
   if (hasTable('suppliers')) {
-    const p = await get('SELECT COALESCE(SUM(ABS(balance)), 0) as total FROM suppliers WHERE balance < 0 AND (is_deleted = 0 OR is_deleted IS NULL)');
+    const p = await get('SELECT COALESCE(SUM(ABS(balance)), 0) as total FROM suppliers WHERE balance < 0 AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)');
     payables = parseFloat(p?.total) || 0;
   }
   if (hasTable('cash_registers')) {
-    const c = await get('SELECT COALESCE(SUM(balance), 0) as total FROM cash_registers WHERE is_active = 1');
+    const c = await get('SELECT COALESCE(SUM(balance), 0) as total FROM cash_registers WHERE is_active IS NOT FALSE');
     cash_balance = parseFloat(c?.total) || 0;
   }
 
@@ -65,14 +65,14 @@ async function getOverview() {
 
 async function getReceivables() {
   if (!hasTable('customers')) return { items: [], total: 0, aging: {} };
-  const items = await all('SELECT id as customer_id, name as customer_name, balance, last_purchase_at as last_payment FROM customers WHERE balance > 0 AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY balance DESC');
+  const items = await all('SELECT id as customer_id, name as customer_name, balance, last_purchase_at as last_payment FROM customers WHERE balance > 0 AND (is_deleted IS NOT TRUE OR is_deleted IS NULL) ORDER BY balance DESC');
   const total = items.reduce((s, r) => s + parseFloat(r.balance || 0), 0);
   return { items, total, aging: { current: total, '30_days': 0, '60_days': 0, '90_days': 0, over_90: 0 } };
 }
 
 async function getReceivableByCustomer(id) {
   if (!hasTable('customers')) return null;
-  const c = await get('SELECT * FROM customers WHERE id = ? AND (is_deleted = 0 OR is_deleted IS NULL)', [id]);
+  const c = await get('SELECT * FROM customers WHERE id = ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)', [id]);
   if (!c) return null;
   const balance = parseFloat(c.balance) || 0;
   const transactions = [];
@@ -85,14 +85,14 @@ async function getReceivableByCustomer(id) {
 
 async function getPayables() {
   if (!hasTable('suppliers')) return { items: [], total: 0, due_this_week: 0, overdue: 0 };
-  const items = await all('SELECT id as supplier_id, name as supplier_name, balance, updated_at as last_payment FROM suppliers WHERE balance < 0 AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY balance ASC');
+  const items = await all('SELECT id as supplier_id, name as supplier_name, balance, updated_at as last_payment FROM suppliers WHERE balance < 0 AND (is_deleted IS NOT TRUE OR is_deleted IS NULL) ORDER BY balance ASC');
   const total = items.reduce((s, r) => s + Math.abs(parseFloat(r.balance || 0)), 0);
   return { items, total, due_this_week: total, overdue: 0 };
 }
 
 async function getCashBoxes() {
   if (!hasTable('cash_registers')) return [];
-  return await all('SELECT id, name, balance, responsible_user_id as employee_id FROM cash_registers WHERE is_active = 1');
+  return await all('SELECT id, name, balance, responsible_user_id as employee_id FROM cash_registers WHERE is_active IS NOT FALSE');
 }
 
 async function transferCash(fromBox, toBox, amount, description, userId) {
@@ -122,8 +122,8 @@ async function getExpenses(filters = {}) {
     JOIN accounts a ON a.id = jel.account_id AND a.type = 'expense'
     WHERE je.status = 'posted'`;
   const params = [];
-  if (from) { query += ' AND date(je.entry_date) >= ?'; params.push(from); }
-  if (to) { query += ' AND date(je.entry_date) <= ?'; params.push(to); }
+  if (from) { query += ' AND je.entry_date::date >= ?'; params.push(from); }
+  if (to) { query += ' AND je.entry_date::date <= ?'; params.push(to); }
   query += ' ORDER BY je.entry_date DESC';
   const items = await all(query, params);
   const total = items.reduce((s, r) => s + parseFloat(r.amount || 0), 0);
@@ -156,9 +156,9 @@ async function getProfitLossReport(from, to) {
   const toDate = to || new Date().toISOString().split('T')[0];
   let revenue = 0, cogs = 0;
   if (hasTable('invoices')) {
-    const r = await get(`SELECT COALESCE(SUM(total), 0) as total FROM invoices WHERE type LIKE 'sale%' AND date(created_at) BETWEEN ? AND ? AND (is_deleted = 0 OR is_deleted IS NULL)`, [fromDate, toDate]);
+    const r = await get(`SELECT COALESCE(SUM(total), 0) as total FROM invoices WHERE type LIKE 'sale%' AND created_at::date BETWEEN ? AND ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)`, [fromDate, toDate]);
     revenue = parseFloat(r?.total) || 0;
-    const c = await get(`SELECT COALESCE(SUM(total), 0) as total FROM invoices WHERE type LIKE 'purchase%' AND date(created_at) BETWEEN ? AND ? AND (is_deleted = 0 OR is_deleted IS NULL)`, [fromDate, toDate]);
+    const c = await get(`SELECT COALESCE(SUM(total), 0) as total FROM invoices WHERE type LIKE 'purchase%' AND created_at::date BETWEEN ? AND ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)`, [fromDate, toDate]);
     cogs = parseFloat(c?.total) || 0;
   }
   const grossProfit = revenue - cogs;
@@ -174,9 +174,9 @@ async function getCashFlowReport(from, to) {
     opening = parseFloat(o?.total) || 0;
   }
   if (hasTable('vouchers')) {
-    const inRows = await all(`SELECT COALESCE(SUM(amount), 0) as total FROM vouchers WHERE type IN ('receipt', 'journal') AND date(created_at) BETWEEN ? AND ?`, [fromDate, toDate]);
+    const inRows = await all(`SELECT COALESCE(SUM(amount), 0) as total FROM vouchers WHERE type IN ('receipt', 'journal') AND created_at::date BETWEEN ? AND ?`, [fromDate, toDate]);
     inflows = inRows.reduce((s, r) => s + parseFloat(r.total || 0), 0);
-    const outRows = await all(`SELECT COALESCE(SUM(amount), 0) as total FROM vouchers WHERE type IN ('payment', 'journal') AND date(created_at) BETWEEN ? AND ?`, [fromDate, toDate]);
+    const outRows = await all(`SELECT COALESCE(SUM(amount), 0) as total FROM vouchers WHERE type IN ('payment', 'journal') AND created_at::date BETWEEN ? AND ?`, [fromDate, toDate]);
     outflows = outRows.reduce((s, r) => s + parseFloat(r.total || 0), 0);
   }
   const net = inflows - outflows;

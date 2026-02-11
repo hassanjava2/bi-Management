@@ -197,7 +197,7 @@ async function createDailyTasks(userId) {
     const existingTasks = await all(`
         SELECT id FROM tasks 
         WHERE assigned_to = ? 
-        AND date(due_date) = ? 
+        AND due_date::date = ? 
         AND status IN ('pending', 'in_progress')
     `, [userId, today]);
 

@@ -16,7 +16,7 @@ async function ensureSuppliersTable() {
 
 async function list(filters = {}) {
   const { search, type, page = 1, limit = 100 } = filters;
-  let query = `SELECT * FROM suppliers WHERE (is_deleted = 0 OR is_deleted IS NULL)`;
+  let query = `SELECT * FROM suppliers WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL)`;
   const params = [];
   if (search) {
     query += ` AND (name LIKE ? OR name_ar LIKE ? OR contact_person LIKE ? OR phone LIKE ? OR phone2 LIKE ? OR code LIKE ?)`;
@@ -35,7 +35,7 @@ async function list(filters = {}) {
 }
 
 async function getById(id) {
-  return await get('SELECT * FROM suppliers WHERE id = ? AND (is_deleted = 0 OR is_deleted IS NULL)', [String(id)]);
+  return await get('SELECT * FROM suppliers WHERE id = ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)', [String(id)]);
 }
 
 async function create(data) {
@@ -96,14 +96,14 @@ async function getTransactions(supplierId) {
   const transactions = [];
   try {
     const vouchers = await all(
-      `SELECT id, voucher_number as reference, amount, created_at as date, type FROM vouchers WHERE supplier_id = ? AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
+      `SELECT id, voucher_number as reference, amount, created_at as date, type FROM vouchers WHERE supplier_id = ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
       [supplierId]
     );
     vouchers.forEach((v) => transactions.push({ date: v.date, type: v.type === 'payment' ? 'payment' : 'purchase', amount: v.type === 'payment' ? -parseFloat(v.amount) : parseFloat(v.amount), reference: v.reference }));
   } catch (_) {}
   try {
     const invoices = await all(
-      `SELECT id, invoice_number as reference, total as amount, created_at as date FROM invoices WHERE supplier_id = ? AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
+      `SELECT id, invoice_number as reference, total as amount, created_at as date FROM invoices WHERE supplier_id = ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
       [supplierId]
     );
     invoices.forEach((i) => transactions.push({ date: i.date, type: 'purchase', amount: parseFloat(i.amount), reference: i.reference }));

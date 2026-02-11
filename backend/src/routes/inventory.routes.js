@@ -140,7 +140,7 @@ router.get('/warehouses', async (req, res) => {
  */
 router.get('/products', async (req, res) => {
     try {
-        const products = await all(`SELECT id, name, name_ar, code, cost_price, selling_price, category_id FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) ORDER BY name LIMIT 500`);
+        const products = await all(`SELECT id, name, name_ar, code, cost_price, selling_price, category_id FROM products WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL) ORDER BY name LIMIT 500`);
         res.json({ success: true, data: products });
     } catch (error) {
         res.json({ success: true, data: [] });
@@ -406,7 +406,7 @@ router.post('/generate-serial', async (req, res) => {
  */
 router.get('/low-stock', async (req, res) => {
     try {
-        const items = await all(`SELECT * FROM products WHERE quantity < min_quantity AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY quantity ASC LIMIT 50`);
+        const items = await all(`SELECT * FROM products WHERE quantity < min_quantity AND (is_deleted IS NOT TRUE OR is_deleted IS NULL) ORDER BY quantity ASC LIMIT 50`);
         res.json({ success: true, data: items });
     } catch (error) {
         res.json({ success: true, data: [] });
@@ -421,7 +421,7 @@ router.get('/parts', async (req, res) => {
     try {
         let rows = [];
         try {
-            rows = await all(`SELECT * FROM parts WHERE (is_active = 1 OR is_active IS NULL) ORDER BY name LIMIT 200`);
+            rows = await all(`SELECT * FROM parts WHERE (is_active IS NOT FALSE OR is_active IS NULL) ORDER BY name LIMIT 200`);
         } catch (e) {
             // parts table might not exist
             rows = [];

@@ -202,7 +202,7 @@ router.get('/waiting', requireInvoiceView, async (req, res) => {
             LEFT JOIN suppliers s ON i.supplier_id = s.id
             LEFT JOIN users u ON i.created_by = u.id
             WHERE (i.status = 'draft' OR i.status = 'waiting' OR i.sub_type = 'waiting')
-            AND (i.is_deleted = 0 OR i.is_deleted IS NULL)
+            AND (i.is_deleted IS NOT TRUE OR i.is_deleted IS NULL)
         `;
         const params = [];
         if (type) {
@@ -231,7 +231,7 @@ router.get('/stats', requireInvoiceView, async (req, res) => {
         const todaySales = await get(`
             SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as total
             FROM invoices
-            WHERE type = 'sale' AND date(created_at) = CURRENT_DATE
+            WHERE type = 'sale' AND created_at::date = CURRENT_DATE
         `);
         
         // This month sales

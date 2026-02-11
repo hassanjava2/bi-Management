@@ -25,7 +25,7 @@ router.get('/by-invoice/:invoiceNumber', auth, async (req, res) => {
       FROM invoices i
       LEFT JOIN customers c ON i.customer_id = c.id
       LEFT JOIN suppliers s ON i.supplier_id = s.id
-      WHERE i.invoice_number = ? AND (i.is_deleted = 0 OR i.is_deleted IS NULL)
+      WHERE i.invoice_number = ? AND (i.is_deleted IS NOT TRUE OR i.is_deleted IS NULL)
     `, [invoiceNumber]);
     if (!invoice) {
       return res.status(404).json({ success: false, error: 'INVOICE_NOT_FOUND' });

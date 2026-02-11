@@ -34,7 +34,7 @@ async function list(filters = {}) {
     SELECT p.*, c.name as category_name, c.name_ar as category_name_ar
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE (p.is_deleted = 0 OR p.is_deleted IS NULL)
+    WHERE (p.is_deleted IS NOT TRUE OR p.is_deleted IS NULL)
   `;
   const params = [];
   if (search) {
@@ -52,7 +52,7 @@ async function list(filters = {}) {
   params.push(limitNum, offset);
   const rows = await all(query, params);
   const countParams = [];
-  let countQuery = `SELECT COUNT(*) as total FROM products p WHERE (p.is_deleted = 0 OR p.is_deleted IS NULL)`;
+  let countQuery = `SELECT COUNT(*) as total FROM products p WHERE (p.is_deleted IS NOT TRUE OR p.is_deleted IS NULL)`;
   if (search) {
     countQuery += ` AND (p.name LIKE ? OR p.name_ar LIKE ? OR p.code LIKE ?)`;
     const term = `%${search}%`;
@@ -78,7 +78,7 @@ async function search(queryTerm, limit = 20) {
   const term = `%${queryTerm}%`;
   const rows = await all(
     `SELECT id, name, name_ar, code, cost_price, selling_price, wholesale_price, category_id FROM products
-     WHERE (is_deleted = 0 OR is_deleted IS NULL) AND (name LIKE ? OR name_ar LIKE ? OR code LIKE ?)
+     WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL) AND (name LIKE ? OR name_ar LIKE ? OR code LIKE ?)
      ORDER BY name LIMIT ?`,
     [term, term, term, parseInt(limit, 10)]
   );
@@ -100,7 +100,7 @@ async function getById(id) {
   const row = await get(
     `SELECT p.*, c.name as category_name, c.name_ar as category_name_ar
      FROM products p LEFT JOIN categories c ON p.category_id = c.id
-     WHERE p.id = ? AND (p.is_deleted = 0 OR p.is_deleted IS NULL)`,
+     WHERE p.id = ? AND (p.is_deleted IS NOT TRUE OR p.is_deleted IS NULL)`,
     [String(id)]
   );
   if (!row) return null;
@@ -137,7 +137,7 @@ async function create(data) {
     min_quantity = 0,
     unit = 'piece',
     warranty_months = 0,
-    is_active = 1,
+    is_active IS NOT FALSE,
     created_by,
   } = data;
   const catId = category_id || (group_id != null ? String(group_id) : null);
@@ -244,7 +244,7 @@ async function remove(id) {
 }
 
 async function getGroups() {
-  const countQuery = `SELECT category_id as id, COUNT(*) as count FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) AND category_id IS NOT NULL GROUP BY category_id`;
+  const countQuery = `SELECT category_id as id, COUNT(*) as count FROM products WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL) AND category_id IS NOT NULL GROUP BY category_id`;
   const counts = await all(countQuery);
   const countMap = {};
   counts.forEach((c) => { countMap[c.id] = c.count; });
@@ -260,11 +260,11 @@ async function getStats() {
   const rows = await all(
     `SELECT COUNT(*) as total, AVG(cost_price) as avg_buy_price, AVG(selling_price) as avg_sale_price,
       SUM(quantity * COALESCE(cost_price, 0)) as total_value
-     FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL)`
+     FROM products WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL)`
   );
   const r = rows[0];
   const byGroup = await all(
-    `SELECT category_id, COUNT(*) as cnt FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) AND category_id IS NOT NULL GROUP BY category_id`
+    `SELECT category_id, COUNT(*) as cnt FROM products WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL) AND category_id IS NOT NULL GROUP BY category_id`
   );
   const by_group = {};
   byGroup.forEach((g) => { by_group[g.category_id] = g.cnt; });

@@ -88,7 +88,7 @@ class SecurityReportService {
     async _countOperations(date) {
         const result = await get(`
             SELECT COUNT(*) as count FROM audit_logs
-            WHERE date(created_at) = ?
+            WHERE created_at::date = ?
         `, [date]);
         return result?.count || 0;
     }
@@ -100,7 +100,7 @@ class SecurityReportService {
         const result = await get(`
             SELECT COUNT(*) as count FROM audit_logs
             WHERE action = 'LOGIN_FAILED'
-            AND date(created_at) = ?
+            AND created_at::date = ?
         `, [date]);
         return result?.count || 0;
     }
@@ -112,7 +112,7 @@ class SecurityReportService {
         const result = await get(`
             SELECT COUNT(*) as count FROM audit_logs
             WHERE action = 'LOGIN_SUCCESS'
-            AND date(created_at) = ?
+            AND created_at::date = ?
         `, [date]);
         return result?.count || 0;
     }
@@ -124,7 +124,7 @@ class SecurityReportService {
         const result = await get(`
             SELECT COUNT(*) as count FROM audit_logs
             WHERE action = 'VIEW_SENSITIVE'
-            AND date(created_at) = ?
+            AND created_at::date = ?
         `, [date]);
         return result?.count || 0;
     }
@@ -137,7 +137,7 @@ class SecurityReportService {
             SELECT se.*, u.full_name as user_name
             FROM security_events se
             LEFT JOIN users u ON se.user_id = u.id
-            WHERE date(se.created_at) = ?
+            WHERE se.created_at::date = ?
             ORDER BY se.created_at DESC
         `, [date]);
     }
@@ -150,7 +150,7 @@ class SecurityReportService {
             SELECT al.user_id, u.full_name, u.email, COUNT(*) as operations
             FROM audit_logs al
             LEFT JOIN users u ON al.user_id = u.id
-            WHERE date(al.created_at) = ?
+            WHERE al.created_at::date = ?
             AND al.user_id IS NOT NULL
             GROUP BY al.user_id
             ORDER BY operations DESC
@@ -165,7 +165,7 @@ class SecurityReportService {
         return await all(`
             SELECT action, COUNT(*) as count
             FROM audit_logs
-            WHERE date(created_at) = ?
+            WHERE created_at::date = ?
             GROUP BY action
             ORDER BY count DESC
         `, [date]);

@@ -85,7 +85,7 @@ async function sendDailyTaskReminders() {
             COUNT(t.id) as task_count
         FROM tasks t
         JOIN users u ON t.assigned_to = u.id
-        WHERE date(t.due_date) = CURRENT_DATE
+        WHERE t.due_date::date = CURRENT_DATE
         AND t.status NOT IN ('completed', 'cancelled')
         GROUP BY u.id
     `);

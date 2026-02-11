@@ -19,7 +19,7 @@ async function checkLowStock() {
         const lowStock = await all(`
             SELECT id, name, quantity, min_quantity
             FROM products
-            WHERE quantity <= min_quantity AND (is_deleted = 0 OR is_deleted IS NULL)
+            WHERE quantity <= min_quantity AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)
         `);
 
         for (const product of lowStock) {
@@ -100,7 +100,7 @@ async function checkOverduePayments() {
               AND i.due_date IS NOT NULL
               AND i.due_date < CURRENT_DATE
               AND i.status != 'cancelled'
-              AND (i.is_deleted = 0 OR i.is_deleted IS NULL)
+              AND (i.is_deleted IS NOT TRUE OR i.is_deleted IS NULL)
         `);
 
         for (const invoice of overdue) {

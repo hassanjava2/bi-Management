@@ -177,7 +177,7 @@ router.get('/statement/customer/:id', auth, authorize(['admin']), async (req, re
     // فواتير العميل
     const invoices = await all(`
       SELECT id, invoice_number, type, total, paid_amount, remaining_amount, payment_status, created_at
-      FROM invoices WHERE customer_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)
+      FROM invoices WHERE customer_id = ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)
       Order BY created_at DESC
     `, [req.params.id]);
 
@@ -242,7 +242,7 @@ router.get('/statement/supplier/:id', auth, authorize(['admin']), async (req, re
 
     const invoices = await all(`
       SELECT id, invoice_number, type, total, paid_amount, remaining_amount, payment_status, created_at
-      FROM invoices WHERE supplier_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)
+      FROM invoices WHERE supplier_id = ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)
       ORDER BY created_at DESC
     `, [req.params.id]);
 
@@ -308,13 +308,13 @@ router.get('/reconciliation', auth, authorize(['admin']), async (req, res) => {
     // مبيعات اليوم
     const sales = await get(`
       SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as total, COALESCE(SUM(paid_amount), 0) as paid
-      FROM invoices WHERE type IN ('sale', 'sale_credit', 'sale_installment') AND date(created_at) = ?
+      FROM invoices WHERE type IN ('sale', 'sale_credit', 'sale_installment') AND created_at::date = ?
     `, [date]);
 
     // مشتريات اليوم
     const purchases = await get(`
       SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as total
-      FROM invoices WHERE type = 'purchase' AND date(created_at) = ?
+      FROM invoices WHERE type = 'purchase' AND created_at::date = ?
     `, [date]);
 
     // سندات القبض
@@ -322,7 +322,7 @@ router.get('/reconciliation', auth, authorize(['admin']), async (req, res) => {
     try {
       receipts = await get(`
         SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
-        FROM vouchers WHERE type = 'receipt' AND date(created_at) = ?
+        FROM vouchers WHERE type = 'receipt' AND created_at::date = ?
       `, [date]) || receipts;
     } catch (_) {}
 
@@ -331,7 +331,7 @@ router.get('/reconciliation', auth, authorize(['admin']), async (req, res) => {
     try {
       payments = await get(`
         SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
-        FROM vouchers WHERE type = 'payment' AND date(created_at) = ?
+        FROM vouchers WHERE type = 'payment' AND created_at::date = ?
       `, [date]) || payments;
     } catch (_) {}
 
@@ -340,7 +340,7 @@ router.get('/reconciliation', auth, authorize(['admin']), async (req, res) => {
     try {
       expenses = await get(`
         SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total
-        FROM expenses WHERE date(expense_date) = ? OR date(created_at) = ?
+        FROM expenses WHERE expense_date::date = ? OR created_at::date = ?
       `, [date, date]) || expenses;
     } catch (_) {}
 

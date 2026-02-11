@@ -16,7 +16,7 @@ async function ensureCustomersTable() {
 
 async function list(filters = {}) {
   const { search, type, page = 1, limit = 100 } = filters;
-  let query = `SELECT * FROM customers WHERE (is_deleted = 0 OR is_deleted IS NULL)`;
+  let query = `SELECT * FROM customers WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL)`;
   const params = [];
   if (search) {
     query += ` AND (name LIKE ? OR phone LIKE ? OR phone2 LIKE ? OR email LIKE ? OR code LIKE ?)`;
@@ -35,7 +35,7 @@ async function list(filters = {}) {
 }
 
 async function getById(id) {
-  return await get('SELECT * FROM customers WHERE id = ? AND (is_deleted = 0 OR is_deleted IS NULL)', [String(id)]);
+  return await get('SELECT * FROM customers WHERE id = ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL)', [String(id)]);
 }
 
 async function create(data) {
@@ -96,13 +96,13 @@ async function remove(id) {
 
 async function getStats() {
   if (!ensureCustomersTable()) return null;
-  const totalRow = await get('SELECT COUNT(*) as total FROM customers WHERE (is_deleted = 0 OR is_deleted IS NULL)');
-  const withBalance = await get('SELECT COUNT(*) as cnt FROM customers WHERE (is_deleted = 0 OR is_deleted IS NULL) AND balance > 0');
-  const receivables = await get('SELECT COALESCE(SUM(balance), 0) as total FROM customers WHERE (is_deleted = 0 OR is_deleted IS NULL) AND balance > 0');
-  const byType = await all('SELECT type, COUNT(*) as cnt FROM customers WHERE (is_deleted = 0 OR is_deleted IS NULL) GROUP BY type');
-  const byTier = await all('SELECT loyalty_level as tier, COUNT(*) as cnt FROM customers WHERE (is_deleted = 0 OR is_deleted IS NULL) GROUP BY loyalty_level');
+  const totalRow = await get('SELECT COUNT(*) as total FROM customers WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL)');
+  const withBalance = await get('SELECT COUNT(*) as cnt FROM customers WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL) AND balance > 0');
+  const receivables = await get('SELECT COALESCE(SUM(balance), 0) as total FROM customers WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL) AND balance > 0');
+  const byType = await all('SELECT type, COUNT(*) as cnt FROM customers WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL) GROUP BY type');
+  const byTier = await all('SELECT loyalty_level as tier, COUNT(*) as cnt FROM customers WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL) GROUP BY loyalty_level');
   const thisMonth = await get(
-    `SELECT COUNT(*) as cnt FROM customers WHERE (is_deleted = 0 OR is_deleted IS NULL) AND date(created_at) >= date_trunc('month', CURRENT_DATE)::date`
+    `SELECT COUNT(*) as cnt FROM customers WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL) AND date(created_at) >= date_trunc('month', CURRENT_DATE)::date`
   );
   const byTypeMap = {};
   (byType || []).forEach((r) => { byTypeMap[r.type] = r.cnt; });
@@ -125,14 +125,14 @@ async function getTransactions(customerId) {
   const transactions = [];
   try {
     const invoices = await all(
-      `SELECT id, invoice_number as reference, total as amount, created_at as date, 'invoice' as type FROM invoices WHERE customer_id = ? AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
+      `SELECT id, invoice_number as reference, total as amount, created_at as date, 'invoice' as type FROM invoices WHERE customer_id = ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
       [customerId]
     );
     invoices.forEach((i) => transactions.push({ date: i.date, type: 'invoice', amount: parseFloat(i.amount), reference: i.reference }));
   } catch (_) {}
   try {
     const vouchers = await all(
-      `SELECT id, voucher_number as reference, amount, created_at as date, type FROM vouchers WHERE customer_id = ? AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
+      `SELECT id, voucher_number as reference, amount, created_at as date, type FROM vouchers WHERE customer_id = ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
       [customerId]
     );
     vouchers.forEach((v) => transactions.push({ date: v.date, type: v.type === 'receipt' ? 'payment' : v.type, amount: v.type === 'receipt' ? -parseFloat(v.amount) : parseFloat(v.amount), reference: v.reference }));
@@ -146,7 +146,7 @@ async function getInvoices(customerId) {
   if (!customer) return [];
   try {
     const rows = await all(
-      `SELECT id, invoice_number as number, created_at as date, total, status, type FROM invoices WHERE customer_id = ? AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
+      `SELECT id, invoice_number as number, created_at as date, total, status, type FROM invoices WHERE customer_id = ? AND (is_deleted IS NOT TRUE OR is_deleted IS NULL) ORDER BY created_at DESC LIMIT 50`,
       [customerId]
     );
     return rows.map((r) => ({ ...r, total: parseFloat(r.total) }));

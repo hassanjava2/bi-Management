@@ -35,7 +35,7 @@ router.get('/executive-dashboard', async (req, res) => {
             SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as count
             FROM invoices
             WHERE type = 'sale' AND status NOT IN ('cancelled', 'voided', 'deleted')
-            AND date(created_at) = CURRENT_DATE
+            AND created_at::date = CURRENT_DATE
         `) || { total: 0, count: 0 };
 
         const revenueMonth = await get(`
@@ -157,7 +157,7 @@ router.get('/dashboard', async (req, res) => {
         const todaySales = await get(`
             SELECT COALESCE(SUM(total), 0) as total 
             FROM invoices 
-            WHERE type = 'sale' AND date(created_at) = CURRENT_DATE
+            WHERE type = 'sale' AND created_at::date = CURRENT_DATE
         `) || { total: 0 };
 
         res.json({
@@ -184,7 +184,7 @@ router.get('/sales', async (req, res) => {
         
         let query = `
             SELECT 
-                date(created_at) as date,
+                created_at::date as date,
                 COUNT(*) as count,
                 SUM(total) as total
             FROM invoices 
@@ -202,7 +202,7 @@ router.get('/sales', async (req, res) => {
             params.push(end_date);
         }
         
-        query += ` GROUP BY date(created_at) ORDER BY date DESC LIMIT 30`;
+        query += ` GROUP BY created_at::date ORDER BY date DESC LIMIT 30`;
         
         const sales = await all(query, params);
         
@@ -322,7 +322,7 @@ router.get('/top-sellers', async (req, res) => {
         let dateFilter = '';
         const params = [];
         if (period === 'today') {
-            dateFilter = ` AND date(i.created_at) = CURRENT_DATE`;
+            dateFilter = ` AND i.created_at::date = CURRENT_DATE`;
         } else if (period === 'week') {
             dateFilter = ` AND i.created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'`;
         } else if (period === 'month') {
@@ -378,14 +378,14 @@ router.get('/my-sales', async (req, res) => {
         if (end_date) { query += ` AND created_at <= ?`; params.push(end_date); }
         const summary = await get(query, params);
         let byDayQuery = `
-            SELECT date(created_at) as date, COUNT(*) as count, SUM(total) as total
+            SELECT created_at::date as date, COUNT(*) as count, SUM(total) as total
             FROM invoices
             WHERE type = 'sale' AND created_by = ? AND status NOT IN ('cancelled', 'voided', 'deleted')
         `;
         const byDayParams = [userId];
         if (start_date) { byDayQuery += ` AND created_at >= ?`; byDayParams.push(start_date); }
         if (end_date) { byDayQuery += ` AND created_at <= ?`; byDayParams.push(end_date); }
-        byDayQuery += ` GROUP BY date(created_at) ORDER BY date DESC LIMIT 31`;
+        byDayQuery += ` GROUP BY created_at::date ORDER BY date DESC LIMIT 31`;
         const byDay = await all(byDayQuery, byDayParams);
         res.json({
             success: true,
@@ -673,7 +673,7 @@ router.get('/export/:reportType', async (req, res) => {
             if (start_date) { where += ` AND created_at >= ?`; params.push(start_date); }
             if (end_date) { where += ` AND created_at <= ?`; params.push(end_date); }
             params.push(safeLimit);
-            rows = await all(`SELECT date(created_at) as date, COUNT(*) as count, SUM(total) as total FROM invoices ${where} GROUP BY date(created_at) ORDER BY date DESC LIMIT ?`, params);
+            rows = await all(`SELECT created_at::date as date, COUNT(*) as count, SUM(total) as total FROM invoices ${where} GROUP BY created_at::date ORDER BY date DESC LIMIT ?`, params);
             headers = ['date', 'count', 'total'];
             filename = 'sales-report.csv';
         } else if (reportType === 'sales-by-employee') {
@@ -744,7 +744,7 @@ router.get('/inventory-report', async (req, res) => {
         } else if (report_type === 'most_sold') {
             const start = start_date || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
             const end = end_date || new Date().toISOString().slice(0, 10);
-            rows = await all(`SELECT ii.product_id, p.name, SUM(ii.quantity) as qty FROM invoice_items ii JOIN invoices i ON i.id = ii.invoice_id JOIN products p ON p.id = ii.product_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?) GROUP BY ii.product_id ORDER BY qty DESC LIMIT ?`, [start, end, safeLimit]);
+            rows = await all(`SELECT ii.product_id, p.name, SUM(ii.quantity) as qty FROM invoice_items ii JOIN invoices i ON i.id = ii.invoice_id JOIN products p ON p.id = ii.product_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND i.created_at::date BETWEEN date(?) AND date(?) GROUP BY ii.product_id ORDER BY qty DESC LIMIT ?`, [start, end, safeLimit]);
         } else {
             rows = await all(`SELECT id, name, sku, quantity, min_quantity FROM products ORDER BY quantity ASC LIMIT ?`, [safeLimit]);
         }
@@ -765,7 +765,7 @@ router.get('/financial-report', async (req, res) => {
         if (report_type === 'vouchers') {
             const fromDate = from || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
             const toDate = to || new Date().toISOString().slice(0, 10);
-            const rows = await all(`SELECT * FROM vouchers WHERE (is_deleted = 0 OR is_deleted IS NULL) AND date(created_at) BETWEEN date(?) AND date(?) ORDER BY created_at DESC LIMIT 100`, [fromDate, toDate]);
+            const rows = await all(`SELECT * FROM vouchers WHERE (is_deleted IS NOT TRUE OR is_deleted IS NULL) AND created_at::date BETWEEN date(?) AND date(?) ORDER BY created_at DESC LIMIT 100`, [fromDate, toDate]);
             return res.json({ success: true, data: rows, report_type: 'vouchers' });
         }
         const summary = {
@@ -789,29 +789,29 @@ router.get('/analytics-widgets', async (req, res) => {
         const end = end_date || new Date().toISOString().slice(0, 10);
         const widgets = {};
         try {
-            const rev = await get(`SELECT COALESCE(SUM(total), 0) as total FROM invoices WHERE type = 'sale' AND status NOT IN ('cancelled', 'voided', 'deleted') AND date(created_at) BETWEEN date(?) AND date(?)`, [start, end]);
-            const cost = await get(`SELECT COALESCE(SUM(ii.quantity * COALESCE(ii.cost_price, 0)), 0) as total FROM invoice_items ii JOIN invoices i ON i.id = ii.invoice_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?)`, [start, end]);
+            const rev = await get(`SELECT COALESCE(SUM(total), 0) as total FROM invoices WHERE type = 'sale' AND status NOT IN ('cancelled', 'voided', 'deleted') AND created_at::date BETWEEN date(?) AND date(?)`, [start, end]);
+            const cost = await get(`SELECT COALESCE(SUM(ii.quantity * COALESCE(ii.cost_price, 0)), 0) as total FROM invoice_items ii JOIN invoices i ON i.id = ii.invoice_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND i.created_at::date BETWEEN date(?) AND date(?)`, [start, end]);
             widgets.profit_loss = { revenue: rev?.total || 0, cost: cost?.total || 0, profit: (rev?.total || 0) - (cost?.total || 0) };
         } catch (e) { widgets.profit_loss = { revenue: 0, cost: 0, profit: 0 }; }
         try {
-            widgets.latest_invoices = await all(`SELECT id, invoice_number, type, total, created_at FROM invoices WHERE is_deleted = 0 ORDER BY created_at DESC LIMIT 10`);
+            widgets.latest_invoices = await all(`SELECT id, invoice_number, type, total, created_at FROM invoices WHERE is_deleted IS NOT TRUE ORDER BY created_at DESC LIMIT 10`);
         } catch (e) { widgets.latest_invoices = []; }
         try {
             widgets.overdue_invoices = await all(`SELECT id, invoice_number, customer_id, total, due_date FROM invoices WHERE payment_status IN ('pending', 'partial') AND due_date < CURRENT_DATE AND status NOT IN ('cancelled', 'voided', 'deleted') LIMIT 20`);
         } catch (e) { widgets.overdue_invoices = []; }
         try {
-            widgets.best_customers = await all(`SELECT i.customer_id, c.name as customer_name, SUM(i.total) as total FROM invoices i LEFT JOIN customers c ON c.id = i.customer_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?) GROUP BY i.customer_id ORDER BY total DESC LIMIT 10`, [start, end]);
+            widgets.best_customers = await all(`SELECT i.customer_id, c.name as customer_name, SUM(i.total) as total FROM invoices i LEFT JOIN customers c ON c.id = i.customer_id WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND i.created_at::date BETWEEN date(?) AND date(?) GROUP BY i.customer_id ORDER BY total DESC LIMIT 10`, [start, end]);
         } catch (e) { widgets.best_customers = []; }
         try {
             widgets.low_stock = await all(`SELECT id, name, quantity, min_quantity FROM products WHERE min_quantity > 0 AND quantity < min_quantity LIMIT 15`);
         } catch (e) { widgets.low_stock = []; }
         try {
-            widgets.invoices_today = (await get(`SELECT COUNT(*) as c FROM invoices WHERE date(created_at) = CURRENT_DATE AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.c || 0;
+            widgets.invoices_today = (await get(`SELECT COUNT(*) as c FROM invoices WHERE created_at::date = CURRENT_DATE AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.c || 0;
             widgets.invoices_week = (await get(`SELECT COUNT(*) as c FROM invoices WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days' AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.c || 0;
             widgets.invoices_month = (await get(`SELECT COUNT(*) as c FROM invoices WHERE date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP) AND status NOT IN ('cancelled', 'voided', 'deleted')`))?.c || 0;
         } catch (e) { widgets.invoices_today = 0; widgets.invoices_week = 0; widgets.invoices_month = 0; }
         try {
-            widgets.top_sellers = await all(`SELECT u.full_name, SUM(i.total) as total FROM invoices i JOIN users u ON u.id = i.created_by WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND date(i.created_at) BETWEEN date(?) AND date(?) GROUP BY i.created_by ORDER BY total DESC LIMIT 5`, [start, end]);
+            widgets.top_sellers = await all(`SELECT u.full_name, SUM(i.total) as total FROM invoices i JOIN users u ON u.id = i.created_by WHERE i.type = 'sale' AND i.status NOT IN ('cancelled', 'voided', 'deleted') AND i.created_at::date BETWEEN date(?) AND date(?) GROUP BY i.created_by ORDER BY total DESC LIMIT 5`, [start, end]);
         } catch (e) { widgets.top_sellers = []; }
         res.json({ success: true, data: widgets });
     } catch (error) {
@@ -829,7 +829,7 @@ router.get('/rep-dashboard', async (req, res) => {
         if (!userId) return res.status(401).json({ success: false, error: 'UNAUTHORIZED' });
         const start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
         const end = new Date().toISOString().slice(0, 10);
-        const my_sales = await get(`SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as count FROM invoices WHERE type = 'sale' AND created_by = ? AND status NOT IN ('cancelled', 'voided', 'deleted') AND date(created_at) BETWEEN date(?) AND date(?)`, [userId, start, end]);
+        const my_sales = await get(`SELECT COALESCE(SUM(total), 0) as total, COUNT(*) as count FROM invoices WHERE type = 'sale' AND created_by = ? AND status NOT IN ('cancelled', 'voided', 'deleted') AND created_at::date BETWEEN date(?) AND date(?)`, [userId, start, end]);
         const overdue_invoices = await all(`SELECT id, invoice_number, customer_id, total, due_date FROM invoices WHERE type = 'sale' AND created_by = ? AND payment_status IN ('pending', 'partial') AND due_date < CURRENT_DATE AND status NOT IN ('cancelled', 'voided', 'deleted') LIMIT 20`, [userId]);
         res.json({
             success: true,
@@ -987,7 +987,7 @@ router.get('/employee-performance', async (req, res) => {
                    (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND a.status = 'present' AND to_char(a.date, 'YYYY-MM') = ?) as present_days,
                    (SELECT COUNT(*) FROM attendance a WHERE a.user_id = u.id AND a.status = 'late' AND to_char(a.date, 'YYYY-MM') = ?) as late_days
             FROM users u
-            WHERE u.is_active = 1
+            WHERE u.is_active IS NOT FALSE
             ORDER BY sales_total DESC
         `, [month, month, month, month, month, month]);
 

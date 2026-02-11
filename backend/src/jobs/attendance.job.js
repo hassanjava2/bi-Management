@@ -182,7 +182,7 @@ async function checkIncompleteTasks() {
         SELECT DISTINCT u.id, u.full_name,
             (SELECT COUNT(*) FROM tasks t 
              WHERE t.assigned_to = u.id 
-             AND date(t.due_date) = ?
+             AND t.due_date::date = ?
              AND t.status NOT IN ('completed', 'cancelled')) as incomplete_count
         FROM users u
         JOIN attendance a ON u.id = a.user_id AND a.date = ? AND a.check_out IS NOT NULL
@@ -204,7 +204,7 @@ async function checkIncompleteTasks() {
             SET due_date = date(due_date, '+1 day'),
                 notes = COALESCE(notes, '') || ' [نُقلت من ${todayDate}]'
             WHERE assigned_to = ?
-            AND date(due_date) = ?
+            AND due_date::date = ?
             AND status NOT IN ('completed', 'cancelled')
         `, [user.id, todayDate]);
     }

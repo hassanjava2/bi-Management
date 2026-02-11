@@ -150,12 +150,12 @@ async function getTasks(filters = {}) {
     }
 
     if (filters.due_date) {
-        query += ` AND date(t.due_date) = ?`;
+        query += ` AND t.due_date::date = ?::date`;
         params.push(filters.due_date);
     }
 
     if (filters.overdue) {
-        query += ` AND t.due_date < CURRENT_TIMESTAMP AND t.status NOT IN ('completed', 'cancelled')`;
+        query += ` AND t.due_date::timestamp < CURRENT_TIMESTAMP AND t.status NOT IN ('completed', 'cancelled')`;
     }
 
     query += ` ORDER BY 
@@ -339,18 +339,18 @@ async function getTaskStats(filters = {}) {
 
     const stats = await get(`
         SELECT 
-            COUNT(*) as total,
-            SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-            SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
-            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-            SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
-            SUM(CASE WHEN due_date < CURRENT_TIMESTAMP AND status NOT IN ('completed', 'cancelled') THEN 1 ELSE 0 END) as overdue
+            COUNT(*)::int as total,
+            SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END)::int as pending,
+            SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END)::int as in_progress,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END)::int as completed,
+            SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END)::int as cancelled,
+            SUM(CASE WHEN due_date::timestamp < CURRENT_TIMESTAMP AND status NOT IN ('completed', 'cancelled') THEN 1 ELSE 0 END)::int as overdue
         FROM tasks WHERE ${whereClause}
     `, params);
 
     const todayTasks = await get(`
-        SELECT COUNT(*) as count FROM tasks 
-        WHERE ${whereClause} AND date(due_date) = CURRENT_DATE
+        SELECT COUNT(*)::int as count FROM tasks 
+        WHERE ${whereClause} AND due_date::date = CURRENT_DATE
     `, params);
 
     return {
