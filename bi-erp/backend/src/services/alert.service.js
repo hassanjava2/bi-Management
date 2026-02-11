@@ -7,7 +7,7 @@ const notificationService = require('./notification.service');
 
 async function getRules() {
     try {
-        return await all('SELECT * FROM alert_rules WHERE is_enabled = 1');
+        return await all('SELECT * FROM alert_rules WHERE is_enabled = TRUE');
     } catch (e) {
         if (e.message && e.message.includes('no such table')) return [];
         throw e;

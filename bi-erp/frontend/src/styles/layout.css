@@ -1,0 +1,207 @@
+/* BI ERP - 3-tier layout (Command Strip + Nav Panes + Main) */
+
+.command-strip {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 1010;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.25rem 0;
+  gap: 1rem;
+}
+
+.cs-logo {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
+}
+
+.cs-item {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sidebar-text);
+  opacity: 0.75;
+  transition: all 0.2s ease;
+  position: relative;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  text-decoration: none;
+}
+
+.cs-item:hover,
+.cs-item.active {
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 1;
+}
+
+.cs-item.active::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: -2px;
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  background: var(--primary);
+  border-radius: 4px 0 0 4px;
+}
+
+.nav-pane {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: var(--sidebar-width);
+  width: var(--nav-pane-width);
+  background: var(--card-bg);
+  border-inline-start: 1px solid var(--border);
+  z-index: 1005;
+  padding: 1.5rem 1rem;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.nav-pane.active {
+  transform: translateX(0);
+}
+
+.pane-header {
+  margin-bottom: 1.5rem;
+}
+
+.pane-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--light);
+  margin-bottom: 0.25rem;
+}
+
+.pane-header p {
+  font-size: 0.8rem;
+  color: var(--gray);
+}
+
+.pane-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pane-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 10px 14px;
+  border-radius: 12px;
+  color: var(--light);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  opacity: 0.9;
+}
+
+.pane-link:hover,
+.pane-link.active {
+  background: var(--primary);
+  color: #fff;
+  opacity: 1;
+}
+
+.pane-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 8px 12px;
+  color: var(--gray);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.75rem;
+}
+
+.pane-section-title:first-child {
+  margin-top: 0;
+}
+
+.layout-main {
+  margin-right: var(--sidebar-width);
+  padding-top: var(--header-height);
+  min-height: 100vh;
+  background: var(--darker);
+  transition: margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.layout-main.pane-open {
+  margin-right: calc(var(--sidebar-width) + var(--nav-pane-width));
+}
+
+.layout-header {
+  position: fixed;
+  top: 0;
+  right: var(--sidebar-width);
+  left: 0;
+  height: var(--header-height);
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  z-index: 1000;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+}
+
+.layout-header.pane-open {
+  right: calc(var(--sidebar-width) + var(--nav-pane-width));
+}
+
+@media (max-width: 1023px) {
+  .command-strip {
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+  .command-strip.open {
+    transform: translateX(0);
+  }
+  .nav-pane {
+    right: 0;
+    width: min(280px, 85vw);
+  }
+  .nav-pane.active {
+    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.25);
+  }
+  .layout-main {
+    margin-right: 0;
+  }
+  .layout-main.pane-open {
+    margin-right: 0;
+  }
+  .layout-header {
+    right: 0;
+  }
+  .layout-header.pane-open {
+    right: 0;
+  }
+}

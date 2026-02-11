@@ -1,0 +1,347 @@
+/**
+ * BI ERP - Theme system (from erp-api1)
+ * 11 themes via data-theme on html
+ */
+
+:root,
+[data-theme] {
+  --sidebar-width: 70px;
+  --nav-pane-width: 240px;
+  --header-height: 70px;
+  --surface: var(--card-bg);
+  --on-surface: var(--light);
+  --text-color: var(--light);
+  --text-muted: var(--gray);
+}
+
+/* Theme 1: Slate Executive (Light) */
+html[data-theme="slate-light"] {
+  --primary: #2563eb;
+  --primary-rgb: 37, 99, 235;
+  --primary-dark: #1d4ed8;
+  --primary-light: #60a5fa;
+  --secondary: #475569;
+  --accent: #0f172a;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #0284c7;
+  --dark: #ffffff;
+  --darker: #f8fafc;
+  --darkest: #f1f5f9;
+  --light: #0f172a;
+  --gray: #64748b;
+  --gray-dark: #475569;
+  --gray-light: #94a3b8;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --border-color: #e2e8f0;
+  --card-bg: #ffffff;
+  --sidebar-bg: #1e293b;
+  --sidebar-text: #ffffff;
+  --header-bg: rgba(255, 255, 255, 0.95);
+  --neon-glow: 0 4px 20px rgba(37, 99, 235, 0.15);
+}
+
+/* Theme 2: Ocean Dark (Default) */
+html[data-theme="ocean-dark"] {
+  --primary: #3b82f6;
+  --primary-rgb: 59, 130, 246;
+  --primary-dark: #2563eb;
+  --primary-light: #60a5fa;
+  --secondary: #1e3a8a;
+  --accent: #60a5fa;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --dark: #0f172a;
+  --darker: #020617;
+  --darkest: #000000;
+  --light: #f1f5f9;
+  --gray: #94a3b8;
+  --gray-dark: #64748b;
+  --gray-light: #cbd5e1;
+  --border: #1e293b;
+  --border-light: #334155;
+  --border-color: #1e293b;
+  --card-bg: #0f172a;
+  --sidebar-bg: #020617;
+  --sidebar-text: #f1f5f9;
+  --header-bg: rgba(15, 23, 42, 0.95);
+  --neon-glow: 0 0 30px rgba(59, 130, 246, 0.15);
+}
+
+/* Theme 3: Royal Navy */
+html[data-theme="royal-navy"] {
+  --primary: #fbbf24;
+  --primary-rgb: 251, 191, 36;
+  --primary-dark: #f59e0b;
+  --primary-light: #fcd34d;
+  --secondary: #1e3a8a;
+  --accent: #1e40af;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --dark: #0f172a;
+  --darker: #020617;
+  --darkest: #000000;
+  --light: #f8fafc;
+  --gray: #94a3b8;
+  --gray-dark: #64748b;
+  --gray-light: #cbd5e1;
+  --border: #1e293b;
+  --border-light: #334155;
+  --border-color: #1e293b;
+  --card-bg: #0f172a;
+  --sidebar-bg: #020617;
+  --sidebar-text: #f8fafc;
+  --header-bg: rgba(15, 23, 42, 0.95);
+  --neon-glow: 0 0 30px rgba(251, 191, 36, 0.2);
+}
+
+/* Theme 4: Steel Light */
+html[data-theme="steel-light"] {
+  --primary: #334155;
+  --primary-rgb: 51, 65, 85;
+  --primary-dark: #1e293b;
+  --primary-light: #475569;
+  --secondary: #64748b;
+  --accent: #f97316;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #0ea5e9;
+  --dark: #ffffff;
+  --darker: #f1f5f9;
+  --darkest: #e2e8f0;
+  --light: #0f172a;
+  --gray: #64748b;
+  --gray-dark: #475569;
+  --gray-light: #94a3b8;
+  --border: #cbd5e1;
+  --border-light: #e2e8f0;
+  --border-color: #cbd5e1;
+  --card-bg: #ffffff;
+  --sidebar-bg: #334155;
+  --sidebar-text: #ffffff;
+  --header-bg: rgba(255, 255, 255, 0.95);
+  --neon-glow: 0 4px 15px rgba(51, 65, 85, 0.1);
+}
+
+/* Theme 5: Midnight Onyx */
+html[data-theme="midnight-onyx"] {
+  --primary: #ffffff;
+  --primary-rgb: 255, 255, 255;
+  --primary-dark: #e2e8f0;
+  --primary-light: #f8fafc;
+  --secondary: #10b981;
+  --accent: #34d399;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --dark: #000000;
+  --darker: #0a0a0a;
+  --darkest: #050505;
+  --light: #ffffff;
+  --gray: #a1a1aa;
+  --gray-dark: #71717a;
+  --gray-light: #d4d4d8;
+  --border: #262626;
+  --border-light: #404040;
+  --border-color: #262626;
+  --card-bg: #0a0a0a;
+  --sidebar-bg: #000000;
+  --sidebar-text: #ffffff;
+  --header-bg: rgba(0, 0, 0, 0.95);
+  --neon-glow: 0 0 40px rgba(255, 255, 255, 0.05);
+}
+
+/* Theme 6: Quartz Minimal */
+html[data-theme="quartz-minimal"] {
+  --primary: #18181b;
+  --primary-rgb: 24, 24, 27;
+  --primary-dark: #09090b;
+  --primary-light: #27272a;
+  --secondary: #71717a;
+  --accent: #a1a1aa;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --dark: #ffffff;
+  --darker: #fafafa;
+  --darkest: #f4f4f5;
+  --light: #18181b;
+  --gray: #71717a;
+  --gray-dark: #52525b;
+  --gray-light: #a1a1aa;
+  --border: #e4e4e7;
+  --border-light: #f4f4f5;
+  --border-color: #e4e4e7;
+  --card-bg: #ffffff;
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #18181b;
+  --header-bg: rgba(255, 255, 255, 0.95);
+  --neon-glow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Theme 7: Mocha Executive */
+html[data-theme="mocha-executive"] {
+  --primary: #d4d4d8;
+  --primary-rgb: 212, 212, 216;
+  --primary-dark: #a1a1aa;
+  --primary-light: #f4f4f5;
+  --secondary: #78350f;
+  --accent: #92400e;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --dark: #1c1917;
+  --darker: #0c0a09;
+  --darkest: #000000;
+  --light: #fafaf9;
+  --gray: #a8a29e;
+  --gray-dark: #78716c;
+  --gray-light: #d6d3d1;
+  --border: #292524;
+  --border-light: #44403c;
+  --border-color: #292524;
+  --card-bg: #1c1917;
+  --sidebar-bg: #0c0a09;
+  --sidebar-text: #fafaf9;
+  --header-bg: rgba(28, 25, 23, 0.95);
+  --neon-glow: 0 0 30px rgba(168, 162, 158, 0.1);
+}
+
+/* Theme 8: Arctic Frost */
+html[data-theme="arctic-frost"] {
+  --primary: #0891b2;
+  --primary-rgb: 8, 145, 178;
+  --primary-dark: #0e7490;
+  --primary-light: #22d3ee;
+  --secondary: #334155;
+  --accent: #94a3b8;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #06b6d4;
+  --dark: #ffffff;
+  --darker: #f0f9ff;
+  --darkest: #e0f2fe;
+  --light: #083344;
+  --gray: #64748b;
+  --gray-dark: #475569;
+  --gray-light: #94a3b8;
+  --border: #bae6fd;
+  --border-light: #e0f2fe;
+  --border-color: #bae6fd;
+  --card-bg: #ffffff;
+  --sidebar-bg: #083344;
+  --sidebar-text: #ffffff;
+  --header-bg: rgba(255, 255, 255, 0.95);
+  --neon-glow: 0 4px 15px rgba(8, 145, 178, 0.1);
+}
+
+/* Theme 9: Obsidian Red */
+html[data-theme="obsidian-red"] {
+  --primary: #dc2626;
+  --primary-rgb: 220, 38, 38;
+  --primary-dark: #991b1b;
+  --primary-light: #ef4444;
+  --secondary: #171717;
+  --accent: #262626;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --dark: #0a0a0a;
+  --darker: #050505;
+  --darkest: #000000;
+  --light: #ffffff;
+  --gray: #a1a1aa;
+  --gray-dark: #71717a;
+  --gray-light: #d4d4d8;
+  --border: #1c1c1c;
+  --border-light: #262626;
+  --border-color: #1c1c1c;
+  --card-bg: #0a0a0a;
+  --sidebar-bg: #000000;
+  --sidebar-text: #ffffff;
+  --header-bg: rgba(10, 10, 10, 0.95);
+  --neon-glow: 0 0 30px rgba(220, 38, 38, 0.15);
+}
+
+/* Theme 10: Imperial Purple */
+html[data-theme="imperial-purple"] {
+  --primary: #a855f7;
+  --primary-rgb: 168, 85, 247;
+  --primary-dark: #7e22ce;
+  --primary-light: #c084fc;
+  --secondary: #3b0764;
+  --accent: #1e1b4b;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --dark: #0f172a;
+  --darker: #020617;
+  --darkest: #000000;
+  --light: #f1f5f9;
+  --gray: #94a3b8;
+  --gray-dark: #64748b;
+  --gray-light: #cbd5e1;
+  --border: #1e293b;
+  --border-light: #334155;
+  --border-color: #1e293b;
+  --card-bg: #0f172a;
+  --sidebar-bg: #1e1b4b;
+  --sidebar-text: #f1f5f9;
+  --header-bg: rgba(15, 23, 42, 0.95);
+  --neon-glow: 0 0 30px rgba(168, 85, 247, 0.15);
+}
+
+/* Theme 11: Emerald Bureau */
+html[data-theme="emerald-bureau"] {
+  --primary: #fde68a;
+  --primary-rgb: 253, 230, 138;
+  --primary-dark: #fbbf24;
+  --primary-light: #fef3c7;
+  --secondary: #064e3b;
+  --accent: #065f46;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --dark: #022c22;
+  --darker: #011c16;
+  --darkest: #000000;
+  --light: #ecfdf5;
+  --gray: #6ee7b7;
+  --gray-dark: #10b981;
+  --gray-light: #a7f3d0;
+  --border: #064e3b;
+  --border-light: #065f46;
+  --border-color: #064e3b;
+  --card-bg: #022c22;
+  --sidebar-bg: #011c16;
+  --sidebar-text: #ecfdf5;
+  --header-bg: rgba(2, 44, 34, 0.95);
+  --neon-glow: 0 0 30px rgba(253, 230, 138, 0.1);
+}
+
+body {
+  font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
+  background: var(--darker);
+  color: var(--light);
+  min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--gray);
+}

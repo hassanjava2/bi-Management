@@ -49,7 +49,7 @@ async function create(data) {
 
 async function list(filters = {}) {
     const { type, from, to, page = 1, limit = 50 } = filters;
-    let query = `SELECT v.*, u.full_name as created_by_name FROM vouchers v LEFT JOIN users u ON v.created_by = u.id WHERE (v.is_deleted = 0 OR v.is_deleted IS NULL)`;
+    let query = `SELECT v.*, u.full_name as created_by_name FROM vouchers v LEFT JOIN users u ON v.created_by = u.id WHERE (v.is_deleted = FALSE OR v.is_deleted IS NULL)`;
     const params = [];
     if (type) { query += ` AND v.type = ?`; params.push(type); }
     if (from) { query += ` AND date(v.created_at) >= ?`; params.push(from); }

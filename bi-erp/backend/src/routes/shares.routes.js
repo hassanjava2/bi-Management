@@ -10,37 +10,7 @@ const { generateId } = require('../utils/helpers');
 
 router.use(auth);
 
-// Ensure shareholders table exists
-(async () => {
-    try {
-        await run(`CREATE TABLE IF NOT EXISTS shareholders (
-            id TEXT PRIMARY KEY,
-            code TEXT,
-            name TEXT NOT NULL,
-            phone TEXT,
-            share_percentage NUMERIC DEFAULT 0,
-            share_value NUMERIC DEFAULT 0,
-            monthly_profit NUMERIC DEFAULT 0,
-            is_active INTEGER DEFAULT 1,
-            created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-        )`);
-        await run(`CREATE TABLE IF NOT EXISTS share_distributions (
-            id TEXT PRIMARY KEY,
-            period TEXT,
-            total_profit NUMERIC DEFAULT 0,
-            distributed_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-            distributed_by TEXT,
-            notes TEXT
-        )`);
-        await run(`CREATE TABLE IF NOT EXISTS share_distribution_items (
-            id TEXT PRIMARY KEY,
-            distribution_id TEXT,
-            shareholder_id TEXT,
-            percentage NUMERIC DEFAULT 0,
-            amount NUMERIC DEFAULT 0
-        )`);
-    } catch (_) {}
-})();
+// Tables shareholders, share_distributions, share_distribution_items are created via migrations.
 
 router.get('/config', async (req, res) => {
     try {
@@ -80,7 +50,7 @@ router.post('/shareholders', async (req, res) => {
         const id = generateId();
         await run(`INSERT INTO shareholders (id, code, name, phone, share_percentage, share_value, monthly_profit, is_active)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, code || null, name, phone || null, share_percentage || 0, share_value || 0, monthly_profit || 0, is_active !== false ? 1 : 0]);
+            [id, code || null, name, phone || null, share_percentage || 0, share_value || 0, monthly_profit || 0, is_active !== false]);
         res.status(201).json({ success: true, data: await get(`SELECT * FROM shareholders WHERE id = ?`, [id]) });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
@@ -101,7 +71,7 @@ router.put('/shareholders/:id', async (req, res) => {
         if (share_percentage !== undefined) { updates.push('share_percentage = ?'); params.push(share_percentage); }
         if (share_value !== undefined) { updates.push('share_value = ?'); params.push(share_value); }
         if (monthly_profit !== undefined) { updates.push('monthly_profit = ?'); params.push(monthly_profit); }
-        if (is_active !== undefined) { updates.push('is_active = ?'); params.push(is_active ? 1 : 0); }
+        if (is_active !== undefined) { updates.push('is_active = ?'); params.push(is_active !== false); }
         if (updates.length > 0) {
             params.push(req.params.id);
             await run(`UPDATE shareholders SET ${updates.join(', ')} WHERE id = ?`, params);

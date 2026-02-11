@@ -18,7 +18,7 @@ export default function PageSkeleton({ rows = 5, hasStats = true, className }) {
       {hasStats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm">
+            <div key={i} className="rounded-2xl p-6 shadow-sm" style={{ background: 'var(--card-bg)' }}>
               <div className="skeleton h-3 w-20 mb-3">&nbsp;</div>
               <div className="skeleton h-8 w-24">&nbsp;</div>
             </div>
@@ -26,12 +26,12 @@ export default function PageSkeleton({ rows = 5, hasStats = true, className }) {
         </div>
       )}
       {/* Table skeleton */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
-        <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+      <div className="rounded-2xl border overflow-hidden" style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}>
+        <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
           <div className="skeleton h-4 w-full max-w-[200px]">&nbsp;</div>
         </div>
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-neutral-50 dark:border-neutral-800/40 last:border-0">
+          <div key={i} className="flex items-center gap-4 px-5 py-4 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
             <div className="skeleton h-4 w-24">&nbsp;</div>
             <div className="skeleton h-4 flex-1 max-w-[180px]">&nbsp;</div>
             <div className="skeleton h-4 w-16">&nbsp;</div>

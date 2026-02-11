@@ -102,9 +102,9 @@ export default function CommandPalette({ open, onClose }) {
       />
       <Command
         className={clsx(
-          'relative w-full max-w-xl rounded-2xl border border-neutral-200 dark:border-neutral-700',
-          'bg-white dark:bg-neutral-900 shadow-modal overflow-hidden animate-scale-in'
+          'relative w-full max-w-xl rounded-2xl border shadow-modal overflow-hidden animate-scale-in'
         )}
+        style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
         label="بحث سريع"
         onSelect={(value) => {
           const page = pageTitles.find((p) => `${p.title} ${p.path}` === value)
@@ -118,7 +118,8 @@ export default function CommandPalette({ open, onClose }) {
           value={search}
           onValueChange={setSearch}
           placeholder="ابحث عن صفحة..."
-          className="w-full px-4 py-3.5 text-base bg-transparent border-b border-neutral-100 dark:border-neutral-800 placeholder:text-neutral-400 focus:outline-none"
+          className="w-full px-4 py-3.5 text-base bg-transparent border-b placeholder:text-neutral-400 focus:outline-none"
+          style={{ borderColor: 'var(--border)' }}
           autoFocus
         />
         <Command.List className="max-h-[60vh] overflow-y-auto p-2">

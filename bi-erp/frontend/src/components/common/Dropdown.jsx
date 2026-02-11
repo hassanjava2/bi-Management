@@ -29,12 +29,12 @@ export default function Dropdown({
       {open && (
         <div
           className={clsx(
-            'absolute z-50 mt-1 min-w-[160px] py-1 rounded-button border border-neutral-200 dark:border-neutral-700',
-            'bg-white dark:bg-neutral-900 shadow-modal animate-slide-down',
+            'absolute z-50 mt-1 min-w-[160px] py-1 rounded-button border shadow-modal animate-slide-down',
             align === 'end' && 'end-0',
             align === 'start' && 'start-0',
             menuClassName
           )}
+          style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
           role="menu"
         >
           {children({ close: () => setOpen(false) })}
@@ -64,11 +64,11 @@ export function DropdownItem({
       onClick={handleClick}
       disabled={disabled}
       className={clsx(
-        'w-full flex items-center gap-2 px-3 py-2 text-sm text-right transition-colors',
-        'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800',
+        'w-full flex items-center gap-2 px-3 py-2 text-sm text-right transition-colors hover:bg-[var(--darker)]',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         className
       )}
+      style={{ color: 'var(--light)' }}
     >
       {Icon && <Icon className="w-4 h-4 shrink-0" />}
       {children}
@@ -77,5 +77,5 @@ export function DropdownItem({
 }
 
 export function DropdownDivider() {
-  return <div className="my-1 border-t border-neutral-100 dark:border-neutral-800" role="separator" />
+  return <div className="my-1 border-t" style={{ borderColor: 'var(--border)' }} role="separator" />
 }

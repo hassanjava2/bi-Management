@@ -4,17 +4,19 @@
  */
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Settings, Save, Loader2, Printer, Building2, DollarSign } from 'lucide-react'
+import { Settings, Save, Loader2, Printer, Building2, DollarSign, Palette } from 'lucide-react'
 import PageShell from '../components/common/PageShell'
 import Button from '../components/common/Button'
 import FormField from '../components/common/FormField'
 import Card from '../components/common/Card'
 import { settingsAPI } from '../services/api'
 import { useToast } from '../context/ToastContext'
+import { useTheme } from '../hooks/useTheme'
 
 export default function SettingsPage() {
   const queryClient = useQueryClient()
   const toast = useToast()
+  const { theme, themes } = useTheme()
   const [editingKey, setEditingKey] = useState(null)
   const [editValue, setEditValue] = useState('')
 
@@ -52,19 +54,41 @@ export default function SettingsPage() {
     )
   }
 
+  const currentThemeLabel = themes.find((t) => t.id === theme)?.label || theme
+
   return (
     <PageShell
       title="الإعدادات"
       description="إعدادات النظام حسب الفئة"
     >
       <div className="space-y-6">
+        {/* المظهر / الثيم */}
+        <Card>
+          <Card.Header>
+            <Card.Title subtitle="الثيم الحالي">
+              <span className="inline-flex items-center gap-2">
+                <Palette className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+                المظهر
+              </span>
+            </Card.Title>
+          </Card.Header>
+          <Card.Body>
+            <p className="text-sm mb-2" style={{ color: 'var(--light)' }}>
+              الثيم الحالي: <strong>{currentThemeLabel}</strong>
+            </p>
+            <p className="text-xs" style={{ color: 'var(--gray)' }}>
+              لتغيير الثيم استخدم أيقونة الباليت (المظهر) في شريط الهيدر أعلى الصفحة.
+            </p>
+          </Card.Body>
+        </Card>
+
         {/* إعدادات الطباعة */}
         <PrintSettings />
 
         {/* إعدادات النظام */}
         {categories.length === 0 ? (
           <Card>
-            <p className="text-neutral-500 dark:text-neutral-400 text-center py-8">لا توجد إعدادات مسجلة</p>
+            <p className="text-center py-8" style={{ color: 'var(--gray)' }}>لا توجد إعدادات مسجلة</p>
           </Card>
         ) : (
           categories.map((category) => (
@@ -73,15 +97,16 @@ export default function SettingsPage() {
               <Card.Body>
                 <div className="space-y-4">
                   {Object.entries(settings[category] || {}).map(([key, value]) => (
-                    <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-2 border-b border-neutral-100 dark:border-neutral-700 pb-4 last:border-0 last:pb-0">
-                      <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 sm:w-48">{key}</label>
+                    <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-2 border-b pb-4 last:border-0 last:pb-0" style={{ borderColor: 'var(--border)' }}>
+                      <label className="text-sm font-medium sm:w-48" style={{ color: 'var(--light)' }}>{key}</label>
                       {editingKey === key ? (
                         <div className="flex-1 flex gap-2">
                           <input
                             type="text"
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
-                            className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-input bg-white dark:bg-neutral-800"
+                            className="flex-1 px-3 py-2 border rounded-input"
+                            style={{ borderColor: 'var(--border)', background: 'var(--card-bg)', color: 'var(--light)' }}
                           />
                           <Button size="sm" onClick={() => handleSave(key)} disabled={updateMutation.isPending}>
                             {updateMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -90,7 +115,7 @@ export default function SettingsPage() {
                         </div>
                       ) : (
                         <div className="flex-1 flex items-center gap-2">
-                          <span className="text-neutral-900 dark:text-white">{String(value)}</span>
+                          <span style={{ color: 'var(--light)' }}>{String(value)}</span>
                           <Button variant="ghost" size="sm" onClick={() => { setEditingKey(key); setEditValue(String(value)) }}>
                             تعديل
                           </Button>

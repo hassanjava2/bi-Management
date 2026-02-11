@@ -71,12 +71,12 @@ export default function DataTable({
 
   if (loading) {
     return (
-      <div className={clsx('bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden', className)}>
+      <div className={clsx('rounded-[16px] border overflow-hidden', className)} style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-neutral-200 dark:border-neutral-700">
+            <tr className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--primary)' }}>
               {safeColumns.map((col) => (
-                <th key={col.key} className={clsx(headerPadding, 'text-end text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider', col.headerClassName)}>
+                <th key={col.key} className={clsx(headerPadding, 'text-end text-[11px] font-semibold uppercase tracking-wider text-white', col.headerClassName)}>
                   {col.label}
                 </th>
               ))}
@@ -84,7 +84,7 @@ export default function DataTable({
           </thead>
           <tbody>
             {Array.from({ length: 5 }).map((_, i) => (
-              <tr key={i} className="border-b border-neutral-50 dark:border-neutral-800/50">
+              <tr key={i} className="border-b" style={{ borderColor: 'var(--border)' }}>
                 {safeColumns.map((col) => (
                   <td key={col.key} className={cellPadding}>
                     <div className="skeleton h-4 w-full max-w-[140px]">&nbsp;</div>
@@ -100,7 +100,7 @@ export default function DataTable({
 
   if (!filteredData || filteredData.length === 0) {
     return (
-      <div className={clsx('bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 p-8', className)}>
+      <div className={clsx('rounded-[16px] border p-8', className)} style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}>
         <EmptyState title={emptyTitle} description={emptyDescription} actionLabel={emptyActionLabel} onAction={onEmptyAction} />
       </div>
     )
@@ -115,10 +115,10 @@ export default function DataTable({
   const showPagination = pagination && paginationTotal > pagination.perPage
 
   return (
-    <div className={clsx('bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden', className)}>
+    <div className={clsx('rounded-[16px] border overflow-hidden', className)} style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}>
       {/* Toolbar */}
       {(filterable || (selectable && selectedRows.length > 0)) && (
-        <div className="flex items-center gap-3 px-5 py-3 border-b border-neutral-200 dark:border-neutral-700">
+        <div className="flex items-center gap-3 px-5 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
           {filterable && (
             <div className="relative flex-1 max-w-xs">
               <Search className="absolute end-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -127,7 +127,8 @@ export default function DataTable({
                 value={filterValue}
                 onChange={(e) => setFilter(e.target.value)}
                 placeholder={globalFilterPlaceholder}
-                className="w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-transparent py-2 pe-10 ps-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500/20"
+                className="w-full rounded-lg border py-2 pe-10 ps-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500/20"
+                style={{ borderColor: 'var(--border)', background: 'var(--darker)', color: 'var(--light)' }}
               />
             </div>
           )}
@@ -143,10 +144,10 @@ export default function DataTable({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-neutral-200 dark:border-neutral-700 bg-transparent">
+            <tr className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--primary)' }}>
               {selectable && (
                 <th className={clsx(headerPadding, 'w-10')}>
-                  <input type="checkbox" checked={selectedRows.length === filteredData.length && filteredData.length > 0} onChange={toggleSelectAll} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
+                  <input type="checkbox" checked={selectedRows.length === filteredData.length && filteredData.length > 0} onChange={toggleSelectAll} className="rounded border-white/50 text-white focus:ring-primary-500 bg-white/20" />
                 </th>
               )}
               {safeColumns.map((col) => {
@@ -155,7 +156,7 @@ export default function DataTable({
                 return (
                   <th
                     key={col.key}
-                    className={clsx(headerPadding, 'text-end text-[11px] font-semibold text-neutral-400 uppercase tracking-wider', sortable && 'cursor-pointer select-none hover:text-neutral-600 dark:hover:text-neutral-300', col.headerClassName)}
+                    className={clsx(headerPadding, 'text-end text-[11px] font-semibold uppercase tracking-wider text-white', sortable && 'cursor-pointer select-none hover:opacity-90', col.headerClassName)}
                     onClick={sortable ? () => handleSort(col.key) : undefined}
                   >
                     <span className="inline-flex items-center gap-1">
@@ -182,13 +183,12 @@ export default function DataTable({
                   key={rowId}
                   onClick={onRowClick ? () => onRowClick(row, rowIndex) : undefined}
                   className={clsx(
-                    'border-b border-neutral-50 dark:border-neutral-800/40 last:border-0',
-                    'transition-colors duration-100',
+                    'border-b last:border-0 transition-colors duration-100 hover:bg-[var(--darker)]',
                     onRowClick && 'cursor-pointer',
-                    onRowClick ? 'hover:bg-primary-50/60 dark:hover:bg-primary-900/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/40',
-                    striped && rowIndex % 2 === 1 && 'bg-neutral-50/40 dark:bg-neutral-800/15',
-                    isSelected && 'bg-primary-50/50 dark:bg-primary-900/15'
+                    striped && rowIndex % 2 === 1 && 'bg-black/5',
+                    isSelected && '!bg-primary-500/20'
                   )}
+                  style={{ borderColor: 'var(--border)' }}
                 >
                   {selectable && (
                     <td className={cellPadding} onClick={(e) => e.stopPropagation()}>
@@ -196,7 +196,7 @@ export default function DataTable({
                     </td>
                   )}
                   {safeColumns.map((col) => (
-                    <td key={col.key} className={clsx(cellPadding, 'text-sm text-neutral-700 dark:text-neutral-300', col.className)}>
+                    <td key={col.key} className={cellPadding + ' text-sm ' + (col.className || '')} style={{ color: 'var(--light)' }}>
                       {col.render ? col.render(row) : (
                         <span className="block truncate">{row[col.key] ?? '—'}</span>
                       )}
@@ -210,16 +210,16 @@ export default function DataTable({
       </div>
 
       {showPagination && (
-        <div className="px-5 py-3 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
-          <span className="text-xs text-neutral-400">
+        <div className="px-5 py-3 border-t flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
+          <span className="text-xs" style={{ color: 'var(--gray)' }}>
             عرض {(pagination.page - 1) * pagination.perPage + 1} - {Math.min(pagination.page * pagination.perPage, paginationTotal)} من {paginationTotal}
           </span>
           <div className="flex items-center gap-1">
-            <button type="button" onClick={() => pagination.onPageChange(pagination.page - 1)} disabled={pagination.page <= 1} className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 disabled:opacity-30 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+            <button type="button" onClick={() => pagination.onPageChange(pagination.page - 1)} disabled={pagination.page <= 1} className="p-1.5 rounded-lg border disabled:opacity-30 transition-colors hover:bg-[var(--darker)]" style={{ borderColor: 'var(--border)' }}>
               <ChevronRight className="w-4 h-4" />
             </button>
-            <span className="px-3 py-1 text-xs font-semibold text-neutral-600 dark:text-neutral-300">{pagination.page}</span>
-            <button type="button" onClick={() => pagination.onPageChange(pagination.page + 1)} disabled={pagination.page * pagination.perPage >= paginationTotal} className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 disabled:opacity-30 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+            <span className="px-3 py-1 text-xs font-semibold" style={{ color: 'var(--light)' }}>{pagination.page}</span>
+            <button type="button" onClick={() => pagination.onPageChange(pagination.page + 1)} disabled={pagination.page * pagination.perPage >= paginationTotal} className="p-1.5 rounded-lg border disabled:opacity-30 transition-colors hover:bg-[var(--darker)]" style={{ borderColor: 'var(--border)' }}>
               <ChevronLeft className="w-4 h-4" />
             </button>
           </div>

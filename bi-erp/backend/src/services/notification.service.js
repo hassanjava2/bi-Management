@@ -100,7 +100,7 @@ async function getUserNotifications(userId, filters = {}) {
         const params = [userId];
 
         if (filters.unread_only) {
-            query += ` AND is_read = 0`;
+            query += ` AND is_read = FALSE`;
         }
 
         if (filters.type) {
@@ -133,7 +133,7 @@ async function markAsRead(notificationId, userId) {
     try {
         const result = await run(`
             UPDATE notifications 
-            SET is_read = 1, read_at = CURRENT_TIMESTAMP
+            SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
             WHERE id = ? AND recipient_id = ?
         `, [notificationId, userId]);
 
@@ -151,8 +151,8 @@ async function markAllAsRead(userId) {
     try {
         const result = await run(`
             UPDATE notifications 
-            SET is_read = 1, read_at = CURRENT_TIMESTAMP
-            WHERE recipient_id = ? AND is_read = 0
+            SET is_read = TRUE, read_at = CURRENT_TIMESTAMP
+            WHERE recipient_id = ? AND is_read = FALSE
         `, [userId]);
 
         return { marked: result.changes };
@@ -170,7 +170,7 @@ async function getUnreadCount(userId) {
         const result = await get(`
             SELECT COUNT(*) as count 
             FROM notifications 
-            WHERE recipient_id = ? AND is_read = 0
+            WHERE recipient_id = ? AND is_read = FALSE
         `, [userId]);
 
         return result?.count || 0;
@@ -238,7 +238,7 @@ function sendBulk(userIds, data) {
  */
 async function sendToDepartment(departmentId, data) {
     try {
-        const users = await all(`SELECT id FROM users WHERE department_id = ? AND is_active = 1`, [departmentId]);
+        const users = await all(`SELECT id FROM users WHERE department_id = ? AND is_active = TRUE`, [departmentId]);
         return sendBulk(users.map(u => u.id), data);
     } catch (error) {
         console.error('[Notification] SendToDepartment error:', error.message);
@@ -251,7 +251,7 @@ async function sendToDepartment(departmentId, data) {
  */
 async function sendToAll(data) {
     try {
-        const users = await all(`SELECT id FROM users WHERE is_active = 1`);
+        const users = await all(`SELECT id FROM users WHERE is_active = TRUE`);
         return sendBulk(users.map(u => u.id), data);
     } catch (error) {
         console.error('[Notification] SendToAll error:', error.message);
@@ -395,7 +395,7 @@ async function notifyEvent(type, context = {}) {
 
     if (context.send_to_admins) {
         try {
-            const admins = await all(`SELECT id FROM users WHERE role IN ('owner', 'admin') AND is_active = 1`);
+            const admins = await all(`SELECT id FROM users WHERE role IN ('owner', 'admin') AND is_active = TRUE`);
             return sendBulk(admins.map(a => a.id), {
                 type,
                 ...template,

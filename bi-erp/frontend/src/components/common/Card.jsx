@@ -4,13 +4,16 @@ export default function Card({ children, className, padding = true, hover = fals
   return (
     <div
       className={clsx(
-        'bg-white dark:bg-neutral-900 rounded-2xl',
-        'border border-transparent dark:border-neutral-800',
-        'shadow-sm dark:shadow-none',
-        hover && 'hover:shadow-md hover:shadow-neutral-200/40 dark:hover:shadow-neutral-900/50 transition-all duration-300',
+        'rounded-[16px] border transition-all duration-300',
+        hover && 'hover:shadow-[var(--neon-glow)]',
         padding && 'p-6',
         className
       )}
+      style={{
+        background: 'var(--card-bg)',
+        borderColor: 'var(--border)',
+        boxShadow: hover ? undefined : '0 1px 3px rgba(0,0,0,0.06)',
+      }}
       {...props}
     >
       {children}
@@ -20,7 +23,7 @@ export default function Card({ children, className, padding = true, hover = fals
 
 Card.Header = function CardHeader({ children, className, action }) {
   return (
-    <div className={clsx('flex items-center justify-between pb-4 mb-5 border-b border-neutral-100 dark:border-neutral-800', className)}>
+    <div className={clsx('flex items-center justify-between pb-4 mb-5 border-b', className)} style={{ borderColor: 'var(--border)' }}>
       <div className="flex-1 min-w-0">{children}</div>
       {action && <div className="flex-shrink-0 ms-4">{action}</div>}
     </div>
@@ -30,11 +33,11 @@ Card.Header = function CardHeader({ children, className, action }) {
 Card.Title = function CardTitle({ children, className, subtitle }) {
   return (
     <div>
-      <h3 className={clsx('text-sm font-semibold text-neutral-900 dark:text-white uppercase tracking-wide', className)}>
+      <h3 className={clsx('text-sm font-semibold uppercase tracking-wide', className)} style={{ color: 'var(--light)' }}>
         {children}
       </h3>
       {subtitle && (
-        <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">{subtitle}</p>
+        <p className="mt-0.5 text-xs" style={{ color: 'var(--gray)' }}>{subtitle}</p>
       )}
     </div>
   )
@@ -46,7 +49,7 @@ Card.Body = function CardBody({ children, className }) {
 
 Card.Footer = function CardFooter({ children, className }) {
   return (
-    <div className={clsx('pt-4 mt-5 border-t border-neutral-100 dark:border-neutral-800', className)}>
+    <div className={clsx('pt-4 mt-5 border-t', className)} style={{ borderColor: 'var(--border)' }}>
       {children}
     </div>
   )

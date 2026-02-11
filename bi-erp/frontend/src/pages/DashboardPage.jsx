@@ -74,10 +74,10 @@ export default function DashboardPage() {
       {/* Welcome + Quick Actions grid */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--light)' }}>
             مرحباً، {user?.full_name?.split(' ')[0]}
           </h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1 text-base">
+          <p className="mt-1 text-base" style={{ color: 'var(--gray)' }}>
             {new Date().toLocaleDateString('ar-IQ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
@@ -86,12 +86,13 @@ export default function DashboardPage() {
             <Link
               key={a.href}
               to={a.href}
-              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-transparent dark:border-neutral-800 shadow-sm hover:shadow-md hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-all duration-200"
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-[16px] border shadow-sm hover:shadow-[var(--neon-glow)] transition-all duration-200"
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
             >
-              <span className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                <a.icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+              <span className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(var(--primary-rgb), 0.15)' }}>
+                <a.icon className="w-6 h-6" style={{ color: 'var(--primary)' }} />
               </span>
-              <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 text-center leading-tight">{a.label}</span>
+              <span className="text-xs font-medium text-center leading-tight" style={{ color: 'var(--light)' }}>{a.label}</span>
             </Link>
           ))}
         </div>

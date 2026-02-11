@@ -37,7 +37,8 @@ export default function Modal({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div
-        className="fixed inset-0 bg-neutral-900/50 backdrop-blur-md transition-opacity duration-300 ease-out animate-fade-in"
+        className="fixed inset-0 backdrop-blur-md transition-opacity duration-300 ease-out animate-fade-in"
+        style={{ background: 'rgba(0,0,0,0.4)' }}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -48,25 +49,25 @@ export default function Modal({
           aria-modal="true"
           aria-labelledby={title ? 'modal-title' : undefined}
           className={clsx(
-            'relative w-full flex flex-col max-h-[90vh]',
-            'bg-white dark:bg-neutral-900 rounded-2xl shadow-modal',
-            'border border-neutral-200/50 dark:border-neutral-800',
+            'relative w-full flex flex-col max-h-[90vh] rounded-[16px] shadow-modal',
             'transition-transform duration-300 ease-out animate-scale-in',
             SIZES[size],
             className
           )}
+          style={{ background: 'var(--card-bg)', border: '1px solid var(--border)' }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between flex-shrink-0 px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-between flex-shrink-0 px-6 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
             {title && (
-              <h3 id="modal-title" className="text-base font-semibold text-neutral-900 dark:text-white">
+              <h3 id="modal-title" className="text-base font-semibold" style={{ color: 'var(--light)' }}>
                 {title}
               </h3>
             )}
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 -m-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+              className="p-1.5 -m-1.5 rounded-lg transition-colors opacity-70 hover:opacity-100"
+              style={{ color: 'var(--gray)' }}
               aria-label="إغلاق"
             >
               <X className="w-4 h-4" />
@@ -78,7 +79,7 @@ export default function Modal({
           </div>
 
           {footer != null && (
-            <div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 rounded-b-2xl">
+            <div className="flex-shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t rounded-b-[16px]" style={{ borderColor: 'var(--border)', background: 'var(--darker)' }}>
               {footer}
             </div>
           )}
@@ -90,12 +91,7 @@ export default function Modal({
 
 Modal.Footer = function ModalFooter({ children, className }) {
   return (
-    <div
-      className={clsx(
-        'flex items-center justify-end gap-3 pt-4 mt-4 border-t border-neutral-100 dark:border-neutral-800',
-        className
-      )}
-    >
+    <div className={clsx('flex items-center justify-end gap-3 pt-4 mt-4 border-t', className)} style={{ borderColor: 'var(--border)' }}>
       {children}
     </div>
   )

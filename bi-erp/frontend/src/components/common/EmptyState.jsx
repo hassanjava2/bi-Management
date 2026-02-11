@@ -17,14 +17,14 @@ export default function EmptyState({
         className
       )}
     >
-      <div className="w-20 h-20 rounded-2xl bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center mb-6 border border-neutral-200/50 dark:border-neutral-700/50">
-        <Icon className="w-10 h-10 text-neutral-400 dark:text-neutral-500" />
+      <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 border" style={{ background: 'var(--darker)', borderColor: 'var(--border)' }}>
+        <Icon className="w-10 h-10" style={{ color: 'var(--gray)' }} />
       </div>
-      <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+      <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--light)' }}>
         {title}
       </h3>
       {description && (
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mb-6 leading-relaxed">
+        <p className="text-sm max-w-sm mb-6 leading-relaxed" style={{ color: 'var(--gray)' }}>
           {description}
         </p>
       )}

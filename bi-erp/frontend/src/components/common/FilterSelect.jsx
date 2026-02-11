@@ -41,20 +41,19 @@ export default function FilterSelect({
         onClick={() => setOpen((v) => !v)}
         className={clsx(
           'inline-flex items-center justify-between gap-2 min-w-[140px]',
-          'rounded-xl border border-neutral-200 dark:border-neutral-700',
-          'bg-white dark:bg-neutral-900 py-2.5 px-4 text-sm text-right',
-          'text-neutral-700 dark:text-neutral-200',
-          'hover:border-neutral-300 dark:hover:border-neutral-600',
+          'rounded-xl border py-2.5 px-4 text-sm text-right',
           'focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500',
           'transition-colors'
         )}
+        style={{ borderColor: 'var(--border)', background: 'var(--card-bg)', color: 'var(--light)' }}
       >
         <span className="truncate">{displayLabel}</span>
         <ChevronDown className={clsx('w-4 h-4 shrink-0 text-neutral-400 transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <div
-          className="absolute top-full end-0 mt-1 min-w-[180px] py-1 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-lg z-50 animate-slide-up"
+          className="absolute top-full end-0 mt-1 min-w-[180px] py-1 rounded-xl border shadow-lg z-50 animate-slide-up"
+          style={{ borderColor: 'var(--border)', background: 'var(--card-bg)' }}
           role="listbox"
         >
           <button

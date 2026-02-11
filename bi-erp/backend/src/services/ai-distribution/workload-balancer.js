@@ -39,13 +39,13 @@ function getWorkloadScore(userId) {
 
 async function getEligibleUserIds() {
     const maxU = getMaxUtilization();
-    const activeUsers = await all(`SELECT id FROM users WHERE is_active = 1`);
+    const activeUsers = await all(`SELECT id FROM users WHERE is_active = TRUE`);
     const ids = activeUsers.map((u) => u.id);
     return ids.filter((id) => getWorkload(id).utilization < maxU);
 }
 
 async function getAllWorkloads() {
-    const users = await all(`SELECT id, full_name, department_id FROM users WHERE is_active = 1`);
+    const users = await all(`SELECT id, full_name, department_id FROM users WHERE is_active = TRUE`);
     return users.map((u) => ({
         userId: u.id,
         full_name: u.full_name,

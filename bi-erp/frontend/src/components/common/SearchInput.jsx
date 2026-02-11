@@ -14,13 +14,15 @@ const SearchInput = forwardRef(function SearchInput(
         type="search"
         placeholder={placeholder}
         className={clsx(
-          'w-full rounded-xl border border-neutral-200 dark:border-neutral-700',
-          'bg-white dark:bg-neutral-900',
-          'py-2.5 pe-10 ps-4 text-sm',
-          'text-neutral-900 dark:text-white placeholder:text-neutral-400',
+          'w-full rounded-xl border py-2.5 pe-10 ps-4 text-sm',
           'focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500',
           'transition-colors'
         )}
+        style={{
+          borderColor: 'var(--border)',
+          background: 'var(--card-bg)',
+          color: 'var(--light)',
+        }}
         {...props}
       />
     </div>

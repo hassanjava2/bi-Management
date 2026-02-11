@@ -9,11 +9,11 @@ export default function PageShell({ title, description, actions, children, class
     <div className={clsx('space-y-6 animate-fade-in', className)}>
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--light)' }}>
             {title}
           </h1>
           {description && (
-            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="mt-1 text-sm" style={{ color: 'var(--gray)' }}>
               {description}
             </p>
           )}

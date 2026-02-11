@@ -8,21 +8,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Clean minimal primary (calm blue)
+        // Theme-aware (from themes.css)
         primary: {
+          DEFAULT: 'var(--primary)',
+          dark: 'var(--primary-dark)',
+          light: 'var(--primary-light)',
           50: '#f0f9ff',
           100: '#e0f2fe',
           200: '#bae6fd',
           300: '#7dd3fc',
           400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
+          500: 'var(--primary)',
+          600: 'var(--primary-dark)',
           700: '#0369a1',
           800: '#075985',
           900: '#0c4a6e',
           950: '#082f49',
         },
-        // Neutral (replaces surface for consistency)
         neutral: {
           50: '#fafafa',
           100: '#f4f4f5',
@@ -36,7 +38,6 @@ export default {
           900: '#18181b',
           950: '#09090b',
         },
-        // Accent (subtle, for highlights)
         accent: {
           50: '#fdf4ff',
           100: '#fae8ff',
@@ -45,24 +46,22 @@ export default {
           400: '#e879f9',
           500: '#d946ef',
         },
-        // Semantic
         success: {
           50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0',
-          500: '#10b981', 600: '#059669', 700: '#047857',
+          500: 'var(--success)', 600: '#059669', 700: '#047857',
         },
         warning: {
           50: '#fffbeb', 100: '#fef3c7', 200: '#fde68a',
-          500: '#f59e0b', 600: '#d97706', 700: '#b45309',
+          500: 'var(--warning)', 600: '#d97706', 700: '#b45309',
         },
         error: {
           50: '#fef2f2', 100: '#fee2e2', 200: '#fecaca',
-          500: '#ef4444', 600: '#dc2626', 700: '#b91c1c',
+          500: 'var(--danger)', 600: '#dc2626', 700: '#b91c1c',
         },
         info: {
           50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe',
-          500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+          500: 'var(--info)', 600: '#2563eb', 700: '#1d4ed8',
         },
-        // Surface (alias for backward compatibility)
         surface: {
           50: '#fafafa',
           100: '#f4f4f5',
@@ -76,9 +75,19 @@ export default {
           900: '#18181b',
           950: '#09090b',
         },
+        // Theme CSS variables for direct use
+        theme: {
+          card: 'var(--card-bg)',
+          sidebar: 'var(--sidebar-bg)',
+          border: 'var(--border)',
+          'border-light': 'var(--border-light)',
+          darker: 'var(--darker)',
+          darkest: 'var(--darkest)',
+          header: 'var(--header-bg)',
+        },
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Tajawal', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['Cairo', 'Tajawal', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'card': '0.75rem',

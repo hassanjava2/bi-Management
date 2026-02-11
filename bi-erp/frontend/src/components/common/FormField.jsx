@@ -9,7 +9,8 @@ export default function FormField({ label, error, required, children, className,
       {label && (
         <label
           htmlFor={htmlFor}
-          className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
+          className="block text-sm font-medium mb-1"
+          style={{ color: 'var(--light)' }}
         >
           {label}
           {required && <span className="text-error-500 mr-1">*</span>}
@@ -17,7 +18,7 @@ export default function FormField({ label, error, required, children, className,
       )}
       {children}
       {error && (
-        <p className="mt-1 text-sm text-error-600 dark:text-error-400">{error}</p>
+        <p className="mt-1 text-sm" style={{ color: 'var(--danger)' }}>{error}</p>
       )}
     </div>
   )

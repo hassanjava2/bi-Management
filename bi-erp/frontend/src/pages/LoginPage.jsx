@@ -37,28 +37,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Full-screen gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-700 via-primary-800 to-neutral-950" />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'var(--darker)' }}>
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, var(--primary-dark), var(--primary), var(--darker))' }} />
       <div className="absolute inset-0">
-        <div className="absolute top-[20%] right-[20%] w-[400px] h-[400px] rounded-full bg-primary-500/20 blur-[100px]" />
-        <div className="absolute bottom-[20%] left-[20%] w-[300px] h-[300px] rounded-full bg-primary-400/10 blur-[80px]" />
+        <div className="absolute top-[20%] right-[20%] w-[400px] h-[400px] rounded-full blur-[100px] opacity-30" style={{ background: 'var(--primary)' }} />
+        <div className="absolute bottom-[20%] left-[20%] w-[300px] h-[300px] rounded-full blur-[80px] opacity-20" style={{ background: 'var(--primary-light)' }} />
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
       </div>
 
       {/* Centered glass form */}
       <div className="relative z-10 w-full max-w-[420px] animate-scale-in">
-        <div className="rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl p-8 md:p-10">
+        <div className="rounded-3xl border backdrop-blur-xl shadow-2xl p-8 md:p-10" style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}>
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/15 backdrop-blur border border-white/20 mb-4">
-              <Building2 className="w-8 h-8 text-white" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4" style={{ background: 'rgba(var(--primary-rgb), 0.2)', border: '1px solid var(--border)' }}>
+              <Building2 className="w-8 h-8" style={{ color: 'var(--primary)' }} />
             </div>
-            <h1 className="text-2xl font-bold text-white">BI Management</h1>
-            <p className="text-white/60 text-sm mt-1">نظام إدارة الشركات الذكي</p>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--light)' }}>BI Management</h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--gray)' }}>نظام إدارة الشركات الذكي</p>
           </div>
 
-          <h2 className="text-xl font-bold text-white mb-1">مرحباً</h2>
-          <p className="text-white/50 text-sm mb-6">سجّل دخولك للمتابعة</p>
+          <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--light)' }}>مرحباً</h2>
+          <p className="text-sm mb-6" style={{ color: 'var(--gray)' }}>سجّل دخولك للمتابعة</p>
 
             {error && (
               <Alert variant="error" className="mb-6">{error}</Alert>
@@ -66,27 +65,29 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">البريد الإلكتروني</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--gray)' }}>البريد الإلكتروني</label>
                 <div className="relative">
-                  <Mail className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-600" />
+                  <Mail className="absolute end-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--gray)' }} />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="email@company.com"
                     required
-                    className="w-full rounded-xl border-0 bg-white/5 py-3 pe-11 ps-4 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary-500/40 transition"
+                    className="w-full rounded-xl border py-3 pe-11 ps-4 focus:outline-none focus:ring-2 focus:ring-primary-500/40 transition"
+                    style={{ background: 'var(--darker)', borderColor: 'var(--border)', color: 'var(--light)' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">كلمة المرور</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--gray)' }}>كلمة المرور</label>
                 <div className="relative">
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute end-3 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-neutral-400"
+                    className="absolute end-3 top-1/2 -translate-y-1/2 hover:opacity-80"
+                    style={{ color: 'var(--gray)' }}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -96,7 +97,8 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="w-full rounded-xl border-0 bg-white/5 py-3 pe-11 ps-4 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary-500/40 transition"
+                    className="w-full rounded-xl border py-3 pe-11 ps-4 focus:outline-none focus:ring-2 focus:ring-primary-500/40 transition"
+                    style={{ background: 'var(--darker)', borderColor: 'var(--border)', color: 'var(--light)' }}
                   />
                 </div>
               </div>
@@ -106,9 +108,10 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded border-neutral-700 bg-white/5 text-primary-500 focus:ring-primary-500/40"
+                  className="rounded border text-primary-500 focus:ring-primary-500/40"
+                  style={{ borderColor: 'var(--border)', background: 'var(--darker)' }}
                 />
-                <span className="text-sm text-white/60">تذكرني</span>
+                <span className="text-sm" style={{ color: 'var(--gray)' }}>تذكرني</span>
               </label>
 
               <Button
@@ -123,10 +126,10 @@ export default function LoginPage() {
             </form>
 
           {import.meta.env.DEV && (
-            <div className="mt-6 p-3 bg-white/5 rounded-xl text-center">
-              <p className="text-xs text-white/50">
-                <strong className="text-white/70">Dev:</strong>{' '}
-                <code className="text-primary-300">admin@bi-company.com / Admin@123</code>
+            <div className="mt-6 p-3 rounded-xl text-center" style={{ background: 'var(--darker)' }}>
+              <p className="text-xs" style={{ color: 'var(--gray)' }}>
+                <strong style={{ color: 'var(--light)' }}>Dev:</strong>{' '}
+                <code style={{ color: 'var(--primary)' }}>admin@bi-company.com / Admin@123</code>
               </p>
             </div>
           )}

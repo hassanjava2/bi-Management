@@ -21,7 +21,7 @@ const Input = forwardRef(function Input(
   return (
     <div className="w-full">
       {label && !floatingLabel && (
-        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+        <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--light)' }}>
           {label}
           {required && <span className="text-error-500 ms-1">*</span>}
         </label>
@@ -37,20 +37,19 @@ const Input = forwardRef(function Input(
           onFocus={(e) => { setFocused(true); props.onFocus?.(e) }}
           onBlur={(e) => { setFocused(false); props.onBlur?.(e) }}
           className={clsx(
-            'block w-full rounded-input border bg-white px-3.5 py-2.5',
-            'text-sm text-neutral-900 placeholder:text-neutral-400',
-            'transition-all duration-smooth',
+            'block w-full rounded-input border px-3.5 py-2.5 text-sm transition-all duration-smooth',
             'focus:border-primary-500 focus:shadow-input-focus focus:outline-none',
-            'dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:placeholder:text-neutral-500',
-            'dark:focus:border-primary-500',
-            'disabled:bg-neutral-50 dark:disabled:bg-neutral-800/50 disabled:text-neutral-400 disabled:cursor-not-allowed',
+            'disabled:opacity-60 disabled:cursor-not-allowed',
             Icon && 'pe-10',
             floatingLabel && 'pt-5',
-            error
-              ? 'border-error-300 focus:border-error-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)] dark:border-error-600'
-              : 'border-neutral-200 dark:border-neutral-700',
+            error && 'border-error-500 focus:border-error-500',
             className
           )}
+          style={{
+            borderColor: error ? undefined : 'var(--border)',
+            background: 'var(--card-bg)',
+            color: 'var(--light)',
+          }}
           placeholder={floatingLabel && !showFloating ? undefined : props.placeholder}
           {...props}
         />
@@ -59,9 +58,10 @@ const Input = forwardRef(function Input(
             className={clsx(
               'absolute start-3.5 transition-all duration-smooth pointer-events-none',
               showFloating
-                ? 'top-1.5 text-[11px] font-medium text-neutral-500 dark:text-neutral-400'
-                : 'top-1/2 -translate-y-1/2 text-sm text-neutral-400 dark:text-neutral-500'
+                ? 'top-1.5 text-[11px] font-medium'
+                : 'top-1/2 -translate-y-1/2 text-sm'
             )}
+            style={{ color: 'var(--gray)' }}
           >
             {required && <span className="text-error-500 ms-0.5">*</span>}
             {label}

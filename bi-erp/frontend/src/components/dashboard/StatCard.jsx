@@ -52,13 +52,15 @@ export default function StatCard({
   const displayValue = useAnimatedValue(value, isNumeric)
 
   return (
-    <div className={clsx(
-      'bg-white dark:bg-neutral-900 rounded-2xl p-6 relative overflow-hidden',
-      'border border-transparent dark:border-neutral-800 shadow-sm dark:shadow-none',
-      'hover:shadow-md hover:shadow-neutral-200/40 dark:hover:shadow-neutral-900/50',
-      'transition-all duration-300',
-      className
-    )}>
+    <div
+      className={clsx(
+        'rounded-[16px] p-6 relative overflow-hidden',
+        'border shadow-sm hover:shadow-[var(--neon-glow)]',
+        'transition-all duration-300',
+        className
+      )}
+      style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
+    >
       {Icon && (
         <div className={clsx('absolute start-4 top-4 opacity-90', c.icon)} aria-hidden>
           <Icon className="w-14 h-14" />
@@ -66,10 +68,10 @@ export default function StatCard({
       )}
       <div className="relative flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
+          <p className="text-xs font-medium uppercase tracking-wide" style={{ color: 'var(--gray)' }}>
             {title}
           </p>
-          <p className="mt-3 text-4xl font-bold text-neutral-900 dark:text-white tabular-nums">
+          <p className="mt-3 text-4xl font-bold tabular-nums" style={{ color: 'var(--light)' }}>
             {displayValue}
           </p>
           {trend && (

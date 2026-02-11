@@ -28,10 +28,10 @@ export class ErrorBoundary extends Component {
             <div className="w-16 h-16 rounded-2xl bg-error-50 dark:bg-error-900/20 flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-8 h-8 text-error-600 dark:text-error-400" />
             </div>
-            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1">
+            <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--light)' }}>
               حدث خطأ غير متوقع
             </h2>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+            <p className="text-sm mb-6" style={{ color: 'var(--gray)' }}>
               نعتذر، حدثت مشكلة. يمكنك المحاولة مرة أخرى أو تحديث الصفحة.
             </p>
             <div className="flex flex-wrap justify-center gap-2">

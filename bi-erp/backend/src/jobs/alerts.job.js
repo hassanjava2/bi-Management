@@ -19,7 +19,7 @@ async function checkLowStock() {
         const lowStock = await all(`
             SELECT id, name, quantity, min_quantity
             FROM products
-            WHERE quantity <= min_quantity AND (is_deleted = 0 OR is_deleted IS NULL)
+            WHERE quantity <= min_quantity AND (is_deleted = FALSE OR is_deleted IS NULL)
         `);
 
         for (const product of lowStock) {

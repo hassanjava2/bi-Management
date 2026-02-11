@@ -34,7 +34,7 @@ async function list(filters = {}) {
     SELECT p.*, c.name as category_name, c.name_ar as category_name_ar
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE (p.is_deleted = 0 OR p.is_deleted IS NULL)
+    WHERE (p.is_deleted = FALSE OR p.is_deleted IS NULL)
   `;
   const params = [];
   if (search) {
@@ -52,7 +52,7 @@ async function list(filters = {}) {
   params.push(limitNum, offset);
   const rows = await all(query, params);
   const countParams = [];
-  let countQuery = `SELECT COUNT(*) as total FROM products p WHERE (p.is_deleted = 0 OR p.is_deleted IS NULL)`;
+  let countQuery = `SELECT COUNT(*) as total FROM products p WHERE (p.is_deleted = FALSE OR p.is_deleted IS NULL)`;
   if (search) {
     countQuery += ` AND (p.name LIKE ? OR p.name_ar LIKE ? OR p.code LIKE ?)`;
     const term = `%${search}%`;
@@ -78,7 +78,7 @@ async function search(queryTerm, limit = 20) {
   const term = `%${queryTerm}%`;
   const rows = await all(
     `SELECT id, name, name_ar, code, cost_price, selling_price, wholesale_price, category_id FROM products
-     WHERE (is_deleted = 0 OR is_deleted IS NULL) AND (name LIKE ? OR name_ar LIKE ? OR code LIKE ?)
+     WHERE (is_deleted = FALSE OR is_deleted IS NULL) AND (name LIKE ? OR name_ar LIKE ? OR code LIKE ?)
      ORDER BY name LIMIT ?`,
     [term, term, term, parseInt(limit, 10)]
   );
@@ -100,7 +100,7 @@ async function getById(id) {
   const row = await get(
     `SELECT p.*, c.name as category_name, c.name_ar as category_name_ar
      FROM products p LEFT JOIN categories c ON p.category_id = c.id
-     WHERE p.id = ? AND (p.is_deleted = 0 OR p.is_deleted IS NULL)`,
+     WHERE p.id = ? AND (p.is_deleted = FALSE OR p.is_deleted IS NULL)`,
     [String(id)]
   );
   if (!row) return null;
@@ -137,7 +137,7 @@ async function create(data) {
     min_quantity = 0,
     unit = 'piece',
     warranty_months = 0,
-    is_active = 1,
+    is_active = true,
     created_by,
   } = data;
   const catId = category_id || (group_id != null ? String(group_id) : null);
@@ -163,12 +163,12 @@ async function create(data) {
       selling != null ? parseFloat(selling) : null,
       wholesale_price != null ? parseFloat(wholesale_price) : null,
       min_price != null ? parseFloat(min_price) : null,
-      track_by_serial ? 1 : 0,
+      !!track_by_serial,
       parseInt(quantity, 10) || 0,
       parseInt(min_quantity, 10) || 0,
       unit,
       parseInt(warranty_months, 10) || 0,
-      is_active ? 1 : 0,
+      is_active !== false,
       createdAt,
       createdAt,
       created_by || null,
@@ -222,12 +222,12 @@ async function update(id, data) {
   else if (sale_price !== undefined) { updates.push('selling_price = ?'); params.push(parseFloat(sale_price)); }
   if (wholesale_price !== undefined) { updates.push('wholesale_price = ?'); params.push(parseFloat(wholesale_price)); }
   if (min_price !== undefined) { updates.push('min_price = ?'); params.push(parseFloat(min_price)); }
-  if (track_by_serial !== undefined) { updates.push('track_by_serial = ?'); params.push(track_by_serial ? 1 : 0); }
+  if (track_by_serial !== undefined) { updates.push('track_by_serial = ?'); params.push(track_by_serial ? true : false); }
   if (quantity !== undefined) { updates.push('quantity = ?'); params.push(parseInt(quantity, 10)); }
   if (min_quantity !== undefined) { updates.push('min_quantity = ?'); params.push(parseInt(min_quantity, 10)); }
   if (unit !== undefined) { updates.push('unit = ?'); params.push(unit); }
   if (warranty_months !== undefined) { updates.push('warranty_months = ?'); params.push(parseInt(warranty_months, 10)); }
-  if (is_active !== undefined) { updates.push('is_active = ?'); params.push(is_active ? 1 : 0); }
+  if (is_active !== undefined) { updates.push('is_active = ?'); params.push(is_active !== false); }
   if (updates.length === 0) return getById(id);
   updates.push('updated_at = ?');
   params.push(now());
@@ -239,12 +239,12 @@ async function update(id, data) {
 async function remove(id) {
   const existing = await get('SELECT id FROM products WHERE id = ?', [String(id)]);
   if (!existing) return false;
-  await run(`UPDATE products SET is_deleted = 1, deleted_at = ? WHERE id = ?`, [now(), String(id)]);
+  await run(`UPDATE products SET is_deleted = TRUE, deleted_at = ? WHERE id = ?`, [now(), String(id)]);
   return true;
 }
 
 async function getGroups() {
-  const countQuery = `SELECT category_id as id, COUNT(*) as count FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) AND category_id IS NOT NULL GROUP BY category_id`;
+  const countQuery = `SELECT category_id as id, COUNT(*) as count FROM products WHERE (is_deleted = FALSE OR is_deleted IS NULL) AND category_id IS NOT NULL GROUP BY category_id`;
   const counts = await all(countQuery);
   const countMap = {};
   counts.forEach((c) => { countMap[c.id] = c.count; });
@@ -260,11 +260,11 @@ async function getStats() {
   const rows = await all(
     `SELECT COUNT(*) as total, AVG(cost_price) as avg_buy_price, AVG(selling_price) as avg_sale_price,
       SUM(quantity * COALESCE(cost_price, 0)) as total_value
-     FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL)`
+     FROM products WHERE (is_deleted = FALSE OR is_deleted IS NULL)`
   );
   const r = rows[0];
   const byGroup = await all(
-    `SELECT category_id, COUNT(*) as cnt FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) AND category_id IS NOT NULL GROUP BY category_id`
+    `SELECT category_id, COUNT(*) as cnt FROM products WHERE (is_deleted = FALSE OR is_deleted IS NULL) AND category_id IS NOT NULL GROUP BY category_id`
   );
   const by_group = {};
   byGroup.forEach((g) => { by_group[g.category_id] = g.cnt; });

@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
         if (!name) return res.status(400).json({ success: false, error: 'name required' });
         const id = generateId();
         await run(`INSERT INTO fixed_assets (id, code, name, category, purchase_invoice_id, cost, is_expense_tracked) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [id, code || null, name, category || null, purchase_invoice_id || null, parseFloat(cost || 0), is_expense_tracked ? 1 : 0]);
+            [id, code || null, name, category || null, purchase_invoice_id || null, parseFloat(cost || 0), !!is_expense_tracked]);
         res.status(201).json({ success: true, data: await get('SELECT * FROM fixed_assets WHERE id = ?', [id]) });
     } catch (e) {
         if (e.message && e.message.includes('no such table')) return res.status(501).json({ success: false, error: 'fixed_assets table not found' });

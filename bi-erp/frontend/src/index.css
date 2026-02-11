@@ -12,11 +12,15 @@
   }
 
   body {
-    @apply bg-neutral-50 text-neutral-900 transition-colors duration-smooth;
+    /* Theme sets background/color via themes.css; fallback for no-js */
+    background: var(--darker, #020617);
+    color: var(--light, #f1f5f9);
+    transition: background 0.3s ease, color 0.3s ease;
   }
 
   .dark body {
-    @apply bg-neutral-950 text-neutral-100;
+    background: var(--darker);
+    color: var(--light);
   }
 }
 

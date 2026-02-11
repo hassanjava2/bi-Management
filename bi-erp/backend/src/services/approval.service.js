@@ -252,7 +252,7 @@ async function executeDeletion(entityType, entityId) {
         try {
             await run(`
                 UPDATE invoices 
-                SET status = 'deleted', updated_at = ?, is_deleted = 1, deleted_at = ?
+                SET status = 'deleted', updated_at = ?, is_deleted = TRUE, deleted_at = ?
                 WHERE id = ?
             `, [now(), now(), entityId]);
         } catch (e) {
@@ -282,7 +282,7 @@ async function executeDeletion(entityType, entityId) {
     try {
         await run(`
             UPDATE ${table} 
-            SET is_deleted = 1, deleted_at = ?
+            SET is_deleted = TRUE, deleted_at = ?
             WHERE id = ?
         `, [now(), entityId]);
     } catch (error) {

@@ -9,12 +9,12 @@ export default function FormSection({ title, description, children, className })
       {(title || description) && (
         <div className="mb-4">
           {title && (
-            <h3 className="text-section-title font-semibold text-neutral-900 dark:text-white">
+            <h3 className="text-section-title font-semibold" style={{ color: 'var(--light)' }}>
               {title}
             </h3>
           )}
           {description && (
-            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{description}</p>
+            <p className="mt-1 text-sm" style={{ color: 'var(--gray)' }}>{description}</p>
           )}
         </div>
       )}
