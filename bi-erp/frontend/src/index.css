@@ -115,9 +115,9 @@
   animation: slideInFromRight 0.2s ease-out forwards;
 }
 
-/* Focus ring (accessibility) */
+/* Focus ring (accessibility) - use fixed color so Tailwind build works with CSS vars */
 .focus-ring {
-  @apply outline-none ring-2 ring-primary-500/40 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900;
+  @apply outline-none ring-2 ring-sky-500/40 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900;
 }
 
 /* Button ripple (optional use via class) */

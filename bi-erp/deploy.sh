@@ -20,6 +20,10 @@ cd ..
 
 # نسخ الواجهة للمجلد الثابت (عدّل المسار حسب إعداد Nginx على السيرفر)
 WEB_DIR="${BI_ERP_WEB_DIR:-/var/www/bi-erp-web}"
+if [ ! -d "$WEB_DIR" ]; then
+  echo "==> Creating $WEB_DIR"
+  mkdir -p "$WEB_DIR" || { echo "Create it manually: sudo mkdir -p $WEB_DIR && sudo chown \$USER $WEB_DIR"; exit 1; }
+fi
 if [ -d "$WEB_DIR" ]; then
   echo "==> Copying frontend to $WEB_DIR"
   cp -r frontend/dist/* "$WEB_DIR"/
