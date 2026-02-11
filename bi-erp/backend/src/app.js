@@ -37,6 +37,17 @@ try {
   console.warn('[!] Rate limiter not loaded:', e.message);
 }
 
+// Attach database pool to req.db for routes that need it
+app.use((req, res, next) => {
+  try {
+    const { getDatabase } = require('./config/database');
+    req.db = getDatabase();
+  } catch (e) {
+    // Database not initialized yet
+  }
+  next();
+});
+
 const API_PREFIX = process.env.API_PREFIX || '/api';
 app.use(API_PREFIX, routes);
 
