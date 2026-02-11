@@ -14,6 +14,18 @@ router.get('/my-tasks', async (req, res) => {
   }
 });
 
+router.get('/stats', async (req, res) => {
+  try {
+    const data = await taskService.getTaskStats({
+      assigned_to: req.query.assigned_to,
+      department_id: req.query.department_id,
+    });
+    res.json({ success: true, data });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const data = await taskService.list({ assigned_to: req.query.assigned_to, status: req.query.status });

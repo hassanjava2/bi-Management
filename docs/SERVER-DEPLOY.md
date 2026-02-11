@@ -36,6 +36,44 @@ cd /var/www/bi-management && git pull && cd frontend && npm install && npm run b
 
 ### إذا كان السيرفر يشغّل BI-ERP (مجلد bi-erp)
 
+**إذا ظهر `Permission denied` عند تشغيل أي `./deploy.sh`:**
+```bash
+chmod +x deploy.sh
+# أو داخل bi-erp:
+chmod +x bi-erp/deploy.sh
+```
+
+**إذا ظهر `chmod: cannot access 'deploy.sh': No such file or directory`** (الملف غير موجود في المستودع على السيرفر)، أنشئ الملف يدوياً ثم شغّله:
+
+```bash
+cd /var/www/bi-management/bi-erp
+
+cat > deploy.sh << 'DEPLOY_EOF'
+#!/bin/bash
+set -e
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+echo "==> Building frontend..."
+cd frontend && npm install --production=false && npm run build && cd ..
+echo "==> Backend..."
+cd backend && npm install --production && cd ..
+WEB_DIR="${BI_ERP_WEB_DIR:-/var/www/bi-erp-web}"
+if [ -d "$WEB_DIR" ]; then
+  echo "==> Copying frontend to $WEB_DIR"
+  cp -r frontend/dist/* "$WEB_DIR"/
+fi
+if command -v pm2 &>/dev/null; then
+  pm2 restart bi-erp-api 2>/dev/null || true
+fi
+echo "==> BI-ERP deploy done."
+DEPLOY_EOF
+
+chmod +x deploy.sh
+./deploy.sh
+```
+
+**أو نفّذ النشر خطوة بخطوة بدون سكربت:**
+
 ```bash
 cd /var/www/bi-management
 git pull
@@ -63,8 +101,39 @@ pm2 restart all          # إعادة تشغيل الكل
 
 ### Nginx (إن وُجد)
 
+**مهم لـ erp.biiraq.com:** يجب توجيه `/api` و WebSocket إلى **bi-erp-api** وليس bi-api، وإلا ستظهر أخطاء 404 وقطع Socket.
+
+مثال إعداد موقع لـ BI-ERP:
+
+```nginx
+server {
+    listen 80;
+    server_name erp.biiraq.com;
+    root /var/www/bi-erp-web;
+    index index.html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    location /api/ {
+        proxy_pass http://127.0.0.1:3001;   # منفذ bi-erp-api (عدّله إن اختلف)
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location /socket.io/ {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+تأكد من أن منفذ bi-erp-api (مثلاً 3001) يطابق ما في `PORT` أو إعداد pm2.
+
 ```bash
-sudo systemctl status nginx
 sudo nginx -t            # فحص التكوين
 sudo systemctl reload nginx
 ```

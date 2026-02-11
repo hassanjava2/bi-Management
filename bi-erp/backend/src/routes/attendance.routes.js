@@ -18,6 +18,15 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/stats', async (req, res) => {
+  try {
+    const data = await attendanceService.getStats();
+    res.json({ success: true, data });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 router.get('/today', async (req, res) => {
   try {
     const record = await attendanceService.getToday(req.user.id);

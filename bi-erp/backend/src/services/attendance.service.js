@@ -61,4 +61,19 @@ async function getToday(userId) {
   return get('SELECT * FROM attendance WHERE user_id = ? AND date = ?', [userId, todayDate]);
 }
 
-module.exports = { list, checkIn, checkOut, getToday };
+async function getStats() {
+  const todayDate = today();
+  const total = (await get('SELECT COUNT(*) as c FROM users WHERE is_active = TRUE', []))?.c ?? 0;
+  const present = (await get('SELECT COUNT(*) as c FROM attendance WHERE date = ? AND check_in IS NOT NULL', [todayDate]))?.c ?? 0;
+  const late = (await get('SELECT COUNT(*) as c FROM attendance WHERE date = ? AND late_minutes > 0', [todayDate]))?.c ?? 0;
+  const absent = Math.max(0, (total || 0) - (present || 0));
+  return {
+    total_employees: total,
+    present,
+    late,
+    absent,
+    checked_in: present,
+  };
+}
+
+module.exports = { list, checkIn, checkOut, getToday, getStats };

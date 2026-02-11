@@ -52,4 +52,27 @@ async function myTasks(userId) {
   return list({ assigned_to: userId });
 }
 
-module.exports = { list, getById, create, update, addComment, myTasks };
+async function getTaskStats(filters = {}) {
+  const { get } = require('../config/database');
+  const today = new Date().toISOString().split('T')[0];
+  const parts = [];
+  const params = [];
+  if (filters.assigned_to) {
+    params.push(filters.assigned_to);
+    parts.push('assigned_to = ?');
+  }
+  if (filters.department_id) {
+    params.push(filters.department_id);
+    parts.push('department_id = ?');
+  }
+  const where = parts.length ? 'AND ' + parts.join(' AND ') : '';
+  const total = (await get('SELECT COUNT(*) as c FROM tasks WHERE 1=1 ' + where, params))?.c ?? 0;
+  const pending = (await get("SELECT COUNT(*) as c FROM tasks WHERE status = 'pending' " + where, params))?.c ?? 0;
+  const in_progress = (await get("SELECT COUNT(*) as c FROM tasks WHERE status = 'in_progress' " + where, params))?.c ?? 0;
+  const completed = (await get("SELECT COUNT(*) as c FROM tasks WHERE status = 'completed' " + where, params))?.c ?? 0;
+  const overdue = (await get("SELECT COUNT(*) as c FROM tasks WHERE status NOT IN ('completed','cancelled') AND due_date IS NOT NULL AND (due_date::date) < ? " + where, [today, ...params]))?.c ?? 0;
+  const todayCount = (await get('SELECT COUNT(*) as c FROM tasks WHERE (due_date::date) = ? ' + where, [today, ...params]))?.c ?? 0;
+  return { total, pending, in_progress, completed, overdue, today: todayCount };
+}
+
+module.exports = { list, getById, create, update, addComment, myTasks, getTaskStats };
