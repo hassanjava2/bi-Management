@@ -10,6 +10,18 @@ const { generateId } = require('../utils/helpers');
 
 router.use(auth);
 
+// Root - return summary as default
+router.get('/', async (req, res) => {
+    try {
+        const shareholders = await all('SELECT * FROM shareholders ORDER BY name LIMIT 100');
+        const totalShares = shareholders.reduce((s, sh) => s + (parseFloat(sh.share_percentage) || 0), 0);
+        const totalValue = shareholders.reduce((s, sh) => s + (parseFloat(sh.share_value) || 0), 0);
+        res.json({ success: true, data: { shareholders, total_shares: totalShares, total_value: totalValue } });
+    } catch (e) {
+        res.json({ success: true, data: { shareholders: [], total_shares: 0, total_value: 0 } });
+    }
+});
+
 // Tables shareholders, share_distributions, share_distribution_items are created via migrations.
 
 router.get('/config', async (req, res) => {

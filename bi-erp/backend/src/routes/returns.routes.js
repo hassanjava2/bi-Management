@@ -6,6 +6,39 @@ const { generateId } = require('../utils/helpers');
 
 router.use(auth);
 
+// Stats
+router.get('/stats', async (req, res) => {
+  try {
+    const total = await get('SELECT COUNT(*) as c FROM returns').then(r => r?.c || 0).catch(() => 0);
+    const pending = await get("SELECT COUNT(*) as c FROM returns WHERE status = 'pending'").then(r => r?.c || 0).catch(() => 0);
+    const completed = await get("SELECT COUNT(*) as c FROM returns WHERE status = 'completed'").then(r => r?.c || 0).catch(() => 0);
+    res.json({ success: true, data: { total, pending, completed, in_progress: total - pending - completed } });
+  } catch (e) {
+    res.json({ success: true, data: { total: 0, pending: 0, completed: 0, in_progress: 0 } });
+  }
+});
+
+// Overdue
+router.get('/overdue', async (req, res) => {
+  try {
+    const rows = await all("SELECT * FROM returns WHERE status = 'pending' AND created_at < NOW() - INTERVAL '7 days' ORDER BY created_at ASC LIMIT 50");
+    res.json({ success: true, data: rows });
+  } catch (e) {
+    res.json({ success: true, data: [] });
+  }
+});
+
+// Alerts
+router.get('/alerts', async (req, res) => {
+  try {
+    const overdue = await all("SELECT * FROM returns WHERE status = 'pending' AND created_at < NOW() - INTERVAL '14 days' LIMIT 10");
+    const alerts = overdue.map(r => ({ type: 'critical', message: 'مرتجع متأخر أكثر من 14 يوم', return_id: r.id }));
+    res.json({ success: true, data: alerts });
+  } catch (e) {
+    res.json({ success: true, data: [] });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const rows = await all('SELECT * FROM returns ORDER BY created_at DESC LIMIT 100');

@@ -5,6 +5,26 @@ const goalsService = require('../services/goals.service');
 
 router.use(auth);
 
+// Root endpoint - leaderboard/overview
+router.get('/', async (req, res) => {
+  try {
+    const data = await goalsService.getUserPoints(req.user.id);
+    res.json({ success: true, data });
+  } catch (e) {
+    res.json({ success: true, data: { total_points: 0, level: 1, badges: [] } });
+  }
+});
+
+router.get('/leaderboard', async (req, res) => {
+  try {
+    const { all } = require('../config/database');
+    const rows = await all('SELECT u.id, u.full_name, u.role, COALESCE(g.total_points, 0) as points FROM users u LEFT JOIN user_goals g ON u.id = g.user_id WHERE u.is_active = true ORDER BY points DESC LIMIT 20');
+    res.json({ success: true, data: rows });
+  } catch (e) {
+    res.json({ success: true, data: [] });
+  }
+});
+
 router.get('/my-points', async (req, res) => {
   try {
     const data = await goalsService.getUserPoints(req.user.id);

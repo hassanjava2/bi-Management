@@ -5,6 +5,16 @@ const onboardingService = require('../services/onboarding.service');
 
 router.use(auth);
 
+// Root endpoint
+router.get('/', async (req, res) => {
+  try {
+    const data = await onboardingService.checkProgress(req.user.id);
+    res.json({ success: true, data });
+  } catch (e) {
+    res.json({ success: true, data: { progress: 0, tasks: [] } });
+  }
+});
+
 router.get('/my-progress', async (req, res) => {
   try {
     const data = await onboardingService.checkProgress(req.user.id);

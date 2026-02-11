@@ -33,6 +33,7 @@ router.use('/devices', require('./device.routes'));
 router.use('/shares', require('./shares.routes'));
 router.use('/fixed-assets', require('./fixed-assets.routes'));
 router.use('/approvals', require('./approval.routes'));
+router.use('/permissions', require('./permissions.routes'));
 router.use('/security', require('./security.routes'));
 router.use('/bot', require('./bot.routes'));
 router.use('/ai-distribution', require('./ai-distribution.routes'));
