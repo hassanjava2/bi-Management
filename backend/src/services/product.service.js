@@ -137,7 +137,7 @@ async function create(data) {
     min_quantity = 0,
     unit = 'piece',
     warranty_months = 0,
-    is_active IS NOT FALSE,
+    is_active = true,
     created_by,
   } = data;
   const catId = category_id || (group_id != null ? String(group_id) : null);
