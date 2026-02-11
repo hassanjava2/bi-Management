@@ -93,9 +93,10 @@ async function initializeDatabase() {
                 await pool.query(
                     `INSERT INTO users (id, username, email, password_hash, full_name, phone, role, security_level, is_active, created_at, updated_at)
                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-                    [adminId, 'admin', 'admin@bi-company.com', passwordHash, 'مدير النظام', '07700000000', 'owner', 5, 1, nowVal, nowVal]
+                    [adminId, 'admin', 'admin@bi-company.com', passwordHash, 'مدير النظام', '07700000000', 'owner', 5, true, nowVal, nowVal]
                 );
                 console.log('    ✓ تم إنشاء مستخدم المدير');
+                console.log('    📧 Email: admin@bi-company.com');
                 console.log('    📧 Username: admin');
                 console.log('    🔑 Password: Admin@123');
             } catch (e) {

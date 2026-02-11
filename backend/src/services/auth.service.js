@@ -28,24 +28,27 @@ async function login(email, password, ipAddress) {
             new_values: { email, reason: 'USER_NOT_FOUND' },
             ip_address: ipAddress
         });
-        return { error: 'INVALID_CREDENTIALS', message: 'Invalid email or password' };
+        return { error: 'INVALID_CREDENTIALS', message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' };
     }
 
     // Check if locked
     if (user.locked_until) {
         const lockedUntil = new Date(user.locked_until);
         if (new Date() < lockedUntil) {
+            const remainingMinutes = Math.ceil((lockedUntil - new Date()) / 60000);
             return { 
                 error: 'ACCOUNT_LOCKED', 
-                message: 'Account is locked. Try again later.',
+                message: `الحساب مقفل. حاول مرة أخرى بعد ${remainingMinutes} دقيقة`,
                 locked_until: user.locked_until
             };
         }
+        // Lock period expired, reset
+        await run(`UPDATE users SET locked_until = NULL, failed_login_attempts = 0 WHERE id = ?`, [user.id]);
     }
 
     // Check if active
     if (!user.is_active) {
-        return { error: 'ACCOUNT_INACTIVE', message: 'Account is deactivated' };
+        return { error: 'ACCOUNT_INACTIVE', message: 'الحساب معطل. تواصل مع مدير النظام' };
     }
 
     // Verify password
@@ -80,7 +83,7 @@ async function login(email, password, ipAddress) {
             ip_address: ipAddress
         });
 
-        return { error: 'INVALID_CREDENTIALS', message: 'Invalid email or password' };
+        return { error: 'INVALID_CREDENTIALS', message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' };
     }
 
     // Success - reset failed attempts

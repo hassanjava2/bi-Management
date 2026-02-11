@@ -12,8 +12,12 @@ if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
     console.error('CRITICAL: JWT_SECRET environment variable is required in production!');
     process.exit(1);
 }
-const FALLBACK_SECRET = 'dev-only-secret-' + Date.now(); // مؤقت للتطوير فقط
+// استخدام مفتاح ثابت كـ fallback (يجب تعيين JWT_SECRET في الإنتاج!)
+const FALLBACK_SECRET = 'dev-bi-management-fallback-jwt-secret-2024';
 const SECRET_KEY = JWT_SECRET || FALLBACK_SECRET;
+if (!JWT_SECRET) {
+    console.warn('[!] WARNING: JWT_SECRET not set. Using fallback secret (NOT secure for production!)');
+}
 
 /**
  * فك تشفير وتحقق من التوكن
@@ -23,7 +27,10 @@ function verifyToken(token) {
         return jwt.verify(token, SECRET_KEY);
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
-            return { expired: true };
+            return { expired: true, error: 'TOKEN_EXPIRED' };
+        }
+        if (error.name === 'JsonWebTokenError') {
+            return { invalid: true, error: 'INVALID_TOKEN' };
         }
         return null;
     }
@@ -56,12 +63,40 @@ function auth(req, res, next) {
             });
         }
 
+        // التحقق من أن التوكن منتهي الصلاحية
+        if (decoded.expired) {
+            return res.status(401).json({
+                success: false,
+                error: 'TOKEN_EXPIRED',
+                message: 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مجدداً'
+            });
+        }
+
+        // التحقق من أن التوكن غير صالح
+        if (decoded.invalid) {
+            return res.status(401).json({
+                success: false,
+                error: 'INVALID_TOKEN',
+                message: 'توكن غير صالح'
+            });
+        }
+
+        // التحقق من وجود بيانات المستخدم الأساسية
+        if (!decoded.id) {
+            return res.status(401).json({
+                success: false,
+                error: 'INVALID_TOKEN',
+                message: 'توكن لا يحتوي على بيانات صالحة'
+            });
+        }
+
         // إضافة بيانات المستخدم للطلب
         req.user = {
             id: decoded.id,
             email: decoded.email,
             name: decoded.name || decoded.full_name,
             role: decoded.role,
+            security_level: decoded.security_level,
             permissions: decoded.permissions || []
         };
 

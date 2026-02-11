@@ -24,9 +24,20 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+      const requestUrl = error.config?.url || ''
+      const isAuthEndpoint = requestUrl.includes('/auth/login') || 
+                             requestUrl.includes('/auth/me') ||
+                             requestUrl.includes('/auth/refresh-token')
+      const isOnLoginPage = window.location.pathname === '/login'
+      
+      // Don't redirect if we're on the login page or hitting auth endpoints
+      // Let the AuthContext and LoginPage handle their own 401 errors
+      if (!isAuthEndpoint && !isOnLoginPage) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        localStorage.removeItem('refreshToken')
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }

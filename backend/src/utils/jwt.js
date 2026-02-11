@@ -9,8 +9,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
     throw new Error('JWT_SECRET environment variable is required in production!');
 }
-const FALLBACK_SECRET = 'dev-only-jwt-secret-' + Date.now();
+// يجب أن يتطابق مع المفتاح في auth.js middleware
+const FALLBACK_SECRET = 'dev-bi-management-fallback-jwt-secret-2024';
 const SECRET_KEY = JWT_SECRET || FALLBACK_SECRET;
+if (!JWT_SECRET) {
+    console.warn('[!] WARNING: JWT_SECRET not set in jwt.js. Using fallback secret.');
+}
 
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '30d';
