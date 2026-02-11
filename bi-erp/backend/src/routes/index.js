@@ -25,6 +25,7 @@ router.use('/audit', require('./audit.routes'));
 router.use('/notifications', require('./notifications.routes'));
 router.use('/reports', require('./reports.routes'));
 router.use('/backup', require('./backup.routes'));
+router.use('/sales', require('./sales.routes'));
 router.use('/settings', require('./settings.routes'));
 router.use('/delivery', require('./delivery.routes'));
 router.use('/products', require('./products.routes'));
