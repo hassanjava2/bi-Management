@@ -27,6 +27,31 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+router.get('/my-record', async (req, res) => {
+  try {
+    const data = await attendanceService.list({
+      user_id: req.user.id,
+      start_date: req.query.start_date,
+      end_date: req.query.end_date,
+    });
+    res.json({ success: true, data });
+  } catch (e) {
+    res.json({ success: true, data: [] });
+  }
+});
+
+router.get('/report', async (req, res) => {
+  try {
+    const data = await attendanceService.list({
+      start_date: req.query.start_date,
+      end_date: req.query.end_date,
+    });
+    res.json({ success: true, data });
+  } catch (e) {
+    res.json({ success: true, data: [] });
+  }
+});
+
 router.get('/today', async (req, res) => {
   try {
     const record = await attendanceService.getToday(req.user.id);

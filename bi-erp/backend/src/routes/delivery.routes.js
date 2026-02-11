@@ -10,6 +10,42 @@ const { generateId } = require('../utils/helpers');
 
 router.use(auth);
 
+// Stats MUST be before /:id to avoid conflict
+router.get('/stats', async (req, res) => {
+    try {
+        const stats = await get(`
+            SELECT 
+                COUNT(*)::int as total,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END)::int as pending,
+                SUM(CASE WHEN status = 'in_transit' THEN 1 ELSE 0 END)::int as in_transit,
+                SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END)::int as delivered,
+                SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END)::int as failed
+            FROM deliveries
+        `);
+        res.json({ success: true, data: stats || { total: 0, pending: 0, in_transit: 0, delivered: 0, failed: 0 } });
+    } catch (error) {
+        res.json({ success: true, data: { total: 0, pending: 0, in_transit: 0, delivered: 0, failed: 0 } });
+    }
+});
+
+router.get('/pending', async (req, res) => {
+    try {
+        const rows = await all("SELECT * FROM deliveries WHERE status = 'pending' ORDER BY created_at DESC LIMIT 50");
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        res.json({ success: true, data: [] });
+    }
+});
+
+router.get('/drivers', async (req, res) => {
+    try {
+        const rows = await all("SELECT id, full_name as name, phone FROM users WHERE role = 'driver' AND is_active = true");
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        res.json({ success: true, data: [] });
+    }
+});
+
 /**
  * GET /api/delivery
  * قائمة التوصيلات
@@ -125,31 +161,6 @@ router.put('/:id/status', async (req, res) => {
         res.json({
             success: true,
             message: 'تم تحديث الحالة'
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-/**
- * GET /api/delivery/stats
- * إحصائيات التوصيل
- */
-router.get('/stats', async (req, res) => {
-    try {
-        const stats = await get(`
-            SELECT 
-                COUNT(*) as total,
-                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-                SUM(CASE WHEN status = 'in_transit' THEN 1 ELSE 0 END) as in_transit,
-                SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered,
-                SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed
-            FROM deliveries
-        `);
-        
-        res.json({
-            success: true,
-            data: stats
         });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

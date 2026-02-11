@@ -2,10 +2,23 @@ const express = require('express');
 const router = express.Router();
 const { auth } = require('../middleware/auth');
 const { hasPermission } = require('../middleware/permissions');
-const { all } = require('../config/database');
+const { all, get } = require('../config/database');
 
 router.use(auth);
 router.use(hasPermission('audit.view'));
+
+router.get('/dashboard', async (req, res) => {
+  try {
+    const [total, today, byAction] = await Promise.all([
+      get('SELECT COUNT(*) as c FROM audit_logs').then(r => r?.c || 0).catch(() => 0),
+      get("SELECT COUNT(*) as c FROM audit_logs WHERE created_at::date = CURRENT_DATE").then(r => r?.c || 0).catch(() => 0),
+      all('SELECT action, COUNT(*) as count FROM audit_logs GROUP BY action ORDER BY count DESC LIMIT 10').catch(() => []),
+    ]);
+    res.json({ success: true, data: { total, today, by_action: byAction } });
+  } catch (e) {
+    res.json({ success: true, data: { total: 0, today: 0, by_action: [] } });
+  }
+});
 
 router.get('/', async (req, res) => {
   try {
