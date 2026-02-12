@@ -45,7 +45,7 @@ export default function SalesPage() {
 
   const { data: invoicesData, isLoading, error: invoicesError } = useQuery({
     queryKey: ['invoices', searchTerm, selectedType, selectedStatus, dateRange],
-    queryFn: () => salesAPI.getInvoices({ search: searchTerm, type: selectedType !== 'all' ? selectedType : undefined, status: selectedStatus !== 'all' ? selectedStatus : undefined, ...dateRange }),
+    queryFn: () => salesAPI.getInvoices({ search: searchTerm, type: selectedType !== 'all' ? selectedType : 'sale', status: selectedStatus !== 'all' ? selectedStatus : undefined, ...dateRange }),
     retry: 1, staleTime: 30000,
   })
   const { data: statsData, error: statsError } = useQuery({

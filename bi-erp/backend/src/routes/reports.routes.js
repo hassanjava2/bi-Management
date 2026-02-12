@@ -31,21 +31,29 @@ router.get('/executive-dashboard', async (req, res) => {
       get("SELECT COUNT(*) as count, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'sale%' AND date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP) AND (is_deleted = FALSE OR is_deleted IS NULL)").catch(() => ({ count: 0, total: 0 })),
     ]);
     
+    const salesTotal = Number(totalSales?.total) || 0;
+    const purchasesTotal = Number(totalPurchases?.total) || 0;
+    const profit = salesTotal - purchasesTotal;
+
     res.json({
       success: true,
       data: {
-        sales: { count: totalSales?.count || 0, total: totalSales?.total || 0 },
-        purchases: { count: totalPurchases?.count || 0, total: totalPurchases?.total || 0 },
+        sales: { count: totalSales?.count || 0, total: salesTotal },
+        purchases: { count: totalPurchases?.count || 0, total: purchasesTotal },
         total_customers: totalCustomers,
         total_products: totalProducts,
-        today_sales: { count: todaySales?.count || 0, total: todaySales?.total || 0 },
-        monthly_sales: { count: monthlySales?.count || 0, total: monthlySales?.total || 0 },
-        revenue: totalSales?.total || 0,
-        profit_margin: 0,
+        today_sales: { count: todaySales?.count || 0, total: Number(todaySales?.total) || 0 },
+        monthly_sales: { count: monthlySales?.count || 0, total: Number(monthlySales?.total) || 0 },
+        // Fields expected by ExecutiveDashboardPage.jsx
+        revenue: { total_sales: salesTotal, total_purchases: purchasesTotal, net_profit: profit, profit_margin: salesTotal > 0 ? ((profit / salesTotal) * 100).toFixed(1) : 0 },
+        cash_flow: [],
+        top_sellers_month: [],
+        alerts: { low_stock: 0, overdue_payments: 0, pending_approvals: 0 },
+        quick_links: [],
       }
     });
   } catch (e) {
-    res.json({ success: true, data: { sales: { count: 0, total: 0 }, purchases: { count: 0, total: 0 }, total_customers: 0, total_products: 0, today_sales: { count: 0, total: 0 }, monthly_sales: { count: 0, total: 0 }, revenue: 0, profit_margin: 0 } });
+    res.json({ success: true, data: { revenue: { total_sales: 0, total_purchases: 0, net_profit: 0, profit_margin: 0 }, cash_flow: [], top_sellers_month: [], alerts: {}, quick_links: [] } });
   }
 });
 

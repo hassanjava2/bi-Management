@@ -9,7 +9,16 @@ async function findAll(filters = {}) {
     WHERE (i.is_deleted = FALSE OR i.is_deleted IS NULL)
   `;
   const params = [];
-  if (filters.type) params.push(filters.type), sql += ` AND i.type = ?`;
+  if (filters.type) {
+    if (filters.type === 'sale') {
+      sql += ` AND i.type LIKE 'sale%'`;
+    } else if (filters.type === 'purchase') {
+      sql += ` AND i.type LIKE 'purchase%'`;
+    } else {
+      params.push(filters.type);
+      sql += ` AND i.type = ?`;
+    }
+  }
   if (filters.status) params.push(filters.status), sql += ` AND i.status = ?`;
   if (filters.customer_id) params.push(filters.customer_id), sql += ` AND i.customer_id = ?`;
   if (filters.supplier_id) params.push(filters.supplier_id), sql += ` AND i.supplier_id = ?`;

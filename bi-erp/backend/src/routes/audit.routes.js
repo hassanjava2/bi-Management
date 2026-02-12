@@ -7,6 +7,20 @@ const { all, get } = require('../config/database');
 router.use(auth);
 router.use(hasPermission('audit.view'));
 
+router.get('/stats', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days, 10) || 7;
+    const [total, recent, todayCount] = await Promise.all([
+      get('SELECT COUNT(*)::int as c FROM audit_logs').then(r => r?.c || 0).catch(() => 0),
+      get(`SELECT COUNT(*)::int as c FROM audit_logs WHERE created_at > NOW() - INTERVAL '${days} days'`).then(r => r?.c || 0).catch(() => 0),
+      get("SELECT COUNT(*)::int as c FROM audit_logs WHERE created_at::date = CURRENT_DATE").then(r => r?.c || 0).catch(() => 0),
+    ]);
+    res.json({ success: true, data: { total, recent, today: todayCount, period_days: days } });
+  } catch (e) {
+    res.json({ success: true, data: { total: 0, recent: 0, today: 0, period_days: 7 } });
+  }
+});
+
 router.get('/dashboard', async (req, res) => {
   try {
     const [total, today, byAction] = await Promise.all([

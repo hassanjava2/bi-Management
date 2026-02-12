@@ -20,10 +20,13 @@ export function useSocket() {
 
     // Create socket connection
     const socket = io(SOCKET_URL, {
+      path: '/socket.io',
       auth: { token },
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
+      reconnectionAttempts: 3,
+      reconnectionDelay: 5000,
+      timeout: 10000,
+      transports: ['websocket', 'polling'],
     })
 
     socketRef.current = socket
