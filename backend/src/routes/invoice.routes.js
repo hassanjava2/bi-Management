@@ -26,6 +26,90 @@ function hasBypassApproval(user) {
     return user?.role === 'owner' || checkPermission(user, 'system.approvals.bypass');
 }
 
+/**
+ * مزامنة فواتير الشراء المكتملة مع المخزون (مرة واحدة لكل فاتورة)
+ */
+async function syncPurchaseInvoiceToInventory(invoiceId, userId) {
+    const invoice = await get('SELECT id, type, status FROM invoices WHERE id = ?', [invoiceId]);
+    if (!invoice || invoice.type !== 'purchase' || invoice.status !== 'completed') {
+        return { applied: false, reason: 'not_completed_purchase' };
+    }
+
+    const syncReason = `purchase_invoice:${invoiceId}`;
+    const alreadySynced = await get(
+        "SELECT COUNT(*) as count FROM inventory_movements WHERE reason = ?",
+        [syncReason]
+    ).catch(() => ({ count: 0 }));
+
+    if (Number(alreadySynced?.count || 0) > 0) {
+        return { applied: false, reason: 'already_synced' };
+    }
+
+    const items = await all(
+        `SELECT product_id, product_name, quantity, unit_price, cost_price
+         FROM invoice_items
+         WHERE invoice_id = ?`,
+        [invoiceId]
+    );
+
+    let movedCount = 0;
+    for (const item of items) {
+        const qty = parseInt(item.quantity, 10) || 0;
+        if (qty <= 0) continue;
+
+        let productId = item.product_id || null;
+        if (!productId && item.product_name) {
+            const byName = await get(
+                'SELECT id FROM products WHERE LOWER(name) = LOWER(?) AND (is_deleted IS NOT TRUE OR is_deleted IS NULL) LIMIT 1',
+                [item.product_name]
+            );
+            productId = byName?.id || null;
+        }
+
+        if (!productId) {
+            const newProductId = generateId();
+            const unitCost = parseFloat(item.cost_price) || parseFloat(item.unit_price) || 0;
+            const safeName = item.product_name || `Purchased Item ${newProductId.slice(0, 8)}`;
+            await run(
+                `INSERT INTO products (id, name, quantity, cost_price, selling_price, min_quantity, is_active, created_at, updated_at, created_by)
+                 VALUES (?, ?, 0, ?, ?, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)`,
+                [newProductId, safeName, unitCost, unitCost, userId || null]
+            );
+            productId = newProductId;
+        }
+
+        const product = await get('SELECT id, quantity FROM products WHERE id = ?', [productId]);
+        if (!product) continue;
+
+        const beforeQty = parseInt(product.quantity, 10) || 0;
+        const afterQty = beforeQty + qty;
+        const unitCost = parseFloat(item.cost_price) || parseFloat(item.unit_price) || 0;
+
+        await run(
+            `UPDATE products
+             SET quantity = ?, cost_price = CASE WHEN ? > 0 THEN ? ELSE cost_price END, updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?`,
+            [afterQty, unitCost, unitCost, productId]
+        );
+
+        await run(
+            `INSERT INTO inventory_movements (id, product_id, type, quantity, reason, notes, created_by, created_at)
+             VALUES (?, ?, 'in', ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+            [
+                generateId(),
+                productId,
+                qty,
+                syncReason,
+                `Auto-sync from completed purchase invoice ${invoiceId}`,
+                userId || null
+            ]
+        );
+        movedCount += 1;
+    }
+
+    return { applied: true, moved_items: movedCount };
+}
+
 // صلاحية العرض: إما مبيعات أو مشتريات
 function requireInvoiceView(req, res, next) {
     if (!req.user) {
@@ -476,6 +560,12 @@ router.post('/', (req, res, next) => {
             } catch (e) { /* columns may not exist yet */ }
         }
 
+        if (type === 'purchase') {
+            await syncPurchaseInvoiceToInventory(id, req.user?.id).catch((syncErr) => {
+                console.warn('[Invoices] Purchase inventory sync warning:', syncErr.message);
+            });
+        }
+
         res.status(201).json({
             success: true,
             data: await get('SELECT * FROM invoices WHERE id = ?', [id]) || createdInvoice
@@ -516,15 +606,22 @@ router.post('/:id/transition', requireInvoiceView, async (req, res) => {
             req.user?.role,
             notes
         );
-        if (eventBus && new_status === 'completed') {
+        if (new_status === 'completed') {
             const inv = await get('SELECT id, type, payment_type, total FROM invoices WHERE id = ?', [req.params.id]);
-            const items = await all('SELECT id, product_id, quantity, total FROM invoice_items WHERE invoice_id = ?', [req.params.id]);
-            const payload = { invoice_id: req.params.id, invoiceId: req.params.id, type: inv?.type, items: items || [], payment_type: inv?.payment_type };
             if (inv?.type === 'purchase') {
-                eventBus.emit(eventBus.EVENT_TYPES.PURCHASE_CONFIRMED, payload);
-            } else {
-                eventBus.emit(eventBus.EVENT_TYPES.INVOICE_COMPLETED, payload);
-                eventBus.emit(eventBus.EVENT_TYPES.DEVICE_SOLD, payload);
+                await syncPurchaseInvoiceToInventory(req.params.id, req.user?.id).catch((syncErr) => {
+                    console.warn('[Invoices] Purchase inventory sync warning:', syncErr.message);
+                });
+            }
+            if (eventBus) {
+                const items = await all('SELECT id, product_id, quantity, total FROM invoice_items WHERE invoice_id = ?', [req.params.id]);
+                const payload = { invoice_id: req.params.id, invoiceId: req.params.id, type: inv?.type, items: items || [], payment_type: inv?.payment_type };
+                if (inv?.type === 'purchase') {
+                    eventBus.emit(eventBus.EVENT_TYPES.PURCHASE_CONFIRMED, payload);
+                } else {
+                    eventBus.emit(eventBus.EVENT_TYPES.INVOICE_COMPLETED, payload);
+                    eventBus.emit(eventBus.EVENT_TYPES.DEVICE_SOLD, payload);
+                }
             }
         }
         res.json({ success: true, data: result });
@@ -577,6 +674,9 @@ router.post('/:id/convert-to-active', requireInvoiceView, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Only draft/waiting invoices can be converted' });
         }
         invoiceWorkflow.transitionTo(req.params.id, invoiceWorkflow.INVOICE_STATUS.COMPLETED, req.user?.id, req.user?.role, 'convert_to_active');
+        await syncPurchaseInvoiceToInventory(req.params.id, req.user?.id).catch((syncErr) => {
+            console.warn('[Invoices] Purchase inventory sync warning:', syncErr.message);
+        });
         invoiceWorkflow.deleteRemindersForInvoice(req.params.id);
         res.json({ success: true, data: { invoice_id: req.params.id, status: 'completed' } });
     } catch (error) {
@@ -735,6 +835,12 @@ router.put('/:id', async (req, res) => {
         await run(`UPDATE invoices SET ${setClauses.join(', ')} WHERE id = ?`, params);
         
         const updated = await get(`SELECT * FROM invoices WHERE id = ?`, [id]);
+
+        if (existing.status !== 'completed' && updates.status === 'completed') {
+            await syncPurchaseInvoiceToInventory(id, req.user?.id).catch((syncErr) => {
+                console.warn('[Invoices] Purchase inventory sync warning:', syncErr.message);
+            });
+        }
 
         logInvoiceAudit(req, 'invoice_modified', id, existing.invoice_number, oldValue, newValue, updates.paid_amount !== undefined ? { payment_updated: true } : null);
 

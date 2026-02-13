@@ -81,7 +81,7 @@ router.get('/executive-dashboard', async (req, res) => {
         let pendingApprovalsCount = 0;
         try {
             const approvalSvc = getApprovalService();
-            if (approvalSvc && approvalSvc.getPendingCount) pendingApprovalsCount = approvalSvc.getPendingCount() || 0;
+            if (approvalSvc && approvalSvc.getPendingCount) pendingApprovalsCount = await approvalSvc.getPendingCount() || 0;
         } catch (e) { /* ignore */ }
 
         let criticalAuditCount = 0;

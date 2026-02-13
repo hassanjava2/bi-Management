@@ -82,7 +82,63 @@ async function addPayment(invoiceId, amount, paymentMethod, notes, receivedBy) {
 
 async function updateStatus(id, status) {
   await run('UPDATE invoices SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [status, id]);
+  if (status === 'completed') {
+    await syncPurchaseInvoiceToInventory(id).catch((err) => {
+      console.warn('[Invoices] Purchase inventory sync warning:', err.message);
+    });
+  }
   return findById(id);
+}
+
+async function syncPurchaseInvoiceToInventory(invoiceId) {
+  const invoice = await get('SELECT id, type, status FROM invoices WHERE id = ?', [invoiceId]);
+  if (!invoice || invoice.type !== 'purchase' || invoice.status !== 'completed') return;
+
+  const syncReason = `purchase_invoice:${invoiceId}`;
+  const alreadySynced = await get('SELECT COUNT(*) as c FROM inventory_movements WHERE reason = ?', [syncReason]).catch(() => ({ c: 0 }));
+  if (Number(alreadySynced?.c || 0) > 0) return;
+
+  const items = await all(
+    'SELECT product_id, product_name, quantity, unit_price, cost_price FROM invoice_items WHERE invoice_id = ?',
+    [invoiceId]
+  );
+  const { generateId } = require('../utils/helpers');
+
+  for (const item of items) {
+    const qty = parseInt(item.quantity, 10) || 0;
+    if (qty <= 0) continue;
+
+    let productId = item.product_id || null;
+    if (!productId && item.product_name) {
+      const byName = await get('SELECT id FROM products WHERE LOWER(name) = LOWER(?) LIMIT 1', [item.product_name]);
+      productId = byName?.id || null;
+    }
+
+    if (!productId) {
+      const newId = generateId();
+      const unitCost = parseFloat(item.cost_price) || parseFloat(item.unit_price) || 0;
+      await run(
+        `INSERT INTO products (id, name, quantity, cost_price, selling_price, min_quantity, created_at, updated_at)
+         VALUES (?, ?, 0, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+        [newId, item.product_name || `Purchased Item ${newId.slice(0, 8)}`, unitCost, unitCost]
+      );
+      productId = newId;
+    }
+
+    const product = await get('SELECT id, quantity FROM products WHERE id = ?', [productId]);
+    if (!product) continue;
+    const afterQty = (parseInt(product.quantity, 10) || 0) + qty;
+    const unitCost = parseFloat(item.cost_price) || parseFloat(item.unit_price) || 0;
+
+    await run(
+      'UPDATE products SET quantity = ?, cost_price = CASE WHEN ? > 0 THEN ? ELSE cost_price END, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [afterQty, unitCost, unitCost, productId]
+    );
+    await run(
+      'INSERT INTO inventory_movements (id, product_id, type, quantity, reason, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
+      [generateId(), productId, 'in', qty, syncReason, `Auto-sync from completed purchase invoice ${invoiceId}`]
+    );
+  }
 }
 
 module.exports = { findAll, findById, getItems, getPayments, create, addItem, addPayment, updateStatus };

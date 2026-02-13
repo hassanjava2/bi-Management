@@ -156,7 +156,7 @@ function requestQuantityCorrection(entityType, entityId, entityName, oldQty, new
  * الموافقة على الطلب
  */
 async function approve(approvalId, decidedBy, notes = '') {
-    const approval = getById(approvalId);
+    const approval = await getById(approvalId);
     
     if (!approval) {
         throw new Error('طلب الموافقة غير موجود');
@@ -180,7 +180,7 @@ async function approve(approvalId, decidedBy, notes = '') {
     `, [APPROVAL_STATUS.APPROVED, decidedBy?.id, notes, decidedAt, approvalId]);
 
     // تنفيذ العملية
-    executeApproval(approval);
+    await executeApproval(approval);
 
     console.log(`✅ Approval granted: ${approval.approval_number} by ${decidedBy?.name}`);
 
@@ -191,7 +191,7 @@ async function approve(approvalId, decidedBy, notes = '') {
  * رفض الطلب
  */
 async function reject(approvalId, decidedBy, reason) {
-    const approval = getById(approvalId);
+    const approval = await getById(approvalId);
     
     if (!approval) {
         throw new Error('طلب الموافقة غير موجود');

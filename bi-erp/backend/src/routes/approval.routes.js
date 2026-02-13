@@ -7,6 +7,7 @@ const express = require('express');
 const router = express.Router();
 const { getApprovalService, APPROVAL_TYPES, APPROVAL_STATUS } = require('../services/approval.service');
 const { getAuditService, EVENT_CATEGORIES } = require('../services/audit.service');
+const { all } = require('../config/database');
 const { requirePermission } = require('../middleware/protection');
 const { auth } = require('../middleware/auth');
 
@@ -298,12 +299,11 @@ router.post('/:id/reject', requirePermission('approvals.decide'), async (req, re
  * أنواع الموافقات
  */
 router.get('/meta/types', (req, res) => {
+    const approvalService = getApprovalService(req.db);
     res.json({
         success: true,
-        data: {
-            types: APPROVAL_TYPES,
-            statuses: APPROVAL_STATUS
-        }
+        data: approvalService.getTypes ? approvalService.getTypes() : Object.entries(APPROVAL_TYPES).map(([key, value]) => ({ key, value, label: value })),
+        statuses: APPROVAL_STATUS
     });
 });
 
@@ -313,19 +313,19 @@ router.get('/meta/types', (req, res) => {
  */
 router.get('/my/requests', async (req, res) => {
     try {
-        const result = await req.db.query(`
+        const rows = await all(`
             SELECT * FROM approvals 
-            WHERE requested_by = $1
+            WHERE requested_by = ?
             ORDER BY created_at DESC
             LIMIT 50
         `, [req.user.id]);
 
         res.json({
             success: true,
-            data: result.rows
+            data: rows
         });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.json({ success: true, data: [] });
     }
 });
 
