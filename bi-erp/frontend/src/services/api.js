@@ -42,7 +42,9 @@ export const authAPI = {
 
 // Dashboard API
 export const dashboardAPI = {
-  getStats: () => api.get('/dashboard'),
+  getStats: () => api.get('/dashboard/stats'),
+  getTaskStats: () => api.get('/dashboard'),
+  getChart: () => api.get('/dashboard/chart'),
 }
 
 // Reports API (لوحة المدير التنفيذية والتقارير)
@@ -160,29 +162,29 @@ export const inventoryAPI = {
   getDeviceHistory: (id) => api.get(`/inventory/devices/${id}/history`),
   transferDevice: (id, data) => api.post(`/inventory/devices/${id}/transfer`, data),
   updateCustody: (id, data) => api.post(`/inventory/devices/${id}/custody`, data),
-  
+
   // Products
   getProducts: (params) => api.get('/inventory/products', { params }),
   getProduct: (id) => api.get(`/inventory/products/${id}`),
   createProduct: (data) => api.post('/inventory/products', data),
   updateProduct: (id, data) => api.put(`/inventory/products/${id}`, data),
-  
+
   // Warehouses
   getWarehouses: () => api.get('/inventory/warehouses'),
   getWarehouseStats: (id) => api.get(`/inventory/warehouses/${id}/stats`),
-  
+
   // Parts & Accessories
   getParts: (params) => api.get('/inventory/parts', { params }),
   createPart: (data) => api.post('/inventory/parts', data),
   updatePart: (id, data) => api.put(`/inventory/parts/${id}`, data),
-  
+
   // Movements
   getMovements: (params) => api.get('/inventory/movements', { params }),
 
   // Stats
   getStats: () => api.get('/inventory/stats'),
   getLowStock: () => api.get('/inventory/low-stock'),
-  
+
   // Serial Generation
   generateSerial: () => api.post('/inventory/generate-serial'),
 }
@@ -199,19 +201,19 @@ export const salesAPI = {
   transitionInvoice: (id, data) => api.post(`/invoices/${id}/transition`, data),
   prepareInvoice: (id) => api.post(`/invoices/${id}/prepare`),
   convertInvoiceToActive: (id) => api.post(`/invoices/${id}/convert-to-active`),
-  
+
   // Invoice Types
   createSaleInvoice: (data) => api.post('/invoices/sale', data),
   createPurchaseInvoice: (data) => api.post('/invoices/purchase', data),
   createReturnInvoice: (data) => api.post('/invoices/return', data),
   createExchangeInvoice: (data) => api.post('/invoices/exchange', data),
   createInstallmentInvoice: (data) => api.post('/invoices/installment', data),
-  
+
   // Stats
   getStats: () => api.get('/sales/stats'),
   getDailyReport: (date) => api.get('/sales/daily-report', { params: { date } }),
   getMonthlyReport: (month, year) => api.get('/sales/monthly-report', { params: { month, year } }),
-  
+
   // Installments
   getInstallmentStats: () => api.get('/sales/installments/stats'),
   getPendingTransfers: () => api.get('/sales/installments/pending-transfers'),
@@ -227,12 +229,12 @@ export const returnsAPI = {
   updateStatus: (id, data) => api.post(`/returns/${id}/status`, data),
   addFollowUp: (id, data) => api.post(`/returns/${id}/follow-up`, data),
   receiveReturn: (id, data) => api.post(`/returns/${id}/receive`, data),
-  
+
   // Stats & Alerts
   getStats: () => api.get('/returns/stats'),
   getAlerts: () => api.get('/returns/alerts'),
   getOverdue: () => api.get('/returns/overdue'),
-  
+
   // Reminders
   sendReminder: (id) => api.post(`/returns/${id}/reminder`),
   sendBulkReminder: (data) => api.post('/returns/bulk-reminder', data),
@@ -242,28 +244,28 @@ export const returnsAPI = {
 export const accountingAPI = {
   // Overview
   getOverview: (params) => api.get('/accounting/overview', { params }),
-  
+
   // Vouchers
   getVouchers: (params) => api.get('/accounting/vouchers', { params }),
   createVoucher: (data) => api.post('/accounting/vouchers', data),
-  
+
   // Receivables (ذمم العملاء)
   getReceivables: (params) => api.get('/accounting/receivables', { params }),
   getReceivableByCustomer: (id) => api.get(`/accounting/receivables/customer/${id}`),
-  
+
   // Payables (ذمم الموردين)
   getPayables: (params) => api.get('/accounting/payables', { params }),
   getPayableBySupplier: (id) => api.get(`/accounting/payables/supplier/${id}`),
-  
+
   // Cash Boxes
   getCashBoxes: () => api.get('/accounting/cash-boxes'),
   getCashBoxBalance: (id) => api.get(`/accounting/cash-boxes/${id}`),
   transferCash: (data) => api.post('/accounting/cash-boxes/transfer', data),
-  
+
   // Expenses
   getExpenses: (params) => api.get('/accounting/expenses', { params }),
   createExpense: (data) => api.post('/accounting/expenses', data),
-  
+
   // Reports
   getProfitLoss: (params) => api.get('/accounting/reports/profit-loss', { params }),
   getCashFlow: (params) => api.get('/accounting/reports/cash-flow', { params }),
@@ -283,11 +285,11 @@ export const suppliersAPI = {
   createSupplier: (data) => api.post('/suppliers', data),
   updateSupplier: (id, data) => api.put(`/suppliers/${id}`, data),
   deleteSupplier: (id) => api.delete(`/suppliers/${id}`),
-  
+
   // Transactions
   getTransactions: (id, params) => api.get(`/suppliers/${id}/transactions`, { params }),
   getReturns: (id, params) => api.get(`/suppliers/${id}/returns`, { params }),
-  
+
   // Stats
   getStats: (id) => api.get(`/suppliers/${id}/stats`),
 }
@@ -299,14 +301,14 @@ export const customersAPI = {
   createCustomer: (data) => api.post('/customers', data),
   updateCustomer: (id, data) => api.put(`/customers/${id}`, data),
   deleteCustomer: (id) => api.delete(`/customers/${id}`),
-  
+
   // Transactions
   getTransactions: (id, params) => api.get(`/customers/${id}/transactions`, { params }),
   getInvoices: (id, params) => api.get(`/customers/${id}/invoices`, { params }),
-  
+
   // Balance
   adjustBalance: (id, data) => api.post(`/customers/${id}/adjust-balance`, data),
-  
+
   // Stats
   getStats: () => api.get('/customers/stats'),
 }
@@ -319,7 +321,7 @@ export const warrantyAPI = {
   createClaim: (data) => api.post('/warranty/claims', data),
   updateClaim: (id, data) => api.put(`/warranty/claims/${id}`, data),
   closeClaim: (id, data) => api.post(`/warranty/claims/${id}/close`, data),
-  
+
   // Repair Orders
   getRepairOrders: (params) => api.get('/warranty/repairs', { params }),
   createRepairOrder: (data) => api.post('/warranty/repairs', data),
@@ -343,10 +345,10 @@ export const deliveryAPI = {
   createDelivery: (data) => api.post('/delivery', data),
   updateDelivery: (id, data) => api.put(`/delivery/${id}`, data),
   updateStatus: (id, data) => api.post(`/delivery/${id}/status`, data),
-  
+
   // Tracking
   trackDelivery: (trackingNumber) => api.get(`/delivery/track/${trackingNumber}`),
-  
+
   // Stats
   getStats: () => api.get('/delivery/stats'),
   getPending: () => api.get('/delivery/pending'),

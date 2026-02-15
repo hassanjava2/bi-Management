@@ -14,6 +14,7 @@ import Card from '../components/common/Card'
 import { CardSkeleton } from '../components/common/LoadingSkeleton'
 import { dashboardAPI, accountingAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { LineChart, Line } from 'recharts'
 
 const CHART_COLORS = ['#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
 
@@ -35,8 +36,13 @@ export default function DashboardPage() {
   const { user, isAdmin } = useAuth()
 
   const { data, isLoading } = useQuery({
-    queryKey: ['dashboard'],
+    queryKey: ['dashboard-stats'],
     queryFn: () => dashboardAPI.getStats(),
+  })
+
+  const { data: taskData } = useQuery({
+    queryKey: ['dashboard-tasks'],
+    queryFn: () => dashboardAPI.getTaskStats(),
   })
 
   const { data: accountingData } = useQuery({
@@ -46,7 +52,14 @@ export default function DashboardPage() {
   })
 
   const stats = data?.data?.data
+  const tasks = taskData?.data?.data
   const accounting = accountingData?.data?.data
+
+  const { data: chartData } = useQuery({
+    queryKey: ['dashboard-chart'],
+    queryFn: () => dashboardAPI.getChart(),
+    enabled: isAdmin || user?.role === 'owner',
+  })
 
   const salesChartData = accounting ? [
     { name: 'المبيعات', value: accounting.month_sales || 0 },
@@ -62,11 +75,12 @@ export default function DashboardPage() {
     { name: 'جملة', value: accounting.wholesale_sales || 0 },
   ].filter(d => d.value > 0) : []
 
-  const taskStats = [
-    { title: 'إجمالي المهام', value: stats?.tasks?.total ?? 0, icon: CheckSquare, color: 'primary', animate: true },
-    { title: 'مهام اليوم', value: stats?.tasks?.today ?? 0, icon: Clock, color: 'info', animate: true },
-    { title: 'مهام متأخرة', value: stats?.tasks?.overdue ?? 0, icon: AlertTriangle, color: 'danger', animate: true },
-    { title: 'الحضور اليوم', value: `${stats?.attendance?.checked_in || 0}/${stats?.attendance?.total_employees || 0}`, icon: Users, color: 'success' },
+  // Business-first stats
+  const businessStats = [
+    { title: 'مبيعات اليوم', value: formatNumber(stats?.today_sales_total || 0), icon: Receipt, color: 'success', trend: stats?.today_sales_count > 0 ? 'up' : undefined, trendValue: `${stats?.today_sales_count || 0} فاتورة` },
+    { title: 'مبيعات الشهر', value: formatNumber(stats?.month_sales_total || 0), icon: TrendingUp, color: 'primary', trendValue: `${stats?.month_sales_count || 0} فاتورة` },
+    { title: 'المنتجات', value: stats?.total_products ?? 0, icon: Package, color: 'info', trendValue: stats?.low_stock_count > 0 ? `${stats.low_stock_count} مخزون منخفض` : undefined },
+    { title: 'العملاء', value: stats?.total_customers ?? 0, icon: Users, color: 'warning', trendValue: stats?.pending_credit_count > 0 ? `${stats.pending_credit_count} فاتورة آجلة` : undefined },
   ]
 
   return (
@@ -98,11 +112,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Business Stats */}
       {isLoading ? (
         <CardSkeleton count={4} />
       ) : (
-        <StatsGrid items={taskStats} columns={4} />
+        <StatsGrid items={businessStats} columns={4} />
       )}
 
       {/* Financial */}
