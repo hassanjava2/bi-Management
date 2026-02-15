@@ -62,8 +62,8 @@ export default function StatCard({
       style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
     >
       {Icon && (
-        <div className={clsx('absolute start-4 top-4 opacity-90', c.icon)} aria-hidden>
-          <Icon className="w-14 h-14" />
+        <div className={clsx('absolute end-4 bottom-4 opacity-[0.07] pointer-events-none', c.icon)} aria-hidden>
+          <Icon className="w-16 h-16" />
         </div>
       )}
       <div className="relative flex items-start justify-between gap-3">

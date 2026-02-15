@@ -466,136 +466,140 @@ function InvoiceItem({ item, index, onUpdate, onRemove, onAddUpgrade, onRemoveUp
   const [showUpgradeMenu, setShowUpgradeMenu] = useState(false)
 
   const upgradeOptions = [
-    { type: 'ram', label: 'ترقية رام', options: [
-      { from: 8, to: 16, cost: 25000, desc: '8GB → 16GB' },
-      { from: 16, to: 32, cost: 40000, desc: '16GB → 32GB' },
-      { from: 8, to: 32, cost: 55000, desc: '8GB → 32GB' },
-    ]},
-    { type: 'ssd', label: 'تغيير هارد', options: [
-      { from: 256, to: 512, cost: 35000, desc: '256GB → 512GB SSD' },
-      { from: 512, to: 1024, cost: 50000, desc: '512GB → 1TB SSD' },
-    ]},
+    {
+      type: 'ram', label: 'ترقية رام', options: [
+        { from: 8, to: 16, cost: 25000, desc: '8GB → 16GB' },
+        { from: 16, to: 32, cost: 40000, desc: '16GB → 32GB' },
+        { from: 8, to: 32, cost: 55000, desc: '8GB → 32GB' },
+      ]
+    },
+    {
+      type: 'ssd', label: 'تغيير هارد', options: [
+        { from: 256, to: 512, cost: 35000, desc: '256GB → 512GB SSD' },
+        { from: 512, to: 1024, cost: 50000, desc: '512GB → 1TB SSD' },
+      ]
+    },
   ]
 
   return (
     <>
-    <tr className="hover:bg-neutral-50 transition-colors">
-      <td className="px-4 py-3 text-center font-medium text-neutral-500">
-        {index + 1}
-      </td>
-      <td className="px-4 py-3">
-        <div>
-          <p className="font-medium text-neutral-900 dark:text-white">{item.name}</p>
-          <p className="text-sm text-neutral-500">{item.group_name}</p>
-          {item.serial_number && <p className="text-xs font-mono text-orange-600">{item.serial_number}</p>}
-          {/* ترقيات مضافة */}
-          {item.upgrades && item.upgrades.length > 0 && (
-            <div className="mt-1 space-y-1">
-              {item.upgrades.map((u, ui) => (
-                <span key={ui} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs mr-1">
-                  <Wrench className="w-3 h-3" /> {u.desc}
-                  <button type="button" onClick={() => onRemoveUpgrade(index, ui)} className="ml-1 text-purple-500 hover:text-red-500">×</button>
-                </span>
-              ))}
-            </div>
-          )}
-          {/* زر إضافة ترقية */}
-          {!item.is_accessory && (
-            <div className="relative mt-1">
-              <button type="button" onClick={() => setShowUpgradeMenu(!showUpgradeMenu)}
-                className="text-xs text-purple-600 hover:text-purple-800 flex items-center gap-1">
-                <Wrench className="w-3 h-3" /> + ترقية
-              </button>
-              {showUpgradeMenu && (
-                <div className="absolute z-30 top-full right-0 mt-1 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-600 p-2 min-w-[200px]">
-                  {upgradeOptions.map(cat => (
-                    <div key={cat.type}>
-                      <p className="text-xs font-bold text-neutral-500 px-2 py-1">{cat.label}</p>
-                      {cat.options.map((opt, oi) => (
-                        <button key={oi} type="button"
-                          onClick={() => { onAddUpgrade(index, { type: cat.type, ...opt }); setShowUpgradeMenu(false) }}
-                          className="w-full text-right px-3 py-2 text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg flex justify-between">
-                          <span>{opt.desc}</span>
-                          <span className="text-purple-600 font-medium">+{formatNumber(opt.cost)}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </td>
-      <td className="px-4 py-3">
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={() => onUpdate(index, { quantity: Math.max(1, item.quantity - 1) })}
-            className="w-8 h-8 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors"
-          >
-            <Minus className="w-4 h-4" />
-          </button>
-          <input
-            type="number"
-            value={item.quantity}
-            onChange={(e) => onUpdate(index, { quantity: Math.max(1, parseInt(e.target.value) || 1) })}
-            className="w-16 text-center border border-neutral-300 rounded-lg py-1 font-medium"
-            min="1"
-          />
-          <button
-            onClick={() => onUpdate(index, { quantity: item.quantity + 1 })}
-            className="w-8 h-8 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-      </td>
-      {showBuyPrice && (
-        <td className="px-4 py-3 text-center text-neutral-500">
-          {formatNumber(item.buy_price)}
+      <tr className="hover:bg-neutral-50 transition-colors">
+        <td className="px-4 py-3 text-center font-medium text-neutral-500">
+          {index + 1}
         </td>
-      )}
-      <td className="px-4 py-3">
-        {isEditing ? (
-          <input
-            type="number"
-            value={item.unit_price}
-            onChange={(e) => onUpdate(index, { unit_price: parseFloat(e.target.value) || 0 })}
-            onBlur={() => setIsEditing(false)}
-            autoFocus
-            className="w-28 text-center border border-primary-500 rounded-lg py-1 font-medium"
-          />
-        ) : (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="w-28 text-center py-1 font-medium text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-          >
-            {formatNumber(item.unit_price)}
-          </button>
+        <td className="px-4 py-3">
+          <div>
+            <p className="font-medium text-neutral-900 dark:text-white">{item.name}</p>
+            <p className="text-sm text-neutral-500">{item.group_name}</p>
+            {item.serial_number && <p className="text-xs font-mono text-orange-600">{item.serial_number}</p>}
+            {/* ترقيات مضافة */}
+            {item.upgrades && item.upgrades.length > 0 && (
+              <div className="mt-1 space-y-1">
+                {item.upgrades.map((u, ui) => (
+                  <span key={ui} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs mr-1">
+                    <Wrench className="w-3 h-3" /> {u.desc}
+                    <button type="button" onClick={() => onRemoveUpgrade(index, ui)} className="ml-1 text-purple-500 hover:text-red-500">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {/* زر إضافة ترقية */}
+            {!item.is_accessory && (
+              <div className="relative mt-1">
+                <button type="button" onClick={() => setShowUpgradeMenu(!showUpgradeMenu)}
+                  className="text-xs text-purple-600 hover:text-purple-800 flex items-center gap-1">
+                  <Wrench className="w-3 h-3" /> + ترقية
+                </button>
+                {showUpgradeMenu && (
+                  <div className="absolute z-30 top-full right-0 mt-1 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-600 p-2 min-w-[200px]">
+                    {upgradeOptions.map(cat => (
+                      <div key={cat.type}>
+                        <p className="text-xs font-bold text-neutral-500 px-2 py-1">{cat.label}</p>
+                        {cat.options.map((opt, oi) => (
+                          <button key={oi} type="button"
+                            onClick={() => { onAddUpgrade(index, { type: cat.type, ...opt }); setShowUpgradeMenu(false) }}
+                            className="w-full text-right px-3 py-2 text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg flex justify-between">
+                            <span>{opt.desc}</span>
+                            <span className="text-purple-600 font-medium">+{formatNumber(opt.cost)}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </td>
+        <td className="px-4 py-3">
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => onUpdate(index, { quantity: Math.max(1, item.quantity - 1) })}
+              className="w-8 h-8 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors"
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+            <input
+              type="number"
+              value={item.quantity}
+              onChange={(e) => onUpdate(index, { quantity: Math.max(1, parseInt(e.target.value) || 1) })}
+              className="w-16 text-center border border-neutral-300 rounded-lg py-1 font-medium"
+              min="1"
+            />
+            <button
+              onClick={() => onUpdate(index, { quantity: item.quantity + 1 })}
+              className="w-8 h-8 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+        </td>
+        {showBuyPrice && (
+          <td className="px-4 py-3 text-center text-neutral-500">
+            {formatNumber(item.buy_price)}
+          </td>
         )}
-      </td>
-      <td className="px-4 py-3 text-center font-bold text-neutral-900">
-        {formatNumber(item.quantity * item.unit_price)}
-      </td>
-      {showBuyPrice && (
-        <td className="px-4 py-3 text-center">
-          <span className={clsx(
-            'font-medium',
-            item.unit_price > item.buy_price ? 'text-emerald-600' : 'text-red-600'
-          )}>
-            {formatNumber((item.unit_price - item.buy_price) * item.quantity)}
-          </span>
+        <td className="px-4 py-3">
+          {isEditing ? (
+            <input
+              type="number"
+              value={item.unit_price}
+              onChange={(e) => onUpdate(index, { unit_price: parseFloat(e.target.value) || 0 })}
+              onBlur={() => setIsEditing(false)}
+              autoFocus
+              className="w-28 text-center border border-primary-500 rounded-lg py-1 font-medium"
+            />
+          ) : (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="w-28 text-center py-1 font-medium text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+            >
+              {formatNumber(item.unit_price)}
+            </button>
+          )}
         </td>
-      )}
-      <td className="px-4 py-3 text-center">
-        <button
-          onClick={() => onRemove(index)}
-          className="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors mx-auto"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </td>
-    </tr>
+        <td className="px-4 py-3 text-center font-bold text-neutral-900">
+          {formatNumber(item.quantity * item.unit_price)}
+        </td>
+        {showBuyPrice && (
+          <td className="px-4 py-3 text-center">
+            <span className={clsx(
+              'font-medium',
+              item.unit_price > item.buy_price ? 'text-emerald-600' : 'text-red-600'
+            )}>
+              {formatNumber((item.unit_price - item.buy_price) * item.quantity)}
+            </span>
+          </td>
+        )}
+        <td className="px-4 py-3 text-center">
+          <button
+            onClick={() => onRemove(index)}
+            className="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors mx-auto"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </td>
+      </tr>
     </>
   )
 }
@@ -618,11 +622,11 @@ export default function NewInvoicePage() {
   const [notes, setNotes] = useState('')
   const [platform, setPlatform] = useState('aqsaty')
   const [showBuyPrice, setShowBuyPrice] = useState(false)
-  
+
   // تعدد العملات
   const [currency, setCurrency] = useState('IQD')
   const [exchangeRate, setExchangeRate] = useState(1480)
-  
+
   // خيارات إضافية
   const [internalNotes, setInternalNotes] = useState('')
   const [paidAmount, setPaidAmount] = useState(0)
@@ -639,7 +643,7 @@ export default function NewInvoicePage() {
   // إضافة منتج
   const addProduct = (product) => {
     const existingIndex = items.findIndex(i => i.product_id === product.id)
-    
+
     if (existingIndex >= 0) {
       const newItems = [...items]
       newItems[existingIndex].quantity += 1
@@ -713,9 +717,9 @@ export default function NewInvoicePage() {
   // حسابات الفاتورة
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
   const totalCost = items.reduce((sum, item) => sum + (item.quantity * item.buy_price), 0)
-  
-  const discountAmount = discountType === 'percent' 
-    ? (subtotal * discount / 100) 
+
+  const discountAmount = discountType === 'percent'
+    ? (subtotal * discount / 100)
     : discount
 
   let total = subtotal - discountAmount
@@ -735,7 +739,19 @@ export default function NewInvoicePage() {
   const profit = total - totalCost - discountAmount
 
   const productSearchInputRef = useRef(null)
-  const handleSaveRef = useRef(() => {})
+  const handleSaveRef = useRef(() => { })
+
+  // حفظ الفاتورة
+  const saveMutation = useMutation({
+    mutationFn: async (data) => {
+      const res = await api.post('/invoices', data)
+      return res.data
+    },
+    onSuccess: (data) => {
+      toast.success('تم حفظ الفاتورة بنجاح')
+      navigate(`/sales?invoice=${data.data?.id}`)
+    },
+  })
 
   // تركيز على بحث المنتج عند فتح الصفحة
   useEffect(() => {
@@ -757,18 +773,6 @@ export default function NewInvoicePage() {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [items.length, saveMutation.isPending])
-
-  // حفظ الفاتورة
-  const saveMutation = useMutation({
-    mutationFn: async (data) => {
-      const res = await api.post('/invoices', data)
-      return res.data
-    },
-    onSuccess: (data) => {
-      toast.success('تم حفظ الفاتورة بنجاح')
-      navigate(`/sales?invoice=${data.data?.id}`)
-    },
-  })
 
   const buildInvoiceData = (overrides = {}) => {
     const typeMap = {
@@ -854,11 +858,11 @@ export default function NewInvoicePage() {
                     فاتورة {typeConfig.name}
                   </h1>
                   <p className="text-sm text-neutral-500">
-                    {new Date().toLocaleDateString('ar-IQ', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
+                    {new Date().toLocaleDateString('ar-IQ', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
                     })}
                   </p>
                 </div>
@@ -875,7 +879,7 @@ export default function NewInvoicePage() {
                 />
                 عرض سعر الشراء
               </label>
-              
+
               <button
                 onClick={handleSave}
                 disabled={items.length === 0 || saveMutation.isPending}
@@ -1044,7 +1048,7 @@ export default function NewInvoicePage() {
                 {invoiceType === 'purchase' ? <Building2 className="w-5 h-5 text-primary-600" /> : <User className="w-5 h-5 text-primary-600" />}
                 {invoiceType === 'purchase' ? 'المورد' : 'العميل'}
               </h3>
-              
+
               {invoiceType === 'purchase' ? (
                 supplier ? (
                   <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
@@ -1137,20 +1141,20 @@ export default function NewInvoicePage() {
             {/* الملخص المالي */}
             <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl p-6 text-white shadow-lg">
               <h3 className="font-bold text-white/90 mb-4">ملخص الفاتورة</h3>
-              
+
               <div className="space-y-3">
                 <div className="flex justify-between text-white/80">
                   <span>المجموع الفرعي</span>
                   <span>{formatNumber(subtotal)} د.ع</span>
                 </div>
-                
+
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-red-200">
                     <span>الخصم</span>
                     <span>- {formatNumber(discountAmount)} د.ع</span>
                   </div>
                 )}
-                
+
                 {invoiceType === 'installment' && (
                   <>
                     <div className="flex justify-between text-purple-200">
@@ -1165,7 +1169,7 @@ export default function NewInvoicePage() {
                     )}
                   </>
                 )}
-                
+
                 <div className="border-t border-white/20 pt-3 mt-3">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-medium">الإجمالي</span>
@@ -1173,7 +1177,7 @@ export default function NewInvoicePage() {
                   </div>
                   <p className="text-left text-white/60 text-sm">دينار عراقي</p>
                 </div>
-                
+
                 {showBuyPrice && (
                   <div className="border-t border-white/20 pt-3 mt-3">
                     <div className="flex justify-between text-white/80">
