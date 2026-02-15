@@ -1,37 +1,38 @@
 #!/bin/bash
-# نشر BI-ERP على السيرفر
-# الاستخدام: من جذر المستودع على السيرفر
-#   cd /var/www/bi-management && git pull && cd bi-erp && chmod +x deploy.sh && ./deploy.sh
+# BI ERP - Auto Deploy Script
+# Usage: ./deploy.sh  (run on server)
 
 set -e
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
 
-echo "==> Building frontend..."
-cd frontend
-npm install --production=false
+echo "=========================================="
+echo "  BI ERP - Auto Deploy"
+echo "=========================================="
+
+PROJECT_DIR="/var/www/bi-management"
+FRONTEND_DIR="$PROJECT_DIR/bi-erp/frontend"
+BACKEND_DIR="$PROJECT_DIR/bi-erp/backend"
+WEB_DIR="/var/www/bi-erp-web"
+
+# 1. Pull latest changes
+echo "[1/4] Pulling latest changes..."
+cd "$PROJECT_DIR"
+git pull
+
+# 2. Build frontend
+echo "[2/4] Building frontend..."
+cd "$FRONTEND_DIR"
 npm run build
-cd ..
 
-echo "==> Backend (install only, pm2 restart separately if needed)..."
-cd backend
-npm install --production
-cd ..
+# 3. Copy to Nginx web root
+echo "[3/4] Deploying frontend to $WEB_DIR..."
+cp -r "$FRONTEND_DIR/dist/"* "$WEB_DIR/"
 
-# نسخ الواجهة للمجلد الثابت (عدّل المسار حسب إعداد Nginx على السيرفر)
-WEB_DIR="${BI_ERP_WEB_DIR:-/var/www/bi-erp-web}"
-if [ ! -d "$WEB_DIR" ]; then
-  echo "==> Creating $WEB_DIR"
-  mkdir -p "$WEB_DIR" || { echo "Create it manually: sudo mkdir -p $WEB_DIR && sudo chown \$USER $WEB_DIR"; exit 1; }
-fi
-if [ -d "$WEB_DIR" ]; then
-  echo "==> Copying frontend to $WEB_DIR"
-  cp -r frontend/dist/* "$WEB_DIR"/
-fi
+# 4. Restart backend
+echo "[4/4] Restarting backend..."
+pm2 restart bi-erp-api
 
-# إعادة تشغيل API إن كان مسجلاً في pm2 باسم bi-erp-api
-if command -v pm2 &>/dev/null; then
-  pm2 restart bi-erp-api 2>/dev/null || true
-fi
-
-echo "==> BI-ERP deploy done."
+echo ""
+echo "=========================================="
+echo "  ✅ Deploy complete!"
+echo "=========================================="
+pm2 status
