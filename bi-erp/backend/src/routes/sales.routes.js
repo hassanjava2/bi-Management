@@ -97,4 +97,41 @@ router.get('/installments/pending-transfers', async (req, res) => {
   }
 });
 
+// POST /api/sales/installments/:id/confirm-transfer
+router.post('/installments/:id/confirm-transfer', async (req, res) => {
+  try {
+    const { amount, payment_method, notes } = req.body;
+    const invoiceId = req.params.id;
+
+    // Update invoice payment
+    await run(
+      `UPDATE invoices 
+       SET paid_amount = COALESCE(paid_amount, 0) + $1,
+           remaining_amount = GREATEST(COALESCE(total, 0) - COALESCE(paid_amount, 0) - $1, 0),
+           payment_status = CASE 
+             WHEN COALESCE(paid_amount, 0) + $1 >= COALESCE(total, 0) THEN 'paid'
+             ELSE 'partial'
+           END,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2`,
+      [amount || 0, invoiceId]
+    );
+
+    // Log as payment
+    try {
+      const { v4: uuidv4 } = require('uuid');
+      await run(
+        `INSERT INTO invoice_payments (id, invoice_id, amount, payment_method, notes, created_by, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+        [uuidv4(), invoiceId, amount, payment_method || 'transfer', notes || 'تأكيد حوالة قسط', req.user?.id]
+      );
+    } catch (_) { /* table may not exist */ }
+
+    const invoice = await get('SELECT * FROM invoices WHERE id = $1', [invoiceId]);
+    res.json({ success: true, data: invoice, message: 'تم تأكيد الحوالة' });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 module.exports = router;
