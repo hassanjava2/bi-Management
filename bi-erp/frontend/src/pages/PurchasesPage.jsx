@@ -12,8 +12,6 @@ import {
   ArrowUpDown, Download, Printer, XCircle, Loader2
 } from 'lucide-react'
 import PageShell from '../components/common/PageShell'
-import StatsGrid from '../components/common/StatsGrid'
-import DataTable from '../components/common/DataTable'
 import SearchInput from '../components/common/SearchInput'
 import FilterSelect from '../components/common/FilterSelect'
 import Button from '../components/common/Button'
@@ -213,11 +211,11 @@ export default function PurchasesPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['purchases', searchTerm, statusFilter, supplierFilter],
     queryFn: () => salesAPI.getInvoices({
-        type: 'purchase',
-        search: searchTerm || undefined,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
+      type: 'purchase',
+      search: searchTerm || undefined,
+      status: statusFilter !== 'all' ? statusFilter : undefined,
       supplier_id: supplierFilter !== 'all' ? supplierFilter : undefined,
-      }),
+    }),
   })
 
   // جلب إحصائيات المشتريات
@@ -363,43 +361,83 @@ export default function PurchasesPage() {
     >
       <div className="space-y-6">
         {/* بطاقات الإحصائيات */}
-        <StatsGrid items={statsItems} />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <StatCard label="إجمالي الفواتير" value={stats.total} icon={ShoppingCart} color="sky" />
+          <StatCard label="هذا الشهر" value={stats.thisMonth} icon={Calendar} color="blue" />
+          <StatCard label="قيد المعالجة" value={stats.pending} icon={Clock} color="amber" />
+          <StatCard label="إجمالي المصروف" value={`${formatNumber(stats.totalSpent)}`} icon={DollarSign} color="emerald" />
+        </div>
 
         {/* شريط الفلاتر */}
-        <PageShell.Toolbar>
-          <SearchInput
-              value={searchTerm}
-            onChange={setSearchTerm}
-              placeholder="بحث برقم الفاتورة أو المورد..."
-            className="flex-1"
-            />
-          <FilterSelect
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={statusOptions}
-            placeholder="الحالة"
-          />
-          <FilterSelect
-            value={supplierFilter}
-            onChange={setSupplierFilter}
-            options={supplierOptions}
-            placeholder="المورد"
-          />
-        </PageShell.Toolbar>
+        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <input type="text" placeholder="بحث برقم الفاتورة أو المورد..."
+                value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pr-10 pl-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800 text-sm" />
+            </div>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800 text-sm">
+              {statusOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            <select value={supplierFilter} onChange={(e) => setSupplierFilter(e.target.value)}
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800 text-sm">
+              {supplierOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+        </div>
 
-        {/* جدول الفواتير */}
-        <PageShell.Content>
-        <DataTable
-          columns={columns}
-          data={invoices}
-          loading={isLoading}
-            onRowClick={(row) => { setSelectedInvoice(row); setShowDetail(true) }}
-          emptyTitle="لا توجد فواتير شراء"
-            emptyDescription="أضف فاتورة شراء جديدة لبدء تتبع المشتريات من الموردين"
-          emptyActionLabel="فاتورة شراء جديدة"
-          onEmptyAction={() => navigate('/purchases/new')}
-          />
-        </PageShell.Content>
+        {/* فواتير الشراء */}
+        {isLoading ? (
+          <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-neutral-400" /></div>
+        ) : invoices.length === 0 ? (
+          <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
+            <ShoppingCart className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+            <p className="text-neutral-500">لا توجد فواتير شراء</p>
+            <Button size="sm" className="mt-3" onClick={() => navigate('/purchases/new')}>فاتورة شراء جديدة</Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {invoices.map(inv => {
+              const s = purchaseStatuses[inv.status] || purchaseStatuses.draft
+              const StatusIcon = s.icon
+              return (
+                <div key={inv.id}
+                  onClick={() => { setSelectedInvoice(inv); setShowDetail(true) }}
+                  className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:shadow-md transition-shadow cursor-pointer">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                        <Building2 className="w-5 h-5 text-primary-600" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p className="font-mono text-sm font-bold text-primary-600">{inv.invoice_number}</p>
+                          {inv.items_count && <span className="text-[10px] bg-neutral-100 dark:bg-neutral-700 px-2 py-0.5 rounded-full">{inv.items_count} بند</span>}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-3 text-xs text-neutral-400">
+                          <span className="font-medium text-neutral-600 dark:text-neutral-300">{inv.supplier_name || '—'}</span>
+                          <span>{formatDate(inv.created_at)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-sm font-bold">{formatNumber(inv.total)} <span className="text-[10px] text-neutral-400">د.ع</span></span>
+                      <span className={clsx('px-2 py-1 rounded-lg text-[10px] font-medium whitespace-nowrap', s.color)}>{s.label}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-700">
+                    <button onClick={(e) => { e.stopPropagation(); setSelectedInvoice(inv); setShowDetail(true) }}
+                      className="text-[10px] text-primary-600 hover:underline flex items-center gap-0.5"><Eye className="w-3 h-3" /> تفاصيل</button>
+                    <button onClick={(e) => { e.stopPropagation(); setExpenseInvoiceId(inv.id); setShowExpense(true) }}
+                      className="text-[10px] text-amber-600 hover:underline flex items-center gap-0.5"><DollarSign className="w-3 h-3" /> مصاريف</button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* نوافذ منبثقة */}
@@ -415,5 +453,26 @@ export default function PurchasesPage() {
         onSuccess={() => queryClient.invalidateQueries(['purchases'])}
       />
     </PageShell>
+  )
+}
+
+// ═══ STAT CARD ═══
+function StatCard({ label, value, icon: Icon, color = 'sky' }) {
+  const colors = {
+    sky: 'bg-sky-50 dark:bg-sky-900/20 text-sky-600',
+    blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600',
+    amber: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600',
+    emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600',
+  }
+  return (
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-3">
+      <div className="flex items-center gap-2.5">
+        <div className={clsx('p-2 rounded-lg', colors[color])}><Icon className="w-4 h-4" /></div>
+        <div>
+          <p className="text-[10px] text-neutral-400">{label}</p>
+          <p className="text-lg font-bold">{value}</p>
+        </div>
+      </div>
+    </div>
   )
 }

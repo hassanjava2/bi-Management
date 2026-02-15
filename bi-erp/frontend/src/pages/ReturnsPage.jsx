@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { 
+import {
   Package, Search, Plus, Filter, Download, AlertTriangle,
   Clock, CheckCircle2, XCircle, Send, RefreshCw, Phone,
   Eye, Edit, MessageSquare, Calendar, User, Building2,
@@ -63,10 +63,10 @@ export default function ReturnsPage() {
   // جلب بيانات المرتجعات
   const { data: returnsData, isLoading } = useQuery({
     queryKey: ['returns', searchTerm, selectedSupplier, selectedStatus],
-    queryFn: () => returnsAPI.getReturns({ 
-      search: searchTerm, 
+    queryFn: () => returnsAPI.getReturns({
+      search: searchTerm,
       supplier: selectedSupplier,
-      status: selectedStatus 
+      status: selectedStatus
     }),
   })
 
@@ -248,132 +248,68 @@ export default function ReturnsPage() {
         <AlertsOverduePanel onClose={() => setShowAlertsOverdue(false)} />
       )}
 
-      {/* Returns List */}
-      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-neutral-50 dark:bg-neutral-700/50">
-              <tr>
-                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">التنبيه</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">رقم المرتجع</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">المنتج</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">السيريال</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">المورد</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">سبب الإرجاع</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">تاريخ الإرسال</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">المدة</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">الحالة</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-neutral-500">إجراءات</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
-              {returns.length === 0 ? (
-                <tr>
-                  <td colSpan="10" className="px-4 py-8 text-center text-neutral-500">
-                    لا توجد مرتجعات مطابقة للبحث
-                  </td>
-                </tr>
-              ) : (
-                returns.map((returnItem) => {
-                  const days = calculateDays(returnItem.sent_date)
-                  const alertLevel = getAlertLevel(days)
-                  const alert = alertLevels[alertLevel]
-                  const status = returnStatuses[returnItem.status] || returnStatuses.pending
-
-                  return (
-                    <tr key={returnItem.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
-                      <td className="px-4 py-3">
-                        {alertLevel === 'critical' && (
-                          <span className="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full animate-pulse">
-                            🚨
-                          </span>
-                        )}
-                        {alertLevel === 'danger' && (
-                          <span className="w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 rounded-full">
-                            🔴
-                          </span>
-                        )}
-                        {alertLevel === 'warning' && (
-                          <span className="w-8 h-8 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-full">
-                            🟡
-                          </span>
-                        )}
-                        {alertLevel === 'normal' && (
-                          <span className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-600 rounded-full">
-                            🟢
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="font-mono font-medium text-primary-600">
-                          {returnItem.return_number || `RTN-${returnItem.id}`}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div>
-                          <p className="font-medium text-neutral-900 dark:text-white">{returnItem.product_name}</p>
-                          <p className="text-sm text-neutral-500">{returnItem.brand} {returnItem.model}</p>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 font-mono text-sm">
-                        {returnItem.serial_number}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-4 h-4 text-neutral-400" />
-                          <span>{returnItem.supplier_name}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
-                        {returnItem.reason || 'عيب مصنعي'}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {new Date(returnItem.sent_date).toLocaleDateString('ar-IQ')}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-sm font-bold ${alert.bg} ${alert.color}`}>
-                          {days} يوم
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${status.color}`}>
-                          <status.icon className="w-3 h-3" />
-                          {status.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <button 
-                            onClick={() => handleViewReturn(returnItem)}
-                            className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
-                            title="تفاصيل"
-                          >
-                            <Eye className="w-4 h-4 text-neutral-500" />
-                          </button>
-                          <button
-                            onClick={() => returnsAPI.sendReminder(returnItem.id).then(() => queryClient.invalidateQueries({ queryKey: ['returns'] }))}
-                            className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
-                            title="تذكير"
-                          >
-                            <Phone className="w-4 h-4 text-neutral-500" />
-                          </button>
-                          <button
-                            onClick={() => handleViewReturn(returnItem)}
-                            className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
-                            title="تحديث الحالة"
-                          >
-                            <RefreshCw className="w-4 h-4 text-neutral-500" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
+      {/* Returns Cards */}
+      {returns.length === 0 ? (
+        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
+          <Package className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+          <p className="text-neutral-500">لا توجد مرتجعات مطابقة للبحث</p>
         </div>
-      </div>
+      ) : (
+        <div className="space-y-3">
+          {returns.map((returnItem) => {
+            const days = calculateDays(returnItem.sent_date)
+            const alertLevel = getAlertLevel(days)
+            const alert = alertLevels[alertLevel]
+            const status = returnStatuses[returnItem.status] || returnStatuses.pending
+            const StatusIcon = status.icon
+            const borderColor = alertLevel === 'critical' ? 'border-red-500 dark:border-red-600' :
+              alertLevel === 'danger' ? 'border-red-300 dark:border-red-700' :
+                alertLevel === 'warning' ? 'border-yellow-300 dark:border-yellow-700' :
+                  'border-neutral-200 dark:border-neutral-700'
+
+            return (
+              <div key={returnItem.id}
+                onClick={() => handleViewReturn(returnItem)}
+                className={`bg-white dark:bg-neutral-800 rounded-xl border-2 p-4 hover:shadow-md transition-shadow cursor-pointer ${borderColor}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-lg ${alert.bg}`}>
+                      {alertLevel === 'critical' ? '🚨' : alertLevel === 'danger' ? '🔴' : alertLevel === 'warning' ? '🟡' : '🟢'}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="font-mono text-sm font-bold text-primary-600">{returnItem.return_number || `RTN-${returnItem.id}`}</p>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${alert.bg} ${alert.color}`}>{days} يوم</span>
+                      </div>
+                      <p className="text-sm font-medium">{returnItem.product_name} <span className="text-neutral-400 text-xs">{returnItem.brand} {returnItem.model}</span></p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-400 mt-0.5">
+                        <span className="font-mono">{returnItem.serial_number}</span>
+                        <span className="flex items-center gap-0.5"><Building2 className="w-3 h-3" />{returnItem.supplier_name}</span>
+                        <span>{returnItem.reason || 'عيب مصنعي'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium ${status.color}`}>
+                      <StatusIcon className="w-3 h-3" /> {status.label}
+                    </span>
+                    <span className="text-[10px] text-neutral-400">{new Date(returnItem.sent_date).toLocaleDateString('ar-IQ')}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-700">
+                  <button onClick={(e) => { e.stopPropagation(); handleViewReturn(returnItem) }}
+                    className="text-[10px] text-primary-600 hover:underline flex items-center gap-0.5"><Eye className="w-3 h-3" /> تفاصيل</button>
+                  <button onClick={(e) => { e.stopPropagation(); returnsAPI.sendReminder(returnItem.id).then(() => queryClient.invalidateQueries({ queryKey: ['returns'] })) }}
+                    className="text-[10px] text-amber-600 hover:underline flex items-center gap-0.5"><Phone className="w-3 h-3" /> تذكير</button>
+                  <button onClick={(e) => { e.stopPropagation(); handleViewReturn(returnItem) }}
+                    className="text-[10px] text-neutral-500 hover:underline flex items-center gap-0.5"><RefreshCw className="w-3 h-3" /> تحديث</button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* New Return Modal */}
       <Modal
