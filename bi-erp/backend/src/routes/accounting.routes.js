@@ -9,7 +9,7 @@ router.use(auth);
 router.get('/overview', async (req, res) => {
   try {
     const monthFilter = "AND (created_at::date) >= date_trunc('month', CURRENT_DATE)::date";
-    const notDeleted = "AND (is_deleted = FALSE OR is_deleted IS NULL)";
+    const notDeleted = "AND (is_deleted = 0 OR is_deleted IS NULL)";
     const notCancelled = "AND (status IS NULL OR status NOT IN ('cancelled'))";
 
     // Monthly totals
@@ -56,14 +56,14 @@ router.get('/overview', async (req, res) => {
     // Receivables (customer debts)
     let receivables = 0;
     try {
-      const r = await get('SELECT COALESCE(SUM(balance), 0) as v FROM customers WHERE balance > 0 AND (is_deleted = FALSE OR is_deleted IS NULL)');
+      const r = await get('SELECT COALESCE(SUM(balance), 0) as v FROM customers WHERE balance > 0 AND (is_deleted = 0 OR is_deleted IS NULL)');
       receivables = Number(r?.v) || 0;
     } catch (_) { /* table may not exist */ }
 
     // Payables (supplier debts)
     let payables = 0;
     try {
-      const p = await get('SELECT COALESCE(SUM(ABS(balance)), 0) as v FROM suppliers WHERE balance < 0 AND (is_deleted = FALSE OR is_deleted IS NULL)');
+      const p = await get('SELECT COALESCE(SUM(ABS(balance)), 0) as v FROM suppliers WHERE balance < 0 AND (is_deleted = 0 OR is_deleted IS NULL)');
       payables = Number(p?.v) || 0;
     } catch (_) { /* table may not exist */ }
 

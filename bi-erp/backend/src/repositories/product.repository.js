@@ -1,7 +1,7 @@
 const { get, all, run } = require('../config/database');
 
 async function findAll(filters = {}) {
-  let sql = `SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE (p.is_deleted = FALSE OR p.is_deleted IS NULL)`;
+  let sql = `SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE (p.is_deleted = 0 OR p.is_deleted IS NULL)`;
   const params = [];
   if (filters.low_stock === 'true') sql += ` AND p.quantity < p.min_quantity`;
   if (filters.category_id) { params.push(filters.category_id); sql += ` AND p.category_id = ?`; }

@@ -43,7 +43,7 @@ router.get('/', requirePermission('devices.read'), logSensitiveAccess('device'),
             LEFT JOIN warehouses w ON d.warehouse_id = w.id
             LEFT JOIN products p ON d.product_id = p.id
             LEFT JOIN suppliers s ON d.supplier_id = s.id
-            WHERE d.is_deleted = false
+            WHERE d.is_deleted = 0
         `;
         const params = [];
         let paramIndex = 1;
@@ -111,7 +111,7 @@ router.get('/:id', requirePermission('devices.read'), logSensitiveAccess('device
             LEFT JOIN products p ON d.product_id = p.id
             LEFT JOIN suppliers s ON d.supplier_id = s.id
             LEFT JOIN customers c ON d.customer_id = c.id
-            WHERE (d.id = $1 OR d.serial_number = $1) AND d.is_deleted = false
+            WHERE (d.id = $1 OR d.serial_number = $1) AND d.is_deleted = 0
         `, [req.params.id]);
 
         if (result.rows.length === 0) {
@@ -234,7 +234,7 @@ router.patch('/:id', requirePermission('devices.update'), protectQuantityChange(
         
         // جلب الجهاز الحالي
         const currentResult = await req.db.query(
-            'SELECT * FROM devices WHERE id = $1 AND is_deleted = false',
+            'SELECT * FROM devices WHERE id = $1 AND is_deleted = 0',
             [req.params.id]
         );
 
@@ -348,7 +348,7 @@ router.post('/:id/transfer', requirePermission('devices.transfer'), async (req, 
 
         // جلب الجهاز
         const deviceResult = await req.db.query(
-            'SELECT * FROM devices WHERE id = $1 AND is_deleted = false',
+            'SELECT * FROM devices WHERE id = $1 AND is_deleted = 0',
             [req.params.id]
         );
 

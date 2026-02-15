@@ -101,9 +101,9 @@ async function stats(req, res) {
   try {
     const { get } = require('../config/database');
     const [total, lowStock, totalValue] = await Promise.all([
-      get('SELECT COUNT(*) as c FROM products WHERE (is_deleted = FALSE OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
-      get('SELECT COUNT(*) as c FROM products WHERE (is_deleted = FALSE OR is_deleted IS NULL) AND quantity < min_quantity').then(r => r?.c || 0).catch(() => 0),
-      get('SELECT COALESCE(SUM(quantity * cost_price), 0) as s FROM products WHERE (is_deleted = FALSE OR is_deleted IS NULL)').then(r => r?.s || 0).catch(() => 0),
+      get('SELECT COUNT(*) as c FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
+      get('SELECT COUNT(*) as c FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) AND quantity < min_quantity').then(r => r?.c || 0).catch(() => 0),
+      get('SELECT COALESCE(SUM(quantity * cost_price), 0) as s FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.s || 0).catch(() => 0),
     ]);
     res.json({ success: true, data: { total_products: total, low_stock_count: lowStock, total_value: totalValue } });
   } catch (e) {

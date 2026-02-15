@@ -9,9 +9,9 @@ router.get('/summary', async (req, res) => {
   try {
     const [users, customers, invoices, products] = await Promise.all([
       get('SELECT COUNT(*) as c FROM users WHERE is_active = TRUE').then(r => r?.c || 0).catch(() => 0),
-      get('SELECT COUNT(*) as c FROM customers WHERE (is_deleted = FALSE OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
-      get('SELECT COUNT(*) as c FROM invoices WHERE (is_deleted = FALSE OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
-      get('SELECT COUNT(*) as c FROM products WHERE (is_deleted = FALSE OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
+      get('SELECT COUNT(*) as c FROM customers WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
+      get('SELECT COUNT(*) as c FROM invoices WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
+      get('SELECT COUNT(*) as c FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
     ]);
     res.json({ success: true, data: { users, customers, invoices, products } });
   } catch (e) {
@@ -23,12 +23,12 @@ router.get('/summary', async (req, res) => {
 router.get('/executive-dashboard', async (req, res) => {
   try {
     const [totalSales, totalPurchases, totalCustomers, totalProducts, todaySales, monthlySales] = await Promise.all([
-      get("SELECT COUNT(*) as count, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'sale%' AND (is_deleted = FALSE OR is_deleted IS NULL)").catch(() => ({ count: 0, total: 0 })),
-      get("SELECT COUNT(*) as count, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'purchase%' AND (is_deleted = FALSE OR is_deleted IS NULL)").catch(() => ({ count: 0, total: 0 })),
-      get('SELECT COUNT(*) as c FROM customers WHERE (is_deleted = FALSE OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
-      get('SELECT COUNT(*) as c FROM products WHERE (is_deleted = FALSE OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
-      get("SELECT COUNT(*) as count, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'sale%' AND created_at::date = CURRENT_DATE AND (is_deleted = FALSE OR is_deleted IS NULL)").catch(() => ({ count: 0, total: 0 })),
-      get("SELECT COUNT(*) as count, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'sale%' AND date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP) AND (is_deleted = FALSE OR is_deleted IS NULL)").catch(() => ({ count: 0, total: 0 })),
+      get("SELECT COUNT(*) as count, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'sale%' AND (is_deleted = 0 OR is_deleted IS NULL)").catch(() => ({ count: 0, total: 0 })),
+      get("SELECT COUNT(*) as count, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'purchase%' AND (is_deleted = 0 OR is_deleted IS NULL)").catch(() => ({ count: 0, total: 0 })),
+      get('SELECT COUNT(*) as c FROM customers WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
+      get('SELECT COUNT(*) as c FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
+      get("SELECT COUNT(*) as count, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'sale%' AND created_at::date = CURRENT_DATE AND (is_deleted = 0 OR is_deleted IS NULL)").catch(() => ({ count: 0, total: 0 })),
+      get("SELECT COUNT(*) as count, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'sale%' AND date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP) AND (is_deleted = 0 OR is_deleted IS NULL)").catch(() => ({ count: 0, total: 0 })),
     ]);
     
     const salesTotal = Number(totalSales?.total) || 0;
@@ -60,7 +60,7 @@ router.get('/executive-dashboard', async (req, res) => {
 // Sales report
 router.get('/sales', async (req, res) => {
   try {
-    const rows = await all("SELECT created_at::date as date, COUNT(*) as count, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'sale%' AND (is_deleted = FALSE OR is_deleted IS NULL) GROUP BY created_at::date ORDER BY date DESC LIMIT 30");
+    const rows = await all("SELECT created_at::date as date, COUNT(*) as count, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'sale%' AND (is_deleted = 0 OR is_deleted IS NULL) GROUP BY created_at::date ORDER BY date DESC LIMIT 30");
     res.json({ success: true, data: rows });
   } catch (e) {
     res.json({ success: true, data: [] });
@@ -70,7 +70,7 @@ router.get('/sales', async (req, res) => {
 // Inventory report
 router.get('/inventory', async (req, res) => {
   try {
-    const rows = await all("SELECT id, name, quantity, min_quantity, cost_price, selling_price, category_id FROM products WHERE (is_deleted = FALSE OR is_deleted IS NULL) ORDER BY quantity ASC LIMIT 50");
+    const rows = await all("SELECT id, name, quantity, min_quantity, cost_price, selling_price, category_id FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) ORDER BY quantity ASC LIMIT 50");
     res.json({ success: true, data: rows });
   } catch (e) {
     res.json({ success: true, data: [] });

@@ -20,7 +20,7 @@ router.get('/warehouses', async (req, res) => {
 router.get('/alerts', async (req, res) => {
   try {
     const { all } = require('../config/database');
-    const rows = await all('SELECT * FROM products WHERE (is_deleted = FALSE OR is_deleted IS NULL) AND quantity <= min_quantity LIMIT 20').catch(() => []);
+    const rows = await all('SELECT * FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL) AND quantity <= min_quantity LIMIT 20').catch(() => []);
     res.json({ success: true, data: rows });
   } catch (e) {
     res.json({ success: true, data: [] });

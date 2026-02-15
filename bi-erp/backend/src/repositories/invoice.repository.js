@@ -6,7 +6,7 @@ async function findAll(filters = {}) {
     FROM invoices i
     LEFT JOIN customers c ON i.customer_id = c.id
     LEFT JOIN suppliers s ON i.supplier_id = s.id
-    WHERE (i.is_deleted = FALSE OR i.is_deleted IS NULL)
+    WHERE (i.is_deleted = 0 OR i.is_deleted IS NULL)
   `;
   const params = [];
   if (filters.type) {

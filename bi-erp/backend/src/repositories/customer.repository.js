@@ -1,7 +1,7 @@
 const { get, all, run } = require('../config/database');
 
 async function findAll(filters = {}) {
-  let sql = `SELECT * FROM customers WHERE (is_deleted = FALSE OR is_deleted IS NULL)`;
+  let sql = `SELECT * FROM customers WHERE (is_deleted = 0 OR is_deleted IS NULL)`;
   const params = [];
   if (filters.search) {
     sql += ` AND (name ILIKE ? OR phone ILIKE ? OR email ILIKE ? OR code ILIKE ?)`;
@@ -16,7 +16,7 @@ async function findAll(filters = {}) {
 }
 
 async function findById(id) {
-  return get('SELECT * FROM customers WHERE id = ? AND (is_deleted = FALSE OR is_deleted IS NULL)', [id]);
+  return get('SELECT * FROM customers WHERE id = ? AND (is_deleted = 0 OR is_deleted IS NULL)', [id]);
 }
 
 async function create(data) {
