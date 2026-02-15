@@ -21,7 +21,7 @@ import DataTable from '../components/common/DataTable'
 import PageShell from '../components/common/PageShell'
 import SearchInput from '../components/common/SearchInput'
 import FilterSelect from '../components/common/FilterSelect'
-import StatsGrid from '../components/common/StatsGrid'
+import { clsx } from 'clsx'
 import { deviceStatuses, warehouses } from '../components/inventory/inventoryConstants'
 import { AddDeviceForm, EditDeviceForm, TransferDeviceForm, DeleteDeviceConfirm, DeviceDetails } from '../components/inventory/InventoryForms'
 import InspectionForm from '../components/inventory/InspectionForm'
@@ -124,12 +124,6 @@ export default function InventoryPage() {
     )
   }
 
-  const inventoryStatsItems = [
-    { title: 'إجمالي الأجهزة', value: stats.total ?? 0, icon: Boxes, color: 'primary' },
-    { title: 'جاهز للبيع', value: stats.ready_to_sell ?? 0, icon: CheckCircle2, color: 'success' },
-    { title: 'بالصيانة', value: stats.in_repair ?? 0, icon: AlertTriangle, color: 'warning' },
-    { title: 'تنبيه نقص', value: stats.low_stock ?? 0, icon: AlertTriangle, color: 'danger' },
-  ]
   const warehouseOptions = warehouses.map((w) => ({ value: w.id, label: `${w.icon} ${w.name}` }))
   const statusOptions = Object.entries(deviceStatuses).map(([k, v]) => ({ value: k, label: v.label }))
   const deviceColumns = [
@@ -170,7 +164,12 @@ export default function InventoryPage() {
 
       {tab === 'devices' && (
         <>
-          <StatsGrid items={inventoryStatsItems} columns={4} />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <InvStatCard label="إجمالي الأجهزة" value={stats.total ?? 0} icon={Boxes} color="sky" />
+            <InvStatCard label="جاهز للبيع" value={stats.ready_to_sell ?? 0} icon={CheckCircle2} color="emerald" />
+            <InvStatCard label="بالصيانة" value={stats.in_repair ?? 0} icon={AlertTriangle} color="amber" />
+            <InvStatCard label="تنبيه نقص" value={stats.low_stock ?? 0} icon={AlertTriangle} color="red" />
+          </div>
           <PageShell.Toolbar>
             <SearchInput placeholder="بحث بالسيريال، الاسم، أو الموديل..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
             <FilterSelect options={warehouseOptions} value={selectedWarehouse === 'all' ? null : selectedWarehouse} onChange={(v) => setSelectedWarehouse(v ?? 'all')} placeholder="كل المخازن" />
@@ -322,15 +321,45 @@ function InventoryProductsTab() {
     queryFn: () => api.get('/inventory').then((r) => r.data),
   })
   const products = data?.data || []
-  const columns = [
-    { key: 'name', label: 'المنتج' },
-    { key: 'quantity', label: 'الكمية' },
-    { key: 'min_quantity', label: 'الحد الأدنى' },
-    { key: 'category_name', label: 'الفئة' },
-  ]
+
+  if (isLoading) return <div className="flex justify-center py-12"><Spinner size="lg" /></div>
+  if (products.length === 0) return <EmptyState icon={Package} title="لا توجد منتجات" description="أضف منتجات من إدارة المخزون." />
+
   return (
-    <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
-      <DataTable columns={columns} data={products} loading={isLoading} emptyTitle="لا توجد منتجات" emptyDescription="أضف منتجات من إدارة المخزون." />
+    <div className="space-y-2">
+      {products.map((p, i) => {
+        const isLow = p.quantity != null && p.min_quantity != null && p.quantity <= p.min_quantity
+        return (
+          <div key={p.id || i} className={clsx(
+            'bg-white dark:bg-neutral-800 rounded-xl border p-4 hover:shadow-md transition-shadow',
+            isLow ? 'border-red-200 dark:border-red-800' : 'border-neutral-200 dark:border-neutral-700'
+          )}>
+            <div className="flex items-center gap-3">
+              <div className={clsx(
+                'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0',
+                isLow ? 'bg-red-100 dark:bg-red-900/30' : 'bg-primary-100 dark:bg-primary-900/30'
+              )}>
+                <Package className={clsx('w-5 h-5', isLow ? 'text-red-600' : 'text-primary-600')} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium">{p.name}</p>
+                <p className="text-xs text-neutral-400">{p.category_name || 'عام'}</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="text-center">
+                  <p className="text-[10px] text-neutral-400">الكمية</p>
+                  <p className={clsx('text-sm font-bold', isLow ? 'text-red-600' : '')}>{p.quantity ?? 0}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] text-neutral-400">الحد الأدنى</p>
+                  <p className="text-sm font-bold text-neutral-500">{p.min_quantity ?? 0}</p>
+                </div>
+                {isLow && <AlertTriangle className="w-4 h-4 text-red-500" />}
+              </div>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -344,16 +373,30 @@ function InventoryMovementsTab() {
     },
   })
   const movements = Array.isArray(data) ? data : []
-  const columns = [
-    { key: 'product_name', label: 'المنتج', render: (r) => r.product_name || r.product_id || '\u2014' },
-    { key: 'type', label: 'النوع' },
-    { key: 'quantity', label: 'الكمية' },
-    { key: 'reason', label: 'السبب' },
-    { key: 'created_at', label: 'التاريخ', render: (r) => r.created_at ? new Date(r.created_at).toLocaleDateString('ar-IQ') : '\u2014' },
-  ]
+  const typeColors = { in: 'bg-emerald-100 text-emerald-700', out: 'bg-red-100 text-red-700', transfer: 'bg-blue-100 text-blue-700', adjustment: 'bg-amber-100 text-amber-700' }
+
+  if (isLoading) return <div className="flex justify-center py-12"><Spinner size="lg" /></div>
+  if (movements.length === 0) return <EmptyState icon={History} title="لا توجد حركات" description="حركات المخزون ستظهر هنا." />
+
   return (
-    <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
-      <DataTable columns={columns} data={movements} loading={isLoading} emptyTitle="لا توجد حركات" emptyDescription="حركات المخزون ستظهر هنا." />
+    <div className="space-y-2">
+      {movements.map((m, i) => (
+        <div key={m.id || i} className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+              <History className="w-5 h-5 text-blue-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium">{m.product_name || m.product_id || '—'}</p>
+              <p className="text-xs text-neutral-400">{m.reason || '—'} • {m.created_at ? new Date(m.created_at).toLocaleDateString('ar-IQ') : '—'}</p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-sm font-bold">{m.quantity}</span>
+              <span className={clsx('px-2 py-0.5 rounded-full text-[10px] font-medium', typeColors[m.type] || 'bg-neutral-100 text-neutral-600')}>{m.type}</span>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -594,6 +637,27 @@ function StockCountTab() {
           })}
         </div>
       )}
+    </div>
+  )
+}
+
+// ═══ STAT CARD ═══
+function InvStatCard({ label, value, icon: Icon, color = 'sky' }) {
+  const colors = {
+    sky: 'bg-sky-50 dark:bg-sky-900/20 text-sky-600',
+    emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600',
+    amber: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600',
+    red: 'bg-red-50 dark:bg-red-900/20 text-red-600',
+  }
+  return (
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-3">
+      <div className="flex items-center gap-2.5">
+        <div className={clsx('p-2 rounded-lg', colors[color])}><Icon className="w-4 h-4" /></div>
+        <div>
+          <p className="text-[10px] text-neutral-400">{label}</p>
+          <p className="text-lg font-bold">{value}</p>
+        </div>
+      </div>
     </div>
   )
 }
