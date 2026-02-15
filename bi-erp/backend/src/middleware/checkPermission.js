@@ -300,7 +300,7 @@ async function handleSensitivePermission(req, res, next, permission) {
 
     // إذا الصلاحية تتطلب موافقة
     if (permission.requires_approval) {
-        req.requiresApproval = true;
+        req.requiresApproval = 1;
         req.permissionCode = permission.code;
     }
 

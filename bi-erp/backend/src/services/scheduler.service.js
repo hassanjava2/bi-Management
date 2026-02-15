@@ -8,7 +8,7 @@ const notificationService = require('./notification.service');
 const attendanceJobs = require('../jobs/attendance.job');
 
 // Track if scheduler is running
-let isRunning = false;
+let isRunning = 0;
 let intervalId = null;
 
 /**
@@ -154,7 +154,7 @@ function startScheduler() {
         return;
     }
 
-    isRunning = true;
+    isRunning = 1;
     console.log('[Scheduler] Starting...');
 
     // Run immediately
@@ -174,7 +174,7 @@ function stopScheduler() {
         clearInterval(intervalId);
         intervalId = null;
     }
-    isRunning = false;
+    isRunning = 0;
     console.log('[Scheduler] Stopped');
 }
 

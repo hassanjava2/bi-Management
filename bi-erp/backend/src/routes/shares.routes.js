@@ -62,7 +62,7 @@ router.post('/shareholders', async (req, res) => {
         const id = generateId();
         await run(`INSERT INTO shareholders (id, code, name, phone, share_percentage, share_value, monthly_profit, is_active)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, code || null, name, phone || null, share_percentage || 0, share_value || 0, monthly_profit || 0, is_active !== false]);
+            [id, code || null, name, phone || null, share_percentage || 0, share_value || 0, monthly_profit || 0, is_active !== 0]);
         res.status(201).json({ success: true, data: await get(`SELECT * FROM shareholders WHERE id = ?`, [id]) });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
@@ -83,7 +83,7 @@ router.put('/shareholders/:id', async (req, res) => {
         if (share_percentage !== undefined) { updates.push('share_percentage = ?'); params.push(share_percentage); }
         if (share_value !== undefined) { updates.push('share_value = ?'); params.push(share_value); }
         if (monthly_profit !== undefined) { updates.push('monthly_profit = ?'); params.push(monthly_profit); }
-        if (is_active !== undefined) { updates.push('is_active = ?'); params.push(is_active !== false); }
+        if (is_active !== undefined) { updates.push('is_active = ?'); params.push(is_active !== 0); }
         if (updates.length > 0) {
             params.push(req.params.id);
             await run(`UPDATE shareholders SET ${updates.join(', ')} WHERE id = ?`, params);

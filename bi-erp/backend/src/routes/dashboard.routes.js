@@ -16,7 +16,7 @@ router.get('/stats', async (req, res) => {
       get('SELECT COUNT(*) as c FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
       get('SELECT COUNT(*) as c FROM invoices WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
       get("SELECT COUNT(*) as c, COALESCE(SUM(total),0) as total FROM invoices WHERE type LIKE 'sale%' AND created_at::date = CURRENT_DATE AND (is_deleted = 0 OR is_deleted IS NULL)").then(r => ({ count: r?.c || 0, total: r?.total || 0 })).catch(() => ({ count: 0, total: 0 })),
-      get('SELECT COUNT(*) as c FROM users WHERE is_active = true').then(r => r?.c || 0).catch(() => 0),
+      get('SELECT COUNT(*) as c FROM users WHERE is_active = 1').then(r => r?.c || 0).catch(() => 0),
     ]);
     res.json({ success: true, data: { total_customers: totalCustomers, total_suppliers: totalSuppliers, total_products: totalProducts, total_invoices: totalInvoices, today_sales_count: todaySales.count, today_sales_total: todaySales.total, total_employees: totalEmployees } });
   } catch (e) {

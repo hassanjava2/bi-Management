@@ -15,7 +15,7 @@ const taskService = require('../task.service');
 const notificationService = require('../notification.service');
 
 async function getManagerUserId() {
-    const u = await get(`SELECT id FROM users WHERE (role = 'admin' OR role = 'owner') AND is_active = TRUE LIMIT 1`);
+    const u = await get(`SELECT id FROM users WHERE (role = 'admin' OR role = 'owner') AND is_active = 1 LIMIT 1`);
     return u?.id || null;
 }
 
@@ -52,7 +52,7 @@ async function ensureTables() {
 
 async function seedEmployeeSkills() {
     try {
-        const users = await all(`SELECT id FROM users WHERE is_active = TRUE`);
+        const users = await all(`SELECT id FROM users WHERE is_active = 1`);
         for (const u of users) {
             historyLearner.ensureEmployeeSkills(u.id);
         }
@@ -225,7 +225,7 @@ async function getAbsentToday() {
         `SELECT a.user_id, u.full_name
          FROM attendance a
          JOIN users u ON u.id = a.user_id
-         WHERE a.date = ? AND a.status = 'absent' AND u.is_active = TRUE`,
+         WHERE a.date = ? AND a.status = 'absent' AND u.is_active = 1`,
         [today]
     );
 }
@@ -324,7 +324,7 @@ function setDistributionConfig(updates) {
  */
 async function getAllSkills() {
     seedEmployeeSkills();
-    const users = await all(`SELECT id, full_name FROM users WHERE is_active = TRUE`);
+    const users = await all(`SELECT id, full_name FROM users WHERE is_active = 1`);
     return users.map((u) => ({
         user_id: u.id,
         full_name: u.full_name,

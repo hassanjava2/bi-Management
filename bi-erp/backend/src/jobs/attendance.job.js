@@ -22,7 +22,7 @@ async function checkLateEmployees() {
         FROM users u
         LEFT JOIN departments d ON u.department_id = d.id
         LEFT JOIN attendance a ON u.id = a.user_id AND a.date = ?
-        WHERE u.is_active = TRUE
+        WHERE u.is_active = 1
         AND a.id IS NULL
         AND u.role != 'admin'
     `, [todayDate]);
@@ -57,7 +57,7 @@ async function markAbsentEmployees() {
         SELECT u.id, u.full_name
         FROM users u
         LEFT JOIN attendance a ON u.id = a.user_id AND a.date = ?
-        WHERE u.is_active = TRUE
+        WHERE u.is_active = 1
         AND a.id IS NULL
         AND u.role != 'admin'
     `, [todayDate]);
@@ -135,7 +135,7 @@ async function generateDailyReport() {
         FROM attendance WHERE date = ?
     `, [todayDate]);
 
-    const totalEmployees = await get(`SELECT COUNT(*) as count FROM users WHERE is_active = TRUE`);
+    const totalEmployees = await get(`SELECT COUNT(*) as count FROM users WHERE is_active = 1`);
 
     const report = {
         date: todayDate,
@@ -154,7 +154,7 @@ async function generateDailyReport() {
     console.log('[Attendance Job] Daily report:', report);
 
     // Send report to HR/Admin
-    const hrUsers = await all(`SELECT id FROM users WHERE role IN ('admin', 'hr') AND is_active = TRUE`);
+    const hrUsers = await all(`SELECT id FROM users WHERE role IN ('admin', 'hr') AND is_active = 1`);
     
     for (const user of hrUsers) {
         notificationService.create({

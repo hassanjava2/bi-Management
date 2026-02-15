@@ -67,7 +67,7 @@ async function login(emailOrUsername, password, ipAddress) {
 }
 
 async function logout(userId, ipAddress) {
-  await run(`UPDATE user_sessions SET is_active = FALSE WHERE user_id = ?`, [userId]);
+  await run(`UPDATE user_sessions SET is_active = 0 WHERE user_id = ?`, [userId]);
   await run(`UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE user_id = ? AND revoked_at IS NULL`, [userId]);
   await logAudit({ user_id: userId, action: 'LOGOUT', ip_address: ipAddress });
   return { success: true };

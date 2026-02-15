@@ -47,7 +47,7 @@ async function update(id, data) {
 }
 
 async function remove(id) {
-  await run('UPDATE customers SET is_deleted = TRUE, deleted_at = CURRENT_TIMESTAMP WHERE id = ?', [id]);
+  await run('UPDATE customers SET is_deleted = 1, deleted_at = CURRENT_TIMESTAMP WHERE id = ?', [id]);
 }
 
 module.exports = { findAll, findById, create, update, remove };

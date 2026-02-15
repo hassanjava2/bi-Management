@@ -39,7 +39,7 @@ router.get('/pending', async (req, res) => {
 
 router.get('/drivers', async (req, res) => {
     try {
-        const rows = await all("SELECT id, full_name as name, phone FROM users WHERE role = 'driver' AND is_active = true");
+        const rows = await all("SELECT id, full_name as name, phone FROM users WHERE role = 'driver' AND is_active = 1");
         res.json({ success: true, data: rows });
     } catch (error) {
         res.json({ success: true, data: [] });

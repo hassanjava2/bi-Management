@@ -15,7 +15,7 @@ const { run, get, all } = require('../../config/database');
 class RealisticWorker {
     constructor(bot) {
         this.bot = bot;
-        this.isWorking = false;
+        this.isWorking = 0;
         this.workInterval = null;
         
         // إحصائيات العمل
@@ -72,7 +72,7 @@ class RealisticWorker {
     startWorking(intervalMs = 5000) {
         if (this.isWorking) return;
         
-        this.isWorking = true;
+        this.isWorking = 1;
         this.stats.startTime = new Date().toISOString();
         this.bot.log('👷 العامل الواقعي بدأ العمل...');
         
@@ -91,7 +91,7 @@ class RealisticWorker {
     stopWorking() {
         if (!this.isWorking) return;
         
-        this.isWorking = false;
+        this.isWorking = 0;
         if (this.workInterval) {
             clearInterval(this.workInterval);
             this.workInterval = null;

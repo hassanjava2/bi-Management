@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 router.get('/leaderboard', async (req, res) => {
   try {
     const { all } = require('../config/database');
-    const rows = await all('SELECT u.id, u.full_name, u.role, COALESCE(g.total_points, 0) as points FROM users u LEFT JOIN user_goals g ON u.id = g.user_id WHERE u.is_active = true ORDER BY points DESC LIMIT 20');
+    const rows = await all('SELECT u.id, u.full_name, u.role, COALESCE(g.total_points, 0) as points FROM users u LEFT JOIN user_goals g ON u.id = g.user_id WHERE u.is_active = 1 ORDER BY points DESC LIMIT 20');
     res.json({ success: true, data: rows });
   } catch (e) {
     res.json({ success: true, data: [] });

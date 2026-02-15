@@ -189,7 +189,7 @@ async function notifyCustomer(claimId, method, message, notifiedBy) {
 
     await run(`
         UPDATE warranty_claims 
-        SET customer_notified = TRUE, customer_notified_at = ?,
+        SET customer_notified = 1, customer_notified_at = ?,
             customer_notification_method = ?, customer_notification_notes = ?,
             updated_at = ?
         WHERE id = ?

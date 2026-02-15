@@ -426,7 +426,7 @@ class AutoHealer {
             const staleSessions = await all(`
                 SELECT id FROM user_sessions 
                 WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '7 days'
-                AND is_active = TRUE
+                AND is_active = 1
             `);
             
             if (staleSessions?.length > 0) {
@@ -454,7 +454,7 @@ class AutoHealer {
                 try {
                     await run(`
                         UPDATE user_sessions 
-                        SET is_active = FALSE 
+                        SET is_active = 0 
                         WHERE id IN (${issue.ids.map(() => '?').join(',')})
                     `, issue.ids);
                     fixed += issue.count;

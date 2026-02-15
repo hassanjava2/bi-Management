@@ -37,6 +37,10 @@ try {
   console.warn('[!] Rate limiter not loaded:', e.message);
 }
 
+// Request timeout (30 seconds — prevents hung requests)
+const { requestTimeout } = require('./middleware/requestTimeout');
+app.use('/api', requestTimeout(30000));
+
 // Attach database pool to req.db for routes that need it
 app.use((req, res, next) => {
   try {

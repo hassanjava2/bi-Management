@@ -35,7 +35,7 @@ function initSocket(httpServer) {
         // Get user
         const user = await get(
             `SELECT id, full_name, role, security_level 
-             FROM users WHERE id = ? AND is_active = TRUE`,
+             FROM users WHERE id = ? AND is_active = 1`,
             [decoded.id]
         );
 

@@ -249,11 +249,11 @@ class SecurityReportService {
             },
             unresolved_events: await get(`
                 SELECT COUNT(*) as count FROM security_events
-                WHERE resolved = FALSE
+                WHERE resolved = 0
             `)?.count || 0,
             critical_events: await get(`
                 SELECT COUNT(*) as count FROM security_events
-                WHERE severity = 'critical' AND resolved = FALSE
+                WHERE severity = 'critical' AND resolved = 0
             `)?.count || 0
         };
     }

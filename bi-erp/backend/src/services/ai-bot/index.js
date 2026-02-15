@@ -27,8 +27,8 @@ class IntelligentBot extends EventEmitter {
         
         this.name = 'BI-Bot';
         this.version = '1.0.0';
-        this.isRunning = false;
-        this.isPaused = false;
+        this.isRunning = 0;
+        this.isPaused = 0;
         
         // Configuration
         this.config = {
@@ -37,8 +37,8 @@ class IntelligentBot extends EventEmitter {
             generateInterval: options.generateInterval || 45000, // 45 seconds
             uxAnalysisInterval: options.uxAnalysisInterval || 300000, // 5 minutes
             maxErrors: options.maxErrors || 100,
-            autoFix: options.autoFix !== false,
-            verbose: options.verbose !== false
+            autoFix: options.autoFix !== 0,
+            verbose: options.verbose !== 0
         };
         
         // Statistics
@@ -90,7 +90,7 @@ class IntelligentBot extends EventEmitter {
             return;
         }
         
-        this.isRunning = true;
+        this.isRunning = 1;
         this.stats.startedAt = new Date();
         
         this.log('🚀 Starting Intelligent Bot...');
@@ -125,7 +125,7 @@ class IntelligentBot extends EventEmitter {
             return;
         }
         
-        this.isRunning = false;
+        this.isRunning = 0;
         
         // Clear all intervals
         Object.values(this.intervals).forEach(interval => clearInterval(interval));
@@ -140,7 +140,7 @@ class IntelligentBot extends EventEmitter {
      * إيقاف مؤقت
      */
     pause() {
-        this.isPaused = true;
+        this.isPaused = 1;
         this.log('⏸️ Bot paused');
         this.emit('paused');
     }
@@ -149,7 +149,7 @@ class IntelligentBot extends EventEmitter {
      * استئناف
      */
     resume() {
-        this.isPaused = false;
+        this.isPaused = 0;
         this.log('▶️ Bot resumed');
         this.emit('resumed');
     }

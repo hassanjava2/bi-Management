@@ -209,7 +209,7 @@ async function createDailyTasks(userId) {
     const recurringTasks = await all(`
         SELECT * FROM task_templates 
         WHERE (user_id = ? OR user_id IS NULL)
-        AND is_active = TRUE
+        AND is_active = 1
         AND (
             recurrence = 'daily'
             OR (recurrence = 'weekly' AND EXTRACT(DOW FROM CURRENT_DATE)::integer = day_of_week)

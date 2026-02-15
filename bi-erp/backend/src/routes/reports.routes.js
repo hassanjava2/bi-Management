@@ -8,7 +8,7 @@ router.use(auth);
 router.get('/summary', async (req, res) => {
   try {
     const [users, customers, invoices, products] = await Promise.all([
-      get('SELECT COUNT(*) as c FROM users WHERE is_active = TRUE').then(r => r?.c || 0).catch(() => 0),
+      get('SELECT COUNT(*) as c FROM users WHERE is_active = 1').then(r => r?.c || 0).catch(() => 0),
       get('SELECT COUNT(*) as c FROM customers WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
       get('SELECT COUNT(*) as c FROM invoices WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),
       get('SELECT COUNT(*) as c FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL)').then(r => r?.c || 0).catch(() => 0),

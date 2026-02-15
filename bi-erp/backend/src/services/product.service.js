@@ -137,7 +137,7 @@ async function create(data) {
     min_quantity = 0,
     unit = 'piece',
     warranty_months = 0,
-    is_active = true,
+    is_active = 1,
     created_by,
   } = data;
   const catId = category_id || (group_id != null ? String(group_id) : null);
@@ -168,7 +168,7 @@ async function create(data) {
       parseInt(min_quantity, 10) || 0,
       unit,
       parseInt(warranty_months, 10) || 0,
-      is_active !== false,
+      is_active !== 0,
       createdAt,
       createdAt,
       created_by || null,
@@ -227,7 +227,7 @@ async function update(id, data) {
   if (min_quantity !== undefined) { updates.push('min_quantity = ?'); params.push(parseInt(min_quantity, 10)); }
   if (unit !== undefined) { updates.push('unit = ?'); params.push(unit); }
   if (warranty_months !== undefined) { updates.push('warranty_months = ?'); params.push(parseInt(warranty_months, 10)); }
-  if (is_active !== undefined) { updates.push('is_active = ?'); params.push(is_active !== false); }
+  if (is_active !== undefined) { updates.push('is_active = ?'); params.push(is_active !== 0); }
   if (updates.length === 0) return getById(id);
   updates.push('updated_at = ?');
   params.push(now());
@@ -239,7 +239,7 @@ async function update(id, data) {
 async function remove(id) {
   const existing = await get('SELECT id FROM products WHERE id = ?', [String(id)]);
   if (!existing) return false;
-  await run(`UPDATE products SET is_deleted = TRUE, deleted_at = ? WHERE id = ?`, [now(), String(id)]);
+  await run(`UPDATE products SET is_deleted = 1, deleted_at = ? WHERE id = ?`, [now(), String(id)]);
   return true;
 }
 

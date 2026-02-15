@@ -100,7 +100,7 @@ async function getOnTimeRate(userId) {
  * Update skill score after task completion (small delta toward 100 for success, toward 0 for fail/late)
  */
 async function recordCompletion(userId, taskKind, options = {}) {
-    const { onTime = true, rating } = options;
+    const { onTime = 1, rating } = options;
     const skillKey = TASK_KIND_TO_SKILL[taskKind];
     if (!skillKey) return;
 

@@ -241,7 +241,7 @@ function checkPermission(user, permission) {
     let current = user.permissions;
 
     for (const part of parts) {
-        if (current[part] === true) return true;
+        if (current[part] === 1) return true;
         if (typeof current[part] === 'object') {
             current = current[part];
         } else {
@@ -249,7 +249,7 @@ function checkPermission(user, permission) {
         }
     }
 
-    return current === true;
+    return current === 1;
 }
 
 /**
