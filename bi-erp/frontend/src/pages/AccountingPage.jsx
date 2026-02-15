@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { 
+import {
   DollarSign, TrendingUp, TrendingDown, Wallet, CreditCard,
   Building2, Users, Receipt, PiggyBank, ArrowUpRight, ArrowDownRight,
   Calendar, Filter, Download, Plus, Eye, BarChart3, PieChart,
@@ -36,6 +36,19 @@ export default function AccountingPage() {
   }
   const [showVoucherModal, setShowVoucherModal] = useState(false)
   const [voucherType, setVoucherType] = useState('receipt')
+
+  // Auto-open voucher modal from URL params (e.g. ?tab=vouchers&action=receipt)
+  useEffect(() => {
+    const action = searchParams.get('action')
+    if (action && ['receipt', 'payment', 'exchange', 'transfer'].includes(action)) {
+      setVoucherType(action)
+      setShowVoucherModal(true)
+      // Remove action param from URL without causing re-render
+      const newParams = new URLSearchParams(searchParams)
+      newParams.delete('action')
+      setSearchParams(newParams, { replace: true })
+    }
+  }, [searchParams])
 
   // جلب البيانات المالية
   const { data: financeData, isLoading } = useQuery({
@@ -91,6 +104,14 @@ export default function AccountingPage() {
           <Button variant="outline" onClick={() => handleNewVoucher('payment')}>
             <ArrowUpRight className="w-4 h-4 ml-2 text-red-500" />
             سند دفع
+          </Button>
+          <Button variant="outline" onClick={() => handleNewVoucher('exchange')}>
+            <PiggyBank className="w-4 h-4 ml-2 text-amber-500" />
+            صيرفة
+          </Button>
+          <Button variant="outline" onClick={() => handleNewVoucher('transfer')}>
+            <ArrowUpRight className="w-4 h-4 ml-2 text-purple-500" />
+            حوالة
           </Button>
           <Button variant="outline">
             <Download className="w-4 h-4 ml-2" />
@@ -160,11 +181,10 @@ export default function AccountingPage() {
             <button
               key={tab.id}
               onClick={() => setTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 border-b-2 font-medium transition-colors whitespace-nowrap ${
-                activeTab === tab.id
+              className={`flex items-center gap-2 px-4 py-2 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === tab.id
                   ? 'border-primary-600 text-primary-600'
                   : 'border-transparent text-neutral-500 hover:text-neutral-700'
-              }`}
+                }`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
@@ -269,7 +289,7 @@ export default function AccountingPage() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Debts Owed to Us */}
               <div>
                 <h4 className="font-medium text-green-600 mb-3 flex items-center gap-2">
@@ -342,7 +362,12 @@ export default function AccountingPage() {
       <Modal
         isOpen={showVoucherModal}
         onClose={() => setShowVoucherModal(false)}
-        title={voucherType === 'receipt' ? 'سند قبض جديد' : 'سند دفع جديد'}
+        title={{
+          receipt: 'سند قبض جديد',
+          payment: 'سند دفع جديد',
+          exchange: 'صيرفة — تبديل عملة',
+          transfer: 'حوالة — تحويل أموال',
+        }[voucherType] || 'سند جديد'}
         size="md"
       >
         <VoucherForm type={voucherType} onClose={() => setShowVoucherModal(false)} onSuccess={() => setShowVoucherModal(false)} />
@@ -382,6 +407,8 @@ function VouchersTab({ onNewReceipt, onNewPayment }) {
             <option value="all">الكل</option>
             <option value="receipt">قبض</option>
             <option value="payment">دفع</option>
+            <option value="exchange">صيرفة</option>
+            <option value="transfer">حوالة</option>
           </select>
           <Button size="sm" variant="outline" onClick={() => exportToCSV(list, 'vouchers.csv')} disabled={list.length === 0}>
             <Download className="w-4 h-4 ml-2" />
@@ -418,8 +445,12 @@ function VouchersTab({ onNewReceipt, onNewPayment }) {
                 <tr key={v.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/30">
                   <td className="px-3 py-2">{v.created_at ? new Date(v.created_at).toLocaleDateString('ar-IQ') : '-'}</td>
                   <td className="px-3 py-2">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${v.type === 'receipt' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                      {v.type === 'receipt' ? 'قبض' : 'دفع'}
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${v.type === 'receipt' ? 'bg-emerald-100 text-emerald-700'
+                        : v.type === 'exchange' ? 'bg-amber-100 text-amber-700'
+                          : v.type === 'transfer' ? 'bg-purple-100 text-purple-700'
+                            : 'bg-red-100 text-red-700'
+                      }`}>
+                      {{ receipt: 'قبض', payment: 'دفع', exchange: 'صيرفة', transfer: 'حوالة' }[v.type] || v.type}
                     </span>
                   </td>
                   <td className="px-3 py-2 font-bold">{(v.amount || 0).toLocaleString()} د.ع</td>
@@ -1022,7 +1053,7 @@ function VoucherForm({ type, onClose, onSuccess }) {
     const amt = parseFloat(amount)
     if (!amt || amt <= 0) return
     const payload = {
-      type: type === 'receipt' ? 'receipt' : 'payment',
+      type,
       amount: amt,
       description: description.trim() || undefined,
       customer_id: partyType === 'customer' ? partyId || null : null,
@@ -1058,7 +1089,7 @@ function VoucherForm({ type, onClose, onSuccess }) {
       </div>
       <div>
         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-          {type === 'receipt' ? 'من' : 'إلى'}
+          {{ receipt: 'من', payment: 'إلى', exchange: 'الطرف', transfer: 'المستلم' }[type] || 'الطرف'}
         </label>
         <select
           className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"

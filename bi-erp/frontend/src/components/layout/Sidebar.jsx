@@ -6,7 +6,8 @@ import {
   Building2, Trophy, GraduationCap, Shield, Activity, Package,
   Receipt, RefreshCw, DollarSign, Truck, Wrench, UserCircle,
   ChevronDown, ShoppingCart, FileCheck, CreditCard, BarChart3,
-  Calculator, Bot, Boxes, X, LogOut, Search, Workflow, MessageCircle,
+  Calculator, Bot, Boxes, X, LogOut, Search, Workflow, MessageCircle, Banknote,
+  ArrowLeftRight, Tag, FileX, Landmark,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useQuery } from '@tanstack/react-query'
@@ -30,7 +31,14 @@ const navSections = [
     stripLabel: 'التجارة',
     items: [
       { name: 'المبيعات', href: '/sales', icon: Receipt, roles: ['owner', 'admin', 'manager', 'sales'] },
+      { name: 'بيع نقدي', href: '/sales/new?type=cash', icon: Banknote, roles: ['owner', 'admin', 'manager', 'sales'], sub: true },
+      { name: 'بيع آجل', href: '/sales/new?type=credit', icon: CreditCard, roles: ['owner', 'admin', 'manager', 'sales'], sub: true },
+      { name: 'أقساط', href: '/sales/new?type=installment', icon: Calculator, roles: ['owner', 'admin', 'manager', 'sales'], sub: true },
+      { name: 'استبدال', href: '/sales/new?type=exchange', icon: ArrowLeftRight, roles: ['owner', 'admin', 'manager', 'sales'], sub: true },
+      { name: 'عرض أسعار', href: '/sales/new?type=quote', icon: Tag, roles: ['owner', 'admin', 'manager', 'sales'], sub: true },
+      { name: 'تالف / مستهلك', href: '/sales/new?type=scrap', icon: FileX, roles: ['owner', 'admin', 'manager', 'inventory'], sub: true },
       { name: 'المشتريات', href: '/purchases', icon: ShoppingCart, roles: ['owner', 'admin', 'manager', 'inventory'] },
+      { name: 'فاتورة شراء', href: '/purchases/new?type=purchase', icon: ShoppingCart, roles: ['owner', 'admin', 'manager', 'inventory'], sub: true },
       { name: 'المخزون', href: '/inventory', icon: Package, roles: ['owner', 'admin', 'manager', 'inventory'] },
       { name: 'المرتجعات', href: '/returns', icon: RefreshCw, roles: ['owner', 'admin', 'manager', 'inventory'] },
     ],
@@ -54,6 +62,10 @@ const navSections = [
     stripLabel: 'المالية',
     items: [
       { name: 'المحاسبة', href: '/accounting', icon: DollarSign, roles: ['owner', 'admin'], secure: true },
+      { name: 'سند قبض', href: '/accounting?tab=vouchers&action=receipt', icon: FileCheck, roles: ['owner', 'admin'], sub: true },
+      { name: 'سند دفع', href: '/accounting?tab=vouchers&action=payment', icon: FileX, roles: ['owner', 'admin'], sub: true },
+      { name: 'صيرفة', href: '/accounting?tab=vouchers&action=exchange', icon: Banknote, roles: ['owner', 'admin'], sub: true },
+      { name: 'حوالة', href: '/accounting?tab=vouchers&action=transfer', icon: Landmark, roles: ['owner', 'admin'], sub: true },
       { name: 'التقارير', href: '/reports', icon: BarChart3 },
       { name: 'الحاسبة', href: '/calculator', icon: Calculator },
     ],
@@ -96,6 +108,19 @@ function PaneLink({ item, onClose }) {
   const baseHref = item.href?.split('?')[0]
   const isActive = location.pathname === baseHref ||
     (baseHref && baseHref !== '/' && location.pathname.startsWith(baseHref + '/'))
+
+  if (item.sub) {
+    return (
+      <NavLink
+        to={item.href}
+        onClick={onClose}
+        className={clsx('pane-link text-xs opacity-75 hover:opacity-100 pr-6', isActive && 'active')}
+      >
+        <item.icon className="w-3.5 h-3.5 shrink-0" />
+        <span>{item.name}</span>
+      </NavLink>
+    )
+  }
 
   return (
     <NavLink
@@ -246,17 +271,17 @@ export default function Sidebar({ paneOpen, onPaneChange, stripOpen, onStripTogg
             onMouseEnter={handlePaneAreaEnter}
             onMouseLeave={handlePaneAreaLeave}
           >
-          <div className="pane-header">
-            <h3>{section.label}</h3>
-            <p>انتقل إلى الصفحات ذات الصلة</p>
+            <div className="pane-header">
+              <h3>{section.label}</h3>
+              <p>انتقل إلى الصفحات ذات الصلة</p>
+            </div>
+            <div className="pane-links">
+              <div className="pane-section-title">{section.label}</div>
+              {visibleItems.map((item) => (
+                <PaneLink key={item.href} item={item} onClose={onClose} />
+              ))}
+            </div>
           </div>
-          <div className="pane-links">
-            <div className="pane-section-title">{section.label}</div>
-            {visibleItems.map((item) => (
-              <PaneLink key={item.href} item={item} onClose={onClose} />
-            ))}
-          </div>
-        </div>
         )
       })}
     </>
