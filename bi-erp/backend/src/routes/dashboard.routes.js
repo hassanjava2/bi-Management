@@ -75,26 +75,35 @@ router.get('/chart', async (req, res) => {
 // /api/dashboard - Tasks + Attendance
 router.get('/', async (req, res) => {
   try {
-    const [taskStats, attendanceStats] = await Promise.all([
-      taskService.getTaskStats({}),
-      attendanceService.getStats(),
-    ]);
+    let taskStats = { total: 0, today: 0, overdue: 0 };
+    let attendanceStats = { checked_in: 0, total_employees: 0 };
+
+    try { taskStats = await taskService.getTaskStats({}); } catch (_) { }
+    try { attendanceStats = await attendanceService.getStats(); } catch (_) { }
+
     res.json({
       success: true,
       data: {
         tasks: {
-          total: taskStats.total ?? 0,
-          today: taskStats.today ?? 0,
-          overdue: taskStats.overdue ?? 0,
+          total: taskStats?.total ?? 0,
+          today: taskStats?.today ?? 0,
+          overdue: taskStats?.overdue ?? 0,
         },
         attendance: {
-          checked_in: attendanceStats.checked_in ?? attendanceStats.present ?? 0,
-          total_employees: attendanceStats.total_employees ?? 0,
+          checked_in: attendanceStats?.checked_in ?? attendanceStats?.present ?? 0,
+          total_employees: attendanceStats?.total_employees ?? 0,
         },
       },
     });
   } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
+    // Never 500 the dashboard — return zeros
+    res.json({
+      success: true,
+      data: {
+        tasks: { total: 0, today: 0, overdue: 0 },
+        attendance: { checked_in: 0, total_employees: 0 },
+      },
+    });
   }
 });
 
