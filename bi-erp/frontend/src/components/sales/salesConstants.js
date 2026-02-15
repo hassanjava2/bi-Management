@@ -1,6 +1,6 @@
 import {
   Wallet, Clock, CreditCard, Building2, RefreshCw,
-  ShoppingCart, ArrowLeftRight,
+  ShoppingCart, ArrowLeftRight, FileText, Package,
 } from 'lucide-react'
 
 export const invoiceTypes = {
@@ -13,7 +13,10 @@ export const invoiceTypes = {
   purchase_return: { label: 'مرتجع شراء', color: 'bg-orange-100 text-orange-800', icon: RefreshCw },
   exchange_same: { label: 'استبدال (نفس الموديل)', color: 'bg-cyan-100 text-cyan-800', icon: ArrowLeftRight },
   exchange_different: { label: 'استبدال (موديل مختلف)', color: 'bg-teal-100 text-teal-800', icon: ArrowLeftRight },
+  exchange: { label: 'استبدال', color: 'bg-cyan-100 text-cyan-800', icon: ArrowLeftRight },
   trade_in: { label: 'شراء + بيع', color: 'bg-pink-100 text-pink-800', icon: ArrowLeftRight },
+  scrap: { label: 'تالف/مستهلك', color: 'bg-red-100 text-red-800', icon: Package },
+  quote: { label: 'عرض أسعار', color: 'bg-sky-100 text-sky-800', icon: FileText },
 }
 
 export const invoiceStatuses = {
