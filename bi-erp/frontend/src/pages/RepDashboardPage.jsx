@@ -11,8 +11,6 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import PageShell from '../components/common/PageShell'
-import StatsGrid from '../components/common/StatsGrid'
-import DataTable from '../components/common/DataTable'
 import EmptyState from '../components/common/EmptyState'
 import Spinner from '../components/common/Spinner'
 import api from '../services/api'
@@ -66,37 +64,18 @@ export default function RepDashboardPage() {
 
   const myInvoices = myInvoicesData?.data?.data?.invoices || myInvoicesData?.data?.data || []
 
-  const statsItems = [
-    { label: 'مبيعاتي (30 يوم)', value: `${formatNumber(mySales)} د.ع`, icon: DollarSign, color: 'primary' },
-    { label: 'عدد الفواتير', value: myCount, icon: Receipt, color: 'blue' },
-    { label: 'التحصيلات', value: `${formatNumber(myCollections)} د.ع`, icon: ArrowUpRight, color: 'emerald' },
-    { label: 'فواتير متأخرة', value: overdue.length, icon: Clock, color: overdue.length > 0 ? 'red' : 'neutral' },
-  ]
 
-  const overdueColumns = [
-    { key: 'invoice_number', label: 'رقم الفاتورة', render: (r) => <span className="font-mono text-primary-600">{r.invoice_number}</span> },
-    { key: 'customer_name', label: 'العميل', render: (r) => r.customer_name || '—' },
-    { key: 'total', label: 'المبلغ', render: (r) => <span className="font-bold">{formatNumber(r.total)} د.ع</span> },
-    { key: 'remaining_amount', label: 'المتبقي', render: (r) => <span className="text-red-600 font-bold">{formatNumber(r.remaining_amount || r.total)} د.ع</span> },
-    { key: 'due_date', label: 'الاستحقاق', render: (r) => <span className="text-neutral-500">{formatDate(r.due_date)}</span> },
-  ]
-
-  const recentColumns = [
-    { key: 'invoice_number', label: 'رقم', render: (r) => <span className="font-mono text-xs text-primary-600">{r.invoice_number}</span> },
-    { key: 'customer_name', label: 'العميل', render: (r) => r.customer_name || r.supplier_name || '—' },
-    { key: 'total', label: 'المبلغ', render: (r) => `${formatNumber(r.total)} د.ع` },
-    { key: 'status', label: 'الحالة', render: (r) => {
-      const colors = { completed: 'bg-emerald-100 text-emerald-700', draft: 'bg-neutral-100 text-neutral-600', cancelled: 'bg-red-100 text-red-700' }
-      return <span className={clsx('px-2 py-0.5 rounded-lg text-xs font-medium', colors[r.status] || 'bg-blue-100 text-blue-700')}>{r.status}</span>
-    }},
-    { key: 'created_at', label: 'التاريخ', render: (r) => formatDate(r.created_at) },
-  ]
 
   return (
     <PageShell title="لوحة المندوب" description="ملخص أدائك ومبيعاتك وتحصيلاتك">
       <div className="space-y-6">
         {/* إحصائيات */}
-        <StatsGrid items={statsItems} />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <RepStatCard label="مبيعاتي (30 يوم)" value={`${formatNumber(mySales)} د.ع`} icon={DollarSign} color="sky" />
+          <RepStatCard label="عدد الفواتير" value={myCount} icon={Receipt} color="blue" />
+          <RepStatCard label="التحصيلات" value={`${formatNumber(myCollections)} د.ع`} icon={ArrowUpRight} color="emerald" />
+          <RepStatCard label="فواتير متأخرة" value={overdue.length} icon={Clock} color={overdue.length > 0 ? 'red' : 'sky'} />
+        </div>
 
         {/* شريط الهدف */}
         {myTarget > 0 && (
@@ -148,7 +127,22 @@ export default function RepDashboardPage() {
               <h3 className="font-bold">فواتير متأخرة التسديد ({overdue.length})</h3>
             </div>
             {overdue.length > 0 ? (
-              <DataTable columns={overdueColumns} data={overdue} compact />
+              <div className="p-3 space-y-2">
+                {overdue.map((inv, i) => (
+                  <div key={inv.id || i} className="flex items-center gap-3 p-3 rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
+                    <div className="w-9 h-9 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                      <AlertTriangle className="w-4 h-4 text-red-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-mono text-sm font-bold text-primary-600">{inv.invoice_number}</p>
+                      <p className="text-xs text-neutral-400">{inv.customer_name || '—'} • {formatDate(inv.due_date)}</p>
+                    </div>
+                    <div className="text-left flex-shrink-0">
+                      <p className="text-sm font-bold text-red-600">{formatNumber(inv.remaining_amount || inv.total)} <span className="text-[10px]">د.ع</span></p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="p-8 text-center text-neutral-400">
                 <CheckCircle2 className="w-12 h-12 mx-auto mb-2 opacity-30" />
@@ -164,7 +158,26 @@ export default function RepDashboardPage() {
               <h3 className="font-bold">آخر فواتيري</h3>
             </div>
             {(Array.isArray(myInvoices) && myInvoices.length > 0) ? (
-              <DataTable columns={recentColumns} data={myInvoices.slice(0, 10)} compact />
+              <div className="p-3 space-y-2">
+                {myInvoices.slice(0, 10).map((inv, i) => {
+                  const statusColors = { completed: 'bg-emerald-100 text-emerald-700', draft: 'bg-neutral-100 text-neutral-600', cancelled: 'bg-red-100 text-red-700' }
+                  return (
+                    <div key={inv.id || i} className="flex items-center gap-3 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-700/30 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 transition-colors">
+                      <div className="w-9 h-9 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                        <Receipt className="w-4 h-4 text-primary-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-mono text-sm font-bold text-primary-600">{inv.invoice_number}</p>
+                        <p className="text-xs text-neutral-400">{inv.customer_name || inv.supplier_name || '—'} • {formatDate(inv.created_at)}</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-sm font-bold">{formatNumber(inv.total)} <span className="text-[10px] text-neutral-400">د.ع</span></span>
+                        <span className={clsx('px-2 py-0.5 rounded-lg text-[10px] font-medium', statusColors[inv.status] || 'bg-blue-100 text-blue-700')}>{inv.status}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             ) : (
               <div className="p-8 text-center text-neutral-400">
                 <FileText className="w-12 h-12 mx-auto mb-2 opacity-30" />
@@ -210,5 +223,26 @@ export default function RepDashboardPage() {
         )}
       </div>
     </PageShell>
+  )
+}
+
+// ═══ STAT CARD ═══
+function RepStatCard({ label, value, icon: Icon, color = 'sky' }) {
+  const colors = {
+    sky: 'bg-sky-50 dark:bg-sky-900/20 text-sky-600',
+    blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600',
+    emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600',
+    red: 'bg-red-50 dark:bg-red-900/20 text-red-600',
+  }
+  return (
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-3">
+      <div className="flex items-center gap-2.5">
+        <div className={clsx('p-2 rounded-lg', colors[color])}><Icon className="w-4 h-4" /></div>
+        <div>
+          <p className="text-[10px] text-neutral-400">{label}</p>
+          <p className="text-lg font-bold">{value}</p>
+        </div>
+      </div>
+    </div>
   )
 }
