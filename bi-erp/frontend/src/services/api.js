@@ -45,6 +45,7 @@ export const dashboardAPI = {
   getStats: () => api.get('/dashboard/stats'),
   getTaskStats: () => api.get('/dashboard'),
   getChart: () => api.get('/dashboard/chart'),
+  getAnalytics: (type) => api.get(`/dashboard/analytics/${type}`),
 }
 
 // Reports API (لوحة المدير التنفيذية والتقارير)
