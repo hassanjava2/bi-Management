@@ -8,11 +8,11 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { getAuditService, EVENT_CATEGORIES } = require('../services/audit.service');
 const { getApprovalService } = require('../services/approval.service');
-const { 
-    preventDelete, 
-    protectQuantityChange, 
+const {
+    preventDelete,
+    protectQuantityChange,
     requirePermission,
-    logSensitiveAccess 
+    logSensitiveAccess
 } = require('../middleware/protection');
 const { auth } = require('../middleware/auth');
 
@@ -24,9 +24,9 @@ router.use(auth);
  */
 router.get('/', requirePermission('devices.read'), logSensitiveAccess('device'), async (req, res) => {
     try {
-        const { 
-            status, 
-            warehouse_id, 
+        const {
+            status,
+            warehouse_id,
             supplier_id,
             customer_id,
             search,
@@ -95,6 +95,63 @@ router.get('/', requirePermission('devices.read'), logSensitiveAccess('device'),
 });
 
 /**
+ * GET /api/devices/scan/:code
+ * بحث سريع بالباركود أو السيريال — للفاتورة
+ */
+router.get('/scan/:code', auth, async (req, res) => {
+    try {
+        const code = req.params.code.trim();
+        // Search devices by serial_number first
+        let result = await req.db.query(`
+            SELECT d.id, d.serial_number, d.status, d.selling_price, d.actual_specs,
+                   d.product_id, d.warehouse_id, d.notes,
+                   p.name as product_name, p.code as product_code, p.barcode, p.price as product_price,
+                   p.brand, p.model, p.description as product_description, p.category_id,
+                   w.name as warehouse_name, c.name as category_name
+            FROM devices d
+            LEFT JOIN products p ON d.product_id = p.id
+            LEFT JOIN warehouses w ON d.warehouse_id = w.id
+            LEFT JOIN categories c ON p.category_id = c.id
+            WHERE d.is_deleted = 0
+              AND (d.serial_number ILIKE $1 OR p.barcode = $2 OR p.code = $2)
+            LIMIT 5
+        `, [`%${code}%`, code]);
+
+        // If no device found, try products table directly
+        if (result.rows.length === 0) {
+            result = await req.db.query(`
+                SELECT p.id as product_id, p.name as product_name, p.code as product_code,
+                       p.barcode, p.price as selling_price, p.brand, p.model,
+                       p.description as product_description, p.quantity as stock_quantity, p.category_id,
+                       c.name as category_name
+                FROM products p
+                LEFT JOIN categories c ON p.category_id = c.id
+                WHERE p.barcode = $1 OR p.code = $1 OR p.name ILIKE $2
+                LIMIT 10
+            `, [code, `%${code}%`]);
+
+            if (result.rows.length === 0) {
+                return res.status(404).json({ success: false, error: 'NOT_FOUND', message: 'لم يتم العثور على منتج بهذا الكود' });
+            }
+
+            return res.json({
+                success: true,
+                source: 'product',
+                data: result.rows
+            });
+        }
+
+        res.json({
+            success: true,
+            source: 'device',
+            data: result.rows
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
  * GET /api/devices/:id
  * جلب جهاز محدد
  */
@@ -149,7 +206,7 @@ router.get('/:id', requirePermission('devices.read'), logSensitiveAccess('device
 router.post('/', requirePermission('devices.create'), async (req, res) => {
     try {
         const auditService = getAuditService(req.db);
-        
+
         const {
             product_id,
             product_name,
@@ -199,7 +256,7 @@ router.post('/', requirePermission('devices.create'), async (req, res) => {
              supplier_id, notes, created_by, created_at)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         `, [
-            device.id, device.serial_number, device.product_id, 
+            device.id, device.serial_number, device.product_id,
             JSON.stringify(device.actual_specs), device.selling_price, device.status,
             device.warehouse_id, device.location_area, device.location_shelf, device.location_row,
             device.supplier_id, device.notes, device.created_by, device.created_at
@@ -231,7 +288,7 @@ router.post('/', requirePermission('devices.create'), async (req, res) => {
 router.patch('/:id', requirePermission('devices.update'), protectQuantityChange('device'), async (req, res) => {
     try {
         const auditService = getAuditService(req.db);
-        
+
         // جلب الجهاز الحالي
         const currentResult = await req.db.query(
             'SELECT * FROM devices WHERE id = $1 AND is_deleted = 0',
@@ -249,7 +306,7 @@ router.patch('/:id', requirePermission('devices.update'), protectQuantityChange(
         const currentDevice = currentResult.rows[0];
         const updates = req.body;
         const allowedFields = [
-            'actual_specs', 'selling_price', 'status', 
+            'actual_specs', 'selling_price', 'status',
             'warehouse_id', 'location_area', 'location_shelf', 'location_row',
             'notes', 'inspection_notes', 'preparation_notes'
         ];
@@ -295,13 +352,13 @@ router.patch('/:id', requirePermission('devices.update'), protectQuantityChange(
             INSERT INTO device_history (id, device_id, event_type, event_details, old_values, new_values, performed_by, created_at)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         `, [
-            uuidv4(), 
-            req.params.id, 
-            'updated', 
+            uuidv4(),
+            req.params.id,
+            'updated',
             JSON.stringify({ fields: Object.keys(filteredUpdates) }),
             JSON.stringify(currentDevice),
             JSON.stringify(filteredUpdates),
-            req.user.id, 
+            req.user.id,
             new Date()
         ]);
 
@@ -374,11 +431,11 @@ router.post('/:id/transfer', requirePermission('devices.transfer'), async (req, 
             INSERT INTO device_history (id, device_id, event_type, event_details, performed_by, created_at)
             VALUES ($1, $2, $3, $4, $5, $6)
         `, [
-            uuidv4(), 
-            req.params.id, 
+            uuidv4(),
+            req.params.id,
             'transferred',
             JSON.stringify({ from: fromWarehouse, to: to_warehouse_id, reason }),
-            req.user.id, 
+            req.user.id,
             new Date()
         ]);
 
@@ -434,11 +491,11 @@ router.post('/:id/custody', requirePermission('devices.custody'), async (req, re
             INSERT INTO device_history (id, device_id, event_type, event_details, performed_by, created_at)
             VALUES ($1, $2, $3, $4, $5, $6)
         `, [
-            uuidv4(), 
-            req.params.id, 
+            uuidv4(),
+            req.params.id,
             action === 'take' ? 'custody_taken' : 'custody_returned',
             JSON.stringify({ reason }),
-            req.user.id, 
+            req.user.id,
             new Date()
         ]);
 

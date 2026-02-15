@@ -162,6 +162,7 @@ export const inventoryAPI = {
   getDeviceHistory: (id) => api.get(`/inventory/devices/${id}/history`),
   transferDevice: (id, data) => api.post(`/inventory/devices/${id}/transfer`, data),
   updateCustody: (id, data) => api.post(`/inventory/devices/${id}/custody`, data),
+  scanDevice: (code) => api.get(`/devices/scan/${encodeURIComponent(code)}`),
 
   // Products
   getProducts: (params) => api.get('/inventory/products', { params }),
