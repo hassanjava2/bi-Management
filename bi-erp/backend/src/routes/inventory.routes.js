@@ -15,6 +15,22 @@ const { v4: uuidv4 } = require('uuid');
 
 router.use(auth);
 
+// Auto-create stock count tables
+(async () => {
+  try {
+    await run(`CREATE TABLE IF NOT EXISTS stock_counts (
+      id TEXT PRIMARY KEY, warehouse_id TEXT, status TEXT DEFAULT 'in_progress',
+      notes TEXT, created_by TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      completed_at TIMESTAMP
+    )`);
+    await run(`CREATE TABLE IF NOT EXISTS stock_count_items (
+      id TEXT PRIMARY KEY, stock_count_id TEXT REFERENCES stock_counts(id),
+      product_id TEXT, expected_quantity INTEGER DEFAULT 0,
+      actual_quantity INTEGER, counted_at TIMESTAMP
+    )`);
+  } catch (e) { /* tables may already exist */ }
+})();
+
 // ═══════════════════════════════════════════════
 // STATS
 // ═══════════════════════════════════════════════
@@ -447,5 +463,111 @@ router.get('/', controller.list);
 router.get('/:id', controller.getOne);
 router.post('/', controller.create);
 router.put('/:id', controller.update);
+// ═══════════════════════════════════════════════
+// STOCK COUNT (الجرد)
+// ═══════════════════════════════════════════════
+router.get('/stock-counts', async (req, res) => {
+  try {
+    const rows = await all(`
+      SELECT sc.*, u.full_name as created_by_name,
+        (SELECT COUNT(*)::int FROM stock_count_items WHERE stock_count_id = sc.id) as item_count,
+        (SELECT COUNT(*)::int FROM stock_count_items WHERE stock_count_id = sc.id AND actual_quantity IS NOT NULL) as counted_items
+      FROM stock_counts sc
+      LEFT JOIN users u ON sc.created_by = u.id
+      ORDER BY sc.created_at DESC LIMIT 20
+    `).catch(() => []);
+    res.json({ success: true, data: rows });
+  } catch (e) {
+    res.json({ success: true, data: [] });
+  }
+});
+
+router.get('/stock-counts/:id', async (req, res) => {
+  try {
+    const count = await get('SELECT * FROM stock_counts WHERE id = $1', [req.params.id]);
+    if (!count) return res.status(404).json({ success: false, error: 'جلسة الجرد غير موجودة' });
+    const items = await all(`
+      SELECT sci.*, p.name as product_name, p.barcode, p.code
+      FROM stock_count_items sci
+      LEFT JOIN products p ON sci.product_id = p.id
+      WHERE sci.stock_count_id = $1
+      ORDER BY p.name
+    `, [req.params.id]).catch(() => []);
+    res.json({ success: true, data: { ...count, items } });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+router.post('/stock-counts', async (req, res) => {
+  try {
+    const { warehouse_id, notes } = req.body;
+    const id = uuidv4();
+
+    // Create stock count session
+    await run(
+      'INSERT INTO stock_counts (id, warehouse_id, status, notes, created_by, created_at) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)',
+      [id, warehouse_id || 'main', 'in_progress', notes || '', req.user?.id || null]
+    );
+
+    // Populate with all products
+    const products = await all(
+      "SELECT id, quantity FROM products WHERE (is_deleted = 0 OR is_deleted IS NULL)"
+    ).catch(() => []);
+
+    for (const p of products) {
+      await run(
+        'INSERT INTO stock_count_items (id, stock_count_id, product_id, expected_quantity, actual_quantity) VALUES ($1, $2, $3, $4, NULL)',
+        [uuidv4(), id, p.id, p.quantity || 0]
+      ).catch(() => { });
+    }
+
+    const created = await get('SELECT * FROM stock_counts WHERE id = $1', [id]);
+    res.status(201).json({ success: true, data: created, message: `تم بدء جلسة جرد (${products.length} منتج)` });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+router.put('/stock-counts/:id/items/:itemId', async (req, res) => {
+  try {
+    const { actual_quantity } = req.body;
+    await run(
+      'UPDATE stock_count_items SET actual_quantity = $1, counted_at = CURRENT_TIMESTAMP WHERE id = $2 AND stock_count_id = $3',
+      [actual_quantity, req.params.itemId, req.params.id]
+    );
+    res.json({ success: true, message: 'تم تحديث الكمية' });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+router.put('/stock-counts/:id/complete', async (req, res) => {
+  try {
+    // Apply differences to products
+    const items = await all(
+      'SELECT * FROM stock_count_items WHERE stock_count_id = $1 AND actual_quantity IS NOT NULL',
+      [req.params.id]
+    ).catch(() => []);
+
+    for (const item of items) {
+      if (item.actual_quantity !== item.expected_quantity) {
+        await run(
+          'UPDATE products SET quantity = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+          [item.actual_quantity, item.product_id]
+        ).catch(() => { });
+      }
+    }
+
+    await run(
+      "UPDATE stock_counts SET status = 'completed', completed_at = CURRENT_TIMESTAMP WHERE id = $1",
+      [req.params.id]
+    );
+
+    res.json({ success: true, message: `تم إكمال الجرد وتحديث ${items.length} منتج` });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
 
 module.exports = router;
