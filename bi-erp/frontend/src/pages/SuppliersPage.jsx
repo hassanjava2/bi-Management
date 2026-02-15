@@ -5,11 +5,12 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { 
+import {
   Building2, Search, Plus, Phone, Mail, MapPin, Download,
   Star, TrendingUp, Package, Clock, AlertTriangle,
   Eye, Edit, Trash2, DollarSign, Receipt, History
 } from 'lucide-react'
+import { clsx } from 'clsx'
 import { exportToCSV } from '../utils/helpers'
 import Spinner from '../components/common/Spinner'
 import Button from '../components/common/Button'
@@ -174,6 +175,14 @@ export default function SuppliersPage() {
         </>
       }
     >
+      {/* ═══ Stats ═══ */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <StatCard label="إجمالي الموردين" value={suppliers.length} icon={Building2} color="sky" />
+        <StatCard label="إجمالي المشتريات" value={suppliers.reduce((s, sup) => s + (sup.total_purchases || 0), 0)} icon={Package} color="emerald" />
+        <StatCard label="إجمالي المرتجعات" value={suppliers.reduce((s, sup) => s + (sup.pending_returns || 0), 0)} icon={AlertTriangle} color="amber" />
+        <StatCard label="إجمالي الأرصدة" value={`${Math.abs(suppliers.reduce((s, sup) => s + (Number(sup.balance) || 0), 0)).toLocaleString()}`} icon={DollarSign} color="purple" />
+      </div>
+
       <PageShell.Toolbar>
         <SearchInput placeholder="بحث بالاسم أو الهاتف..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
       </PageShell.Toolbar>
@@ -181,7 +190,7 @@ export default function SuppliersPage() {
       {/* Suppliers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {suppliers.map((supplier) => (
-          <div 
+          <div
             key={supplier.id}
             className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:shadow-lg transition-shadow"
           >
@@ -489,5 +498,26 @@ export default function SuppliersPage() {
         )}
       </Modal>
     </PageShell>
+  )
+}
+
+// ═══ STAT CARD ═══
+function StatCard({ label, value, icon: Icon, color = 'sky' }) {
+  const colors = {
+    sky: 'bg-sky-50 dark:bg-sky-900/20 text-sky-600',
+    emerald: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600',
+    amber: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600',
+    purple: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600',
+  }
+  return (
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-3">
+      <div className="flex items-center gap-2.5">
+        <div className={clsx('p-2 rounded-lg', colors[color])}><Icon className="w-4 h-4" /></div>
+        <div>
+          <p className="text-[10px] text-neutral-400">{label}</p>
+          <p className="text-lg font-bold">{value}</p>
+        </div>
+      </div>
+    </div>
   )
 }
