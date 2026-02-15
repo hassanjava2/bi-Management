@@ -28,7 +28,7 @@ const AIDistributionPage = lazy(() => import('./pages/AIDistributionPage'))
 const AIChatsPage = lazy(() => import('./pages/AIChatsPage'))
 const InventoryPage = lazy(() => import('./pages/InventoryPage'))
 const SalesPage = lazy(() => import('./pages/SalesPage'))
-const NewInvoicePage = lazy(() => import('./pages/NewInvoicePage'))
+const InvoiceWorkspace = lazy(() => import('./pages/invoices/InvoiceWorkspace'))
 const WaitingInvoicesPage = lazy(() => import('./pages/WaitingInvoicesPage'))
 const RepDashboardPage = lazy(() => import('./pages/RepDashboardPage'))
 const CalculatorPage = lazy(() => import('./pages/CalculatorPage'))
@@ -131,14 +131,14 @@ function App() {
 
           <Route path="inventory" element={<Suspense fallback={<PageFallback />}><InventoryPage /></Suspense>} />
           <Route path="sales" element={<Suspense fallback={<PageFallback />}><SalesPage /></Suspense>} />
-          <Route path="sales/new" element={<Suspense fallback={<PageFallback />}><NewInvoicePage /></Suspense>} />
+          <Route path="sales/new" element={<Suspense fallback={<PageFallback />}><InvoiceWorkspace /></Suspense>} />
           <Route path="sales/waiting" element={<Suspense fallback={<PageFallback />}><WaitingInvoicesPage /></Suspense>} />
           <Route path="rep-dashboard" element={<Suspense fallback={<PageFallback />}><RepDashboardPage /></Suspense>} />
           <Route path="calculator" element={<Suspense fallback={<PageFallback />}><CalculatorPage /></Suspense>} />
           <Route path="fixed-assets" element={<Suspense fallback={<PageFallback />}><FixedAssetsPage /></Suspense>} />
           <Route path="shares" element={<Suspense fallback={<PageFallback />}><SharesPage /></Suspense>} />
           <Route path="purchases" element={<Suspense fallback={<PageFallback />}><PurchasesPage /></Suspense>} />
-          <Route path="purchases/new" element={<Suspense fallback={<PageFallback />}><NewInvoicePage /></Suspense>} />
+          <Route path="purchases/new" element={<Suspense fallback={<PageFallback />}><InvoiceWorkspace /></Suspense>} />
           <Route path="returns" element={<Suspense fallback={<PageFallback />}><ReturnsPage /></Suspense>} />
           <Route path="accounting" element={<Suspense fallback={<PageFallback />}><AccountingPage /></Suspense>} />
           <Route path="suppliers" element={<Suspense fallback={<PageFallback />}><SuppliersPage /></Suspense>} />

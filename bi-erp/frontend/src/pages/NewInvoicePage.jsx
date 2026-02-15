@@ -15,6 +15,7 @@ import {
 import api from '../services/api'
 import { customersAPI, suppliersAPI } from '../services/api'
 import { useToast } from '../context/ToastContext'
+import { useInvoiceDraft, loadDrafts } from '../hooks/useInvoiceDraft'
 
 // أنواع الفواتير
 const invoiceTypes = {
@@ -605,21 +606,42 @@ function InvoiceItem({ item, index, onUpdate, onRemove, onAddUpgrade, onRemoveUp
 }
 
 // الصفحة الرئيسية
-export default function NewInvoicePage() {
+export default function NewInvoicePage({ tabId, initialType: propType, onStateChange }) {
   const navigate = useNavigate()
   const toast = useToast()
   const [searchParams] = useSearchParams()
   const { pathname } = useLocation()
-  const initialType = pathname?.includes('purchases/new') ? 'purchase' : (searchParams.get('type') || 'cash')
+  const resolvedType = propType || (pathname?.includes('purchases/new') ? 'purchase' : (searchParams.get('type') || 'cash'))
+
+  // Auto-save hook
+  const { saveDraft, loadDraft, clearDraft, saveStatus } = useInvoiceDraft(tabId)
 
   // حالة الفاتورة
-  const [invoiceType, setInvoiceType] = useState(initialType)
-  const [items, setItems] = useState([])
-  const [customer, setCustomer] = useState(null)
-  const [supplier, setSupplier] = useState(null)
-  const [discount, setDiscount] = useState(0)
-  const [discountType, setDiscountType] = useState('amount') // amount or percent
-  const [notes, setNotes] = useState('')
+  const [invoiceType, setInvoiceType] = useState(() => {
+    if (tabId) { const d = loadDraft(); if (d) return d.invoiceType || resolvedType }
+    return resolvedType
+  })
+  const [items, setItems] = useState(() => {
+    if (tabId) { const d = loadDraft(); if (d) return d.items || [] }
+    return []
+  })
+  const [customer, setCustomer] = useState(() => {
+    if (tabId) { const d = loadDraft(); if (d) return d.customer || null }
+    return null
+  })
+  const [supplier, setSupplier] = useState(() => {
+    if (tabId) { const d = loadDraft(); if (d) return d.supplier || null }
+    return null
+  })
+  const [discount, setDiscount] = useState(() => {
+    if (tabId) { const d = loadDraft(); if (d) return d.discount || 0 }
+    return 0
+  })
+  const [discountType, setDiscountType] = useState('amount')
+  const [notes, setNotes] = useState(() => {
+    if (tabId) { const d = loadDraft(); if (d) return d.notes || '' }
+    return ''
+  })
   const [platform, setPlatform] = useState('aqsaty')
   const [showBuyPrice, setShowBuyPrice] = useState(false)
 
@@ -752,6 +774,16 @@ export default function NewInvoicePage() {
       navigate(`/sales?invoice=${data.data?.id}`)
     },
   })
+
+  // Auto-save: حفظ تلقائي كل 3 ثواني
+  useEffect(() => {
+    if (!tabId) return
+    const state = { invoiceType, items, customer, supplier, discount, notes, paidAmount }
+    const timer = setTimeout(() => saveDraft(state), 3000)
+    // Notify workspace of state changes
+    if (onStateChange) onStateChange(state)
+    return () => clearTimeout(timer)
+  }, [invoiceType, items, customer, supplier, discount, notes, paidAmount, tabId])
 
   // تركيز على بحث المنتج عند فتح الصفحة
   useEffect(() => {
