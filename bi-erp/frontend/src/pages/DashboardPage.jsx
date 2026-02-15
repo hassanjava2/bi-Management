@@ -88,7 +88,7 @@ export default function DashboardPage() {
       {/* Welcome + Quick Actions grid */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--light)' }}>
+          <h1 className="text-3xl font-bold tracking-tight text-gradient">
             مرحباً، {user?.full_name?.split(' ')[0]}
           </h1>
           <p className="mt-1 text-base" style={{ color: 'var(--gray)' }}>
@@ -113,23 +113,27 @@ export default function DashboardPage() {
       </div>
 
       {/* Business Stats */}
-      {isLoading ? (
-        <CardSkeleton count={4} />
-      ) : (
-        <StatsGrid items={businessStats} columns={4} />
-      )}
+      <div className="animate-slide-up">
+        {isLoading ? (
+          <CardSkeleton count={4} />
+        ) : (
+          <StatsGrid items={businessStats} columns={4} />
+        )}
+      </div>
 
       {/* Financial */}
       {accounting && (isAdmin || user?.role === 'owner') && (
-        <StatsGrid
-          items={[
-            { title: 'مبيعات الشهر', value: formatNumber(accounting.month_sales), icon: Receipt, color: 'success', trend: 'up', trendValue: 'هذا الشهر' },
-            { title: 'مشتريات الشهر', value: formatNumber(accounting.month_purchases), icon: Package, color: 'warning' },
-            { title: 'صافي الربح', value: formatNumber(accounting.month_profit), icon: TrendingUp, color: 'primary' },
-            { title: 'النقد المتاح', value: formatNumber(accounting.cash_balance), icon: DollarSign, color: 'info' },
-          ]}
-          columns={4}
-        />
+        <div className="animate-slide-up animate-slide-up-delay-1">
+          <StatsGrid
+            items={[
+              { title: 'مبيعات الشهر', value: formatNumber(accounting.month_sales), icon: Receipt, color: 'success', trend: 'up', trendValue: 'هذا الشهر' },
+              { title: 'مشتريات الشهر', value: formatNumber(accounting.month_purchases), icon: Package, color: 'warning' },
+              { title: 'صافي الربح', value: formatNumber(accounting.month_profit), icon: TrendingUp, color: 'primary' },
+              { title: 'النقد المتاح', value: formatNumber(accounting.cash_balance), icon: DollarSign, color: 'info' },
+            ]}
+            columns={4}
+          />
+        </div>
       )}
 
       {/* Charts */}

@@ -4,7 +4,7 @@ export default function Card({ children, className, padding = true, hover = fals
   return (
     <div
       className={clsx(
-        'rounded-[16px] border transition-all duration-300',
+        'card-premium rounded-[16px] border transition-all duration-300',
         hover && 'hover:shadow-[var(--neon-glow)]',
         padding && 'p-6',
         className

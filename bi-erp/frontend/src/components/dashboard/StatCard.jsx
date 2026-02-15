@@ -54,8 +54,8 @@ export default function StatCard({
   return (
     <div
       className={clsx(
-        'rounded-[16px] p-6 relative overflow-hidden',
-        'border shadow-sm hover:shadow-[var(--neon-glow)]',
+        'stat-card rounded-[16px] p-6 relative overflow-hidden',
+        'border shadow-sm',
         'transition-all duration-300',
         className
       )}
@@ -71,15 +71,18 @@ export default function StatCard({
           <p className="text-xs font-medium uppercase tracking-wide" style={{ color: 'var(--gray)' }}>
             {title}
           </p>
-          <p className="mt-3 text-4xl font-bold tabular-nums" style={{ color: 'var(--light)' }}>
+          <p className="mt-3 text-4xl font-bold tabular-nums stat-value">
             {displayValue}
           </p>
-          {trend && (
+          {(trend || trendValue) && (
             <div className={clsx(
               'mt-2 inline-flex items-center gap-1 text-xs font-semibold',
-              trend === 'up' ? 'text-success-600 dark:text-success-400' : 'text-error-600 dark:text-error-400'
-            )}>
-              {trend === 'up' ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+              trend === 'up' ? 'text-success-600 dark:text-success-400' :
+                trend === 'down' ? 'text-error-600 dark:text-error-400' :
+                  ''
+            )} style={!trend ? { color: 'var(--gray)' } : undefined}>
+              {trend === 'up' && <TrendingUp className="w-3.5 h-3.5" />}
+              {trend === 'down' && <TrendingDown className="w-3.5 h-3.5" />}
               <span>{trendValue}</span>
             </div>
           )}

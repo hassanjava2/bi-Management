@@ -157,3 +157,95 @@
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ===== Premium Card Effects ===== */
+
+/* Gradient top-accent bar on stat cards */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light, var(--primary)));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.stat-card:hover::before {
+  opacity: 1;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neon-glow);
+}
+
+/* Shimmer highlight (runs once on load) */
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+  animation: shimmerOnce 1.5s ease-out 0.5s forwards;
+  pointer-events: none;
+}
+@keyframes shimmerOnce {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Premium card hover lift */
+.card-premium {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.card-premium:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--neon-glow);
+  border-color: rgba(var(--primary-rgb), 0.3) !important;
+}
+
+/* Pulse dot for live data */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.pulse-live {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--success, #10b981);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Number counter glow */
+.stat-value {
+  background: linear-gradient(135deg, var(--light), var(--gray-light, var(--light)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Entrance animation for dashboard sections */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-slide-up-delay-1 { animation-delay: 100ms; }
+.animate-slide-up-delay-2 { animation-delay: 200ms; }
+.animate-slide-up-delay-3 { animation-delay: 300ms; }
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light, var(--accent, var(--primary))));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
