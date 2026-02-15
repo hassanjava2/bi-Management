@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { 
+import {
   Users, Search, Plus, Phone, Mail, MapPin, Download,
   Star, ShoppingCart, CreditCard, Clock, AlertTriangle,
   Eye, Edit, Trash2, DollarSign, Receipt, History, Crown
@@ -17,7 +17,7 @@ import Modal from '../components/common/Modal'
 import PageShell from '../components/common/PageShell'
 import SearchInput from '../components/common/SearchInput'
 import FilterSelect from '../components/common/FilterSelect'
-import StatsGrid from '../components/common/StatsGrid'
+import { clsx } from 'clsx'
 import { customersAPI } from '../services/api'
 
 // مستويات العملاء
@@ -212,7 +212,13 @@ export default function CustomersPage() {
         </>
       }
     >
-      <StatsGrid items={customerStatsItems} columns={4} />
+      {/* ═══ Stats ═══ */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <StatCard label="إجمالي العملاء" value={stats.total ?? 0} icon={Users} color="sky" />
+        <StatCard label="عملاء بذمم" value={stats.with_balance ?? 0} icon={AlertTriangle} color="amber" />
+        <StatCard label="إجمالي الذمم" value={`${(stats.total_receivables / 1000000 || 0).toFixed(1)}M`} icon={DollarSign} color="red" />
+        <StatCard label="VIP" value={stats.vip_count ?? 0} icon={Crown} color="purple" />
+      </div>
 
       <PageShell.Toolbar>
         <SearchInput placeholder="بحث بالاسم أو الهاتف..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
@@ -287,21 +293,21 @@ export default function CustomersPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
-                          <button 
+                          <button
                             onClick={() => handleViewCustomer(customer)}
                             className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                             title="عرض"
                           >
                             <Eye className="w-4 h-4 text-neutral-500" />
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => handleEditCustomer(e, customer)}
                             className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
                             title="تعديل"
                           >
                             <Edit className="w-4 h-4 text-neutral-500" />
                           </button>
-                          <button 
+                          <button
                             onClick={(e) => handleDeleteClick(e, customer)}
                             className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-red-600"
                             title="حذف"
@@ -507,11 +513,10 @@ export default function CustomersPage() {
                   key={tab}
                   type="button"
                   onClick={() => setDetailsTab(tab)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-                    detailsTab === tab
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium ${detailsTab === tab
                       ? 'bg-primary-600 text-white'
                       : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                  }`}
+                    }`}
                 >
                   {tab === 'info' && 'البيانات'}
                   {tab === 'invoices' && 'الفواتير'}
@@ -637,5 +642,26 @@ export default function CustomersPage() {
         )}
       </Modal>
     </PageShell>
+  )
+}
+
+// ═══ STAT CARD ═══
+function StatCard({ label, value, icon: Icon, color = 'sky' }) {
+  const colors = {
+    sky: 'bg-sky-50 dark:bg-sky-900/20 text-sky-600',
+    amber: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600',
+    red: 'bg-red-50 dark:bg-red-900/20 text-red-600',
+    purple: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600',
+  }
+  return (
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-3">
+      <div className="flex items-center gap-2.5">
+        <div className={clsx('p-2 rounded-lg', colors[color])}><Icon className="w-4 h-4" /></div>
+        <div>
+          <p className="text-[10px] text-neutral-400">{label}</p>
+          <p className="text-lg font-bold">{value}</p>
+        </div>
+      </div>
+    </div>
   )
 }
