@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { getDatabase } = require('../config/database');
+const logger = require('../utils/logger');
 
 // مسار ملف قاعدة البيانات الرئيسي (مطابق لـ config/database.js)
 const mainDbPath = process.env.DATABASE_PATH || path.join(__dirname, '../../..', 'data', 'bi_management.db');
@@ -15,7 +16,7 @@ class BackupService {
         this.backupDir = path.join(__dirname, '../../backups');
         this.mainDbPath = mainDbPath;
         this.maxBackups = 30; // Keep last 30 backups
-        
+
         // Create backup directory if not exists
         if (!fs.existsSync(this.backupDir)) {
             fs.mkdirSync(this.backupDir, { recursive: true });
@@ -153,14 +154,14 @@ class BackupService {
     cleanupOldBackups() {
         try {
             const backups = this.listBackups();
-            
+
             if (backups.length > this.maxBackups) {
                 const toDelete = backups.slice(this.maxBackups);
-                
+
                 for (const backup of toDelete) {
                     this.deleteBackup(backup.filename);
                 }
-                
+
                 logger.info(`[Backup] Cleaned up ${toDelete.length} old backups`);
             }
         } catch (error) {
@@ -175,8 +176,7 @@ class BackupService {
         try {
             const db = getDatabase();
             const { v4: uuid } = require('uuid');
-const logger = require('../utils/logger');
-            
+
             db.run(`
                 INSERT INTO backups (id, filename, file_path, file_size, description, created_at)
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -236,13 +236,13 @@ const logger = require('../utils/logger');
         try {
             const backups = this.listBackups();
             let totalBytes = 0;
-            
+
             for (const backup of backups) {
                 const filePath = path.join(this.backupDir, backup.filename);
                 const stats = fs.statSync(filePath);
                 totalBytes += stats.size;
             }
-            
+
             return {
                 bytes: totalBytes,
                 mb: (totalBytes / 1024 / 1024).toFixed(2),

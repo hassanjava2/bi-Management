@@ -6,6 +6,7 @@
 const { all, run, get } = require('../config/database');
 const notificationService = require('../services/notification.service');
 const { generateId, today } = require('../utils/helpers');
+const logger = require('../utils/logger');
 
 /**
  * Check for late employees and send reminders
@@ -13,9 +14,9 @@ const { generateId, today } = require('../utils/helpers');
  */
 async function checkLateEmployees() {
     logger.info('[Attendance Job] Checking for late employees...');
-    
+
     const todayDate = today();
-    
+
     // Get active employees who haven't checked in
     const lateEmployees = await all(`
         SELECT u.id, u.full_name, u.department_id, d.name as department_name
@@ -49,9 +50,9 @@ async function checkLateEmployees() {
  */
 async function markAbsentEmployees() {
     logger.info('[Attendance Job] Marking absent employees...');
-    
+
     const todayDate = today();
-    
+
     // Get employees who still haven't checked in
     const absentEmployees = await all(`
         SELECT u.id, u.full_name
@@ -100,7 +101,6 @@ async function markAbsentEmployees() {
             // Reassign their open tasks (AI Distribution)
             try {
                 const aiDist = require('../services/ai-distribution/index');
-const logger = require('../utils/logger');
                 const result = aiDist.reassignTasksFromUser(employee.id);
                 if (result.reassigned?.length > 0) {
                     logger.info(`[Attendance Job] Reassigned ${result.reassigned.length} tasks from absent user ${employee.id}`);
@@ -121,9 +121,9 @@ const logger = require('../utils/logger');
  */
 async function generateDailyReport() {
     logger.info('[Attendance Job] Generating daily report...');
-    
+
     const todayDate = today();
-    
+
     const stats = await get(`
         SELECT 
             COUNT(*) as total_records,
@@ -147,8 +147,8 @@ async function generateDailyReport() {
         vacation: stats?.vacation || 0,
         total_work_hours: Math.round((stats?.total_work_minutes || 0) / 60 * 100) / 100,
         total_overtime_hours: Math.round((stats?.total_overtime_minutes || 0) / 60 * 100) / 100,
-        attendance_rate: totalEmployees?.count > 0 
-            ? Math.round(((stats?.present || 0) + (stats?.late || 0)) / totalEmployees.count * 100) 
+        attendance_rate: totalEmployees?.count > 0
+            ? Math.round(((stats?.present || 0) + (stats?.late || 0)) / totalEmployees.count * 100)
             : 0
     };
 
@@ -156,7 +156,7 @@ async function generateDailyReport() {
 
     // Send report to HR/Admin
     const hrUsers = await all(`SELECT id FROM users WHERE role IN ('admin', 'hr') AND is_active = 1`);
-    
+
     for (const user of hrUsers) {
         notificationService.create({
             user_id: user.id,
@@ -175,9 +175,9 @@ async function generateDailyReport() {
  */
 async function checkIncompleteTasks() {
     logger.info('[Attendance Job] Checking incomplete tasks...');
-    
+
     const todayDate = today();
-    
+
     // Get users who checked out today with incomplete tasks
     const usersWithIncompleteTasks = await all(`
         SELECT DISTINCT u.id, u.full_name,

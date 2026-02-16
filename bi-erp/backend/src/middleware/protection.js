@@ -4,6 +4,7 @@
  */
 
 const { getAuditService, EVENT_CATEGORIES, SEVERITY } = require('../services/audit.service');
+const logger = require('../utils/logger');
 
 /**
  * منع الحذف المباشر
@@ -140,7 +141,7 @@ function filterSensitiveData(data, userRole) {
 function sensitiveDataFilter(req, res, next) {
     const originalJson = res.json.bind(res);
 
-    res.json = function(data) {
+    res.json = function (data) {
         const userRole = req.user?.role || 'viewer';
         const filteredData = filterSensitiveData(data, userRole);
         return originalJson(filteredData);
@@ -257,13 +258,12 @@ function checkPermission(user, permission) {
  */
 function requestTracker(req, res, next) {
     const { v4: uuidv4 } = require('uuid');
-const logger = require('../utils/logger');
     req.requestId = uuidv4();
     req.requestStartTime = Date.now();
 
     res.on('finish', () => {
         const duration = Date.now() - req.requestStartTime;
-        
+
         // تسجيل الطلبات البطيئة
         if (duration > 5000) {
             logger.warn(`Slow request: ${req.method} ${req.path} - ${duration}ms`);

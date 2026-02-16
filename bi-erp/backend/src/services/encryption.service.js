@@ -4,6 +4,7 @@
  */
 
 const crypto = require('crypto');
+const logger = require('../utils/logger');
 
 class EncryptionService {
     constructor() {
@@ -17,7 +18,7 @@ class EncryptionService {
      */
     _getKey() {
         const key = process.env.MASTER_ENCRYPTION_KEY;
-        
+
         if (!key) {
             // توليد مفتاح مؤقت للتطوير (غير آمن للإنتاج!)
             logger.warn('[!] WARNING: Using auto-generated encryption key. Set MASTER_ENCRYPTION_KEY in .env for production!');
@@ -28,7 +29,7 @@ class EncryptionService {
         if (key.length === 64) {
             return Buffer.from(key, 'hex');
         }
-        
+
         // إذا كان المفتاح نص عادي، نشتق منه مفتاح
         return crypto.scryptSync(key, 'bi-management-salt', 32);
     }
@@ -40,16 +41,16 @@ class EncryptionService {
      */
     encrypt(plaintext) {
         if (!plaintext) return null;
-        
+
         try {
             const iv = crypto.randomBytes(16);
             const cipher = crypto.createCipheriv(this.algorithm, this.masterKey, iv);
-            
+
             let encrypted = cipher.update(String(plaintext), 'utf8', 'hex');
             encrypted += cipher.final('hex');
-            
+
             const authTag = cipher.getAuthTag();
-            
+
             return {
                 v: 1, // version
                 iv: iv.toString('hex'),
@@ -69,19 +70,19 @@ class EncryptionService {
      */
     decrypt(encryptedObj) {
         if (!encryptedObj) return null;
-        
+
         try {
             const decipher = crypto.createDecipheriv(
                 this.algorithm,
                 this.masterKey,
                 Buffer.from(encryptedObj.iv, 'hex')
             );
-            
+
             decipher.setAuthTag(Buffer.from(encryptedObj.tag, 'hex'));
-            
+
             let decrypted = decipher.update(encryptedObj.data, 'hex', 'utf8');
             decrypted += decipher.final('utf8');
-            
+
             return decrypted;
         } catch (error) {
             logger.error('[Encryption] Decrypt error:', error.message);
@@ -96,7 +97,7 @@ class EncryptionService {
      */
     encryptField(value) {
         if (value === null || value === undefined) return null;
-        
+
         const encrypted = this.encrypt(String(value));
         return JSON.stringify(encrypted);
     }
@@ -108,7 +109,7 @@ class EncryptionService {
      */
     decryptField(encryptedValue) {
         if (!encryptedValue) return null;
-        
+
         try {
             // فحص إذا كانت القيمة مشفرة أصلاً
             if (typeof encryptedValue === 'string' && encryptedValue.startsWith('{')) {
@@ -133,13 +134,13 @@ class EncryptionService {
      */
     encryptObject(obj, fields) {
         const result = { ...obj };
-        
+
         for (const field of fields) {
             if (result[field] !== undefined && result[field] !== null) {
                 result[field] = this.encryptField(result[field]);
             }
         }
-        
+
         return result;
     }
 
@@ -151,13 +152,13 @@ class EncryptionService {
      */
     decryptObject(obj, fields) {
         const result = { ...obj };
-        
+
         for (const field of fields) {
             if (result[field]) {
                 result[field] = this.decryptField(result[field]);
             }
         }
-        
+
         return result;
     }
 
@@ -179,7 +180,7 @@ class EncryptionService {
      */
     verifyPassword(password, hash) {
         const bcrypt = require('bcryptjs');
-const logger = require('../utils/logger');
+        const logger = require('../utils/logger');
         return bcrypt.compareSync(password, hash);
     }
 
@@ -247,8 +248,8 @@ const SENSITIVE_FIELDS = {
     employees: ['salary', 'bank_info']
 };
 
-module.exports = { 
-    EncryptionService, 
+module.exports = {
+    EncryptionService,
     encryptionService,
     SENSITIVE_FIELDS
 };

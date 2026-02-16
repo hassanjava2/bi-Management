@@ -1,4 +1,5 @@
 const { get, all, run } = require('../config/database');
+const logger = require('../utils/logger');
 
 async function findAll(filters = {}) {
   let sql = `
@@ -103,7 +104,6 @@ async function syncPurchaseInvoiceToInventory(invoiceId) {
     [invoiceId]
   );
   const { generateId } = require('../utils/helpers');
-const logger = require('../utils/logger');
 
   for (const item of items) {
     const qty = parseInt(item.quantity, 10) || 0;

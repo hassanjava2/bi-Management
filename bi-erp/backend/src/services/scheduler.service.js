@@ -6,6 +6,7 @@
 const { all, run, get } = require('../config/database');
 const notificationService = require('./notification.service');
 const attendanceJobs = require('../jobs/attendance.job');
+const logger = require('../utils/logger');
 
 // Track if scheduler is running
 let isRunning = 0;
@@ -16,7 +17,7 @@ let intervalId = null;
  */
 async function checkOverdueTasks() {
     logger.info('[Scheduler] Checking overdue tasks...');
-    
+
     let overdueTasks;
     try {
         // Get tasks that are overdue and not completed
@@ -76,7 +77,7 @@ async function checkOverdueTasks() {
  */
 async function sendDailyTaskReminders() {
     logger.info('[Scheduler] Sending daily task reminders...');
-    
+
     // Get tasks due today grouped by user
     const tasksByUser = await all(`
         SELECT 
@@ -109,7 +110,7 @@ async function sendDailyTaskReminders() {
  */
 async function cleanOldNotifications() {
     logger.info('[Scheduler] Cleaning old notifications...');
-    
+
     try {
         const result = await run(`
             DELETE FROM notifications 
@@ -129,7 +130,7 @@ async function cleanOldNotifications() {
  */
 async function cleanOldAuditLogs() {
     logger.info('[Scheduler] Cleaning old audit logs...');
-    
+
     try {
         const result = await run(`
             DELETE FROM audit_logs 
@@ -263,7 +264,6 @@ async function runScheduledTasks() {
         if (hour === 2 && minute < 15) {
             try {
                 const { getBackupService } = require('./backup.service');
-const logger = require('../utils/logger');
                 const svc = getBackupService();
                 if (svc && typeof svc.createBackup === 'function') {
                     await svc.createBackup('Daily automatic backup');
