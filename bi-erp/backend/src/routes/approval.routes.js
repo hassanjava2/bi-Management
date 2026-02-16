@@ -28,37 +28,19 @@ router.get('/', requirePermission('approvals.read'), async (req, res) => {
         }
 
         try {
-            if (status === 'all') {
-                const result = await req.db.query(`
-                    SELECT a.*, u.full_name as requester_name
-                    FROM approvals a
-                    LEFT JOIN users u ON a.requested_by = u.id
-                    ORDER BY a.created_at DESC
-                    LIMIT 100
-                `);
-                approvals = result.rows;
-            } else {
-                const result = await req.db.query(`
-                    SELECT a.*, u.full_name as requester_name
-                    FROM approvals a
-                    LEFT JOIN users u ON a.requested_by = u.id
-                    WHERE a.status = $1
-                    ORDER BY a.created_at DESC
-                    LIMIT 100
-                `, [status]);
-                approvals = result.rows;
-            }
+            const query = status === 'all'
+                ? `SELECT a.*, u.full_name as requester_name FROM approvals a LEFT JOIN users u ON a.requested_by = u.id ORDER BY a.created_at DESC LIMIT 100`
+                : `SELECT a.*, u.full_name as requester_name FROM approvals a LEFT JOIN users u ON a.requested_by = u.id WHERE a.status = $1 ORDER BY a.created_at DESC LIMIT 100`;
+            const result = status === 'all'
+                ? await req.db.query(query)
+                : await req.db.query(query, [status]);
+            approvals = result.rows;
         } catch (dbErr) {
-            // Table might not exist
             logger.warn('[Approvals] Query error:', dbErr.message);
             approvals = [];
         }
 
-        res.json({
-            success: true,
-            data: approvals,
-            count: approvals.length
-        });
+        res.json({ success: true, data: approvals, count: approvals.length });
     } catch (error) {
         res.json({ success: true, data: [], count: 0 });
     }
@@ -107,7 +89,7 @@ router.post('/deletion', requirePermission('approvals.request'), async (req, res
         }
 
         const approvalService = getApprovalService(req.db);
-        
+
         const approval = await approvalService.requestDeletion(
             entity_type,
             entity_id,
@@ -181,7 +163,7 @@ router.post('/quantity', requirePermission('approvals.request'), async (req, res
         }
 
         const approvalService = getApprovalService(req.db);
-        
+
         const approval = await approvalService.requestQuantityCorrection(
             entity_type,
             entity_id,
