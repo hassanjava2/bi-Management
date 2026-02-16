@@ -7,6 +7,7 @@ const { Server } = require('socket.io');
 const { verifyToken } = require('../utils/jwt');
 const { get } = require('../config/database');
 const notificationService = require('../services/notification.service');
+const logger = require('../utils/logger');
 
 function initSocket(httpServer) {
     const corsOrigin = process.env.CORS_ORIGIN === '*' ? true : (process.env.CORS_ORIGIN || 'http://localhost:5173');
@@ -21,13 +22,13 @@ function initSocket(httpServer) {
     // Authentication middleware
     io.use(async (socket, next) => {
         const token = socket.handshake.auth.token;
-        
+
         if (!token) {
             return next(new Error('Authentication required'));
         }
 
         const decoded = verifyToken(token);
-        
+
         if (!decoded) {
             return next(new Error('Invalid token'));
         }
@@ -50,8 +51,8 @@ function initSocket(httpServer) {
     // Connection handler
     io.on('connection', (socket) => {
         const userId = socket.user.id;
-        
-        console.log(`[Socket] User connected: ${socket.user.full_name}`);
+
+        logger.info(`Socket: User connected: ${socket.user.full_name}`);
 
         // Join user's personal room
         socket.join(`user:${userId}`);
@@ -85,15 +86,15 @@ function initSocket(httpServer) {
 
         // Disconnect
         socket.on('disconnect', () => {
-            console.log(`[Socket] User disconnected: ${socket.user.full_name}`);
+            logger.info(`Socket: User disconnected: ${socket.user.full_name}`);
         });
     });
 
     // Set io instance in notification service for real-time notifications
     notificationService.setSocketIO(io);
 
-    console.log('[+] Socket.io initialized');
-    
+    logger.info('Socket.io initialized');
+
     return io;
 }
 

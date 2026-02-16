@@ -12,7 +12,7 @@ const { generateId, today } = require('../utils/helpers');
  * يعمل الساعة 9:30 صباحاً
  */
 async function checkLateEmployees() {
-    console.log('[Attendance Job] Checking for late employees...');
+    logger.info('[Attendance Job] Checking for late employees...');
     
     const todayDate = today();
     
@@ -27,7 +27,7 @@ async function checkLateEmployees() {
         AND u.role != 'admin'
     `, [todayDate]);
 
-    console.log(`[Attendance Job] Found ${lateEmployees.length} employees who haven't checked in`);
+    logger.info(`[Attendance Job] Found ${lateEmployees.length} employees who haven't checked in`);
 
     for (const employee of lateEmployees) {
         // Send reminder notification
@@ -48,7 +48,7 @@ async function checkLateEmployees() {
  * يعمل الساعة 10:00 صباحاً
  */
 async function markAbsentEmployees() {
-    console.log('[Attendance Job] Marking absent employees...');
+    logger.info('[Attendance Job] Marking absent employees...');
     
     const todayDate = today();
     
@@ -100,17 +100,18 @@ async function markAbsentEmployees() {
             // Reassign their open tasks (AI Distribution)
             try {
                 const aiDist = require('../services/ai-distribution/index');
+const logger = require('../utils/logger');
                 const result = aiDist.reassignTasksFromUser(employee.id);
                 if (result.reassigned?.length > 0) {
-                    console.log(`[Attendance Job] Reassigned ${result.reassigned.length} tasks from absent user ${employee.id}`);
+                    logger.info(`[Attendance Job] Reassigned ${result.reassigned.length} tasks from absent user ${employee.id}`);
                 }
             } catch (e) {
-                console.warn('[Attendance Job] AI reassign skipped:', e.message);
+                logger.warn('[Attendance Job] AI reassign skipped:', e.message);
             }
         }
     }
 
-    console.log(`[Attendance Job] Marked ${markedCount} employees as absent`);
+    logger.info(`[Attendance Job] Marked ${markedCount} employees as absent`);
     return { marked: markedCount };
 }
 
@@ -119,7 +120,7 @@ async function markAbsentEmployees() {
  * يعمل الساعة 6:00 مساءً
  */
 async function generateDailyReport() {
-    console.log('[Attendance Job] Generating daily report...');
+    logger.info('[Attendance Job] Generating daily report...');
     
     const todayDate = today();
     
@@ -151,7 +152,7 @@ async function generateDailyReport() {
             : 0
     };
 
-    console.log('[Attendance Job] Daily report:', report);
+    logger.info('[Attendance Job] Daily report:', report);
 
     // Send report to HR/Admin
     const hrUsers = await all(`SELECT id FROM users WHERE role IN ('admin', 'hr') AND is_active = 1`);
@@ -173,7 +174,7 @@ async function generateDailyReport() {
  * Check for incomplete tasks at end of day
  */
 async function checkIncompleteTasks() {
-    console.log('[Attendance Job] Checking incomplete tasks...');
+    logger.info('[Attendance Job] Checking incomplete tasks...');
     
     const todayDate = today();
     
@@ -219,7 +220,7 @@ function runAttendanceJobs() {
     const hour = new Date().getHours();
     const minute = new Date().getMinutes();
 
-    console.log(`[Attendance Job] Running at ${hour}:${minute}`);
+    logger.info(`[Attendance Job] Running at ${hour}:${minute}`);
 
     // 9:30 AM - Send reminders
     if (hour === 9 && minute >= 30 && minute < 45) {

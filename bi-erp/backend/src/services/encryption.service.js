@@ -20,7 +20,7 @@ class EncryptionService {
         
         if (!key) {
             // توليد مفتاح مؤقت للتطوير (غير آمن للإنتاج!)
-            console.warn('[!] WARNING: Using auto-generated encryption key. Set MASTER_ENCRYPTION_KEY in .env for production!');
+            logger.warn('[!] WARNING: Using auto-generated encryption key. Set MASTER_ENCRYPTION_KEY in .env for production!');
             return crypto.scryptSync('bi-management-default-key', 'salt', 32);
         }
 
@@ -57,7 +57,7 @@ class EncryptionService {
                 tag: authTag.toString('hex')
             };
         } catch (error) {
-            console.error('[Encryption] Encrypt error:', error.message);
+            logger.error('[Encryption] Encrypt error:', error.message);
             throw new Error('فشل في التشفير');
         }
     }
@@ -84,7 +84,7 @@ class EncryptionService {
             
             return decrypted;
         } catch (error) {
-            console.error('[Encryption] Decrypt error:', error.message);
+            logger.error('[Encryption] Decrypt error:', error.message);
             throw new Error('فشل في فك التشفير');
         }
     }
@@ -179,6 +179,7 @@ class EncryptionService {
      */
     verifyPassword(password, hash) {
         const bcrypt = require('bcryptjs');
+const logger = require('../utils/logger');
         return bcrypt.compareSync(password, hash);
     }
 

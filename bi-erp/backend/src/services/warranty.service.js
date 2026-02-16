@@ -5,6 +5,7 @@
 
 const { v4: uuidv4 } = require('uuid');
 const { run, get, all } = require('../config/database');
+const logger = require('../utils/logger');
 
 // حالات طلب الضمان
 const WARRANTY_STATUS = {
@@ -70,7 +71,7 @@ async function createClaim(data) {
             warranty_valid: warrantyValid
         };
     } catch (error) {
-        console.error('Error creating warranty claim:', error);
+        logger.error('Error creating warranty claim:', error);
         throw error;
     }
 }
@@ -248,7 +249,7 @@ async function addTracking(claimId, action, details, performedBy) {
             new Date().toISOString()
         ]);
     } catch (error) {
-        console.warn('Could not add warranty tracking:', error.message);
+        logger.warn('Could not add warranty tracking:', error.message);
     }
 }
 
@@ -370,7 +371,7 @@ async function updateDeviceStatus(deviceId, status) {
             WHERE id = ?
         `, [status, new Date().toISOString(), deviceId]);
     } catch (error) {
-        console.warn('Could not update device status:', error.message);
+        logger.warn('Could not update device status:', error.message);
     }
 }
 

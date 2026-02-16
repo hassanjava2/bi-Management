@@ -4,6 +4,7 @@
  */
 const { get, all } = require('../config/database');
 const notificationService = require('./notification.service');
+const logger = require('../utils/logger');
 
 async function getRules() {
     try {
@@ -75,7 +76,7 @@ async function runChecks() {
             }
         }
     } catch (e) {
-        console.error('[Alert] runChecks error:', e.message);
+        logger.error('[Alert] runChecks error:', e.message);
     }
     return sent;
 }

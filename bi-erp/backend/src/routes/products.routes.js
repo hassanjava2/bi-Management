@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const { auth } = require('../middleware/auth');
 const productService = require('../services/product.service');
+const logger = require('../utils/logger');
 
 // Fallback: تحميل من JSON إذا جدول المنتجات غير موجود
 let productsData = null;
@@ -25,9 +26,9 @@ function loadProductsFromJson() {
           productsData = JSON.parse(data);
         }
       }
-      if (productsData) console.log(`[Products] JSON fallback: ${productsData.count} products`);
+      if (productsData) logger.info(`[Products] JSON fallback: ${productsData.count} products`);
     } catch (e) {
-      console.error('[Products] JSON fallback error:', e.message);
+      logger.error('[Products] JSON fallback error:', e.message);
     }
     if (!productsData) productsData = { count: 0, products: [] };
   }

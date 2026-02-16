@@ -8,6 +8,7 @@ const taskService = require('./task.service');
 const notificationService = require('./notification.service');
 const { run, get, all } = require('../config/database');
 const { generateId, now } = require('../utils/helpers');
+const logger = require('../utils/logger');
 
 /**
  * معالجة مشكلة المستخدم وإنشاء مهمة
@@ -50,7 +51,7 @@ async function processUserProblem(userId, conversationId, description) {
         };
 
     } catch (error) {
-        console.error('[AI Task Service] Error:', error.message);
+        logger.error('[AI Task Service] Error:', error.message);
         throw error;
     }
 }
@@ -98,7 +99,7 @@ async function confirmAndCreateTask(userId, taskData) {
 
         return task;
     } catch (error) {
-        console.error('[AI Task Service] Confirm error:', error.message);
+        logger.error('[AI Task Service] Confirm error:', error.message);
         throw error;
     }
 }

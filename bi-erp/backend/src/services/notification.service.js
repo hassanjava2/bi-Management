@@ -7,6 +7,7 @@
 
 const { run, get, all } = require('../config/database');
 const { generateId, now } = require('../utils/helpers');
+const logger = require('../utils/logger');
 
 // Socket.io instance (set from app.js)
 let io = null;
@@ -47,7 +48,7 @@ async function create(data) {
 
         return notification;
     } catch (error) {
-        console.error('[Notification] Create error:', error.message);
+        logger.error('[Notification] Create error:', error.message);
         return null;
     }
 }
@@ -58,12 +59,12 @@ async function create(data) {
 async function getById(notificationId) {
     try {
         const notification = await get(`SELECT * FROM notifications WHERE id = ?`, [notificationId]);
-        
+
         if (!notification) return null;
 
         return formatNotification(notification);
     } catch (error) {
-        console.error('[Notification] GetById error:', error.message);
+        logger.error('[Notification] GetById error:', error.message);
         return null;
     }
 }
@@ -121,7 +122,7 @@ async function getUserNotifications(userId, filters = {}) {
 
         return notifications.map(formatNotification);
     } catch (error) {
-        console.error('[Notification] GetUserNotifications error:', error.message);
+        logger.error('[Notification] GetUserNotifications error:', error.message);
         return [];
     }
 }
@@ -139,7 +140,7 @@ async function markAsRead(notificationId, userId) {
 
         return result.changes > 0;
     } catch (error) {
-        console.error('[Notification] MarkAsRead error:', error.message);
+        logger.error('[Notification] MarkAsRead error:', error.message);
         return false;
     }
 }
@@ -157,7 +158,7 @@ async function markAllAsRead(userId) {
 
         return { marked: result.changes };
     } catch (error) {
-        console.error('[Notification] MarkAllAsRead error:', error.message);
+        logger.error('[Notification] MarkAllAsRead error:', error.message);
         return { marked: 0 };
     }
 }
@@ -175,7 +176,7 @@ async function getUnreadCount(userId) {
 
         return result?.count || 0;
     } catch (error) {
-        console.error('[Notification] GetUnreadCount error:', error.message);
+        logger.error('[Notification] GetUnreadCount error:', error.message);
         return 0;
     }
 }
@@ -191,7 +192,7 @@ async function deleteNotification(notificationId, userId) {
 
         return result.changes > 0;
     } catch (error) {
-        console.error('[Notification] Delete error:', error.message);
+        logger.error('[Notification] Delete error:', error.message);
         return false;
     }
 }
@@ -208,7 +209,7 @@ async function deleteOldNotifications(days = 30) {
 
         return { deleted: (result && result.changes) || 0 };
     } catch (error) {
-        console.error('[Notification] DeleteOld error:', error.message);
+        logger.error('[Notification] DeleteOld error:', error.message);
         return { deleted: 0 };
     }
 }
@@ -241,7 +242,7 @@ async function sendToDepartment(departmentId, data) {
         const users = await all(`SELECT id FROM users WHERE department_id = ? AND is_active = 1`, [departmentId]);
         return sendBulk(users.map(u => u.id), data);
     } catch (error) {
-        console.error('[Notification] SendToDepartment error:', error.message);
+        logger.error('[Notification] SendToDepartment error:', error.message);
         return [];
     }
 }
@@ -254,7 +255,7 @@ async function sendToAll(data) {
         const users = await all(`SELECT id FROM users WHERE is_active = 1`);
         return sendBulk(users.map(u => u.id), data);
     } catch (error) {
-        console.error('[Notification] SendToAll error:', error.message);
+        logger.error('[Notification] SendToAll error:', error.message);
         return [];
     }
 }
@@ -272,33 +273,33 @@ const NOTIFICATION_TYPES = {
     INVOICE_READY_TO_DELIVER: 'invoice_ready_to_deliver',
     INVOICE_CANCELLED: 'invoice_cancelled',
     INVOICE_OVERDUE: 'invoice_overdue',
-    
+
     // مخزون
     STOCK_LOW: 'stock_low',
     STOCK_OUT: 'stock_out',
     DEVICE_INSPECTION_NEEDED: 'device_inspection_needed',
     DEVICE_READY_FOR_PREP: 'device_ready_for_prep',
     DEVICE_READY_TO_SELL: 'device_ready_to_sell',
-    
+
     // مالية
     PAYMENT_RECEIVED: 'payment_received',
     PAYMENT_OVERDUE: 'payment_overdue',
     VOUCHER_CREATED: 'voucher_created',
-    
+
     // مهام
     TASK_ASSIGNED: 'task_assigned',
     TASK_COMPLETED: 'task_completed',
     TASK_OVERDUE: 'task_overdue',
-    
+
     // HR
     ATTENDANCE_LATE: 'attendance_late',
     ATTENDANCE_ABSENT: 'attendance_absent',
     VACATION_REQUEST: 'vacation_request',
-    
+
     // ضمان
     WARRANTY_EXPIRING: 'warranty_expiring',
     WARRANTY_CLAIM: 'warranty_claim',
-    
+
     // عام
     SYSTEM_ALERT: 'system_alert',
     APPROVAL_NEEDED: 'approval_needed',
@@ -404,7 +405,7 @@ async function notifyEvent(type, context = {}) {
                 action_url: context.action_url,
             });
         } catch (e) {
-            console.error('[Notification] notifyEvent admin error:', e.message);
+            logger.error('[Notification] notifyEvent admin error:', e.message);
             return [];
         }
     }

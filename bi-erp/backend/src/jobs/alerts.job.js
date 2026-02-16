@@ -9,12 +9,13 @@ let notificationService;
 try { notificationService = require('../services/notification.service'); } catch (_) {}
 let eventBus;
 try { eventBus = require('../services/ai-distribution/event-bus'); } catch (_) {}
+const logger = require('../utils/logger');
 
 /**
  * فحص المخزون المنخفض وإرسال تنبيهات
  */
 async function checkLowStock() {
-    console.log('[Alerts Job] Checking low stock...');
+    logger.info('[Alerts Job] Checking low stock...');
     try {
         const lowStock = await all(`
             SELECT id, name, quantity, min_quantity
@@ -39,10 +40,10 @@ async function checkLowStock() {
                 eventBus.emit(eventBus.EVENT_TYPES.STOCK_LOW, { product_id: product.id, productId: product.id, product_name: product.name, quantity: product.quantity, min_quantity: product.min_quantity });
             }
         }
-        console.log(`[Alerts Job] Found ${lowStock.length} low-stock products`);
+        logger.info(`[Alerts Job] Found ${lowStock.length} low-stock products`);
         return lowStock.length;
     } catch (error) {
-        console.error('[Alerts Job] Low stock check error:', error.message);
+        logger.error('[Alerts Job] Low stock check error:', error.message);
         return 0;
     }
 }
@@ -51,7 +52,7 @@ async function checkLowStock() {
  * فحص الضمانات القاربة على الانتهاء (7 أيام)
  */
 async function checkExpiringWarranties() {
-    console.log('[Alerts Job] Checking expiring warranties...');
+    logger.info('[Alerts Job] Checking expiring warranties...');
     try {
         const expiring = await all(`
             SELECT sn.id, sn.serial_number, sn.warranty_expires, p.name as product_name,
@@ -77,10 +78,10 @@ async function checkExpiringWarranties() {
                 action_url: '/warranty',
             });
         }
-        console.log(`[Alerts Job] Found ${expiring.length} expiring warranties`);
+        logger.info(`[Alerts Job] Found ${expiring.length} expiring warranties`);
         return expiring.length;
     } catch (error) {
-        console.error('[Alerts Job] Warranty check error:', error.message);
+        logger.error('[Alerts Job] Warranty check error:', error.message);
         return 0;
     }
 }
@@ -89,7 +90,7 @@ async function checkExpiringWarranties() {
  * فحص الدفعات المتأخرة
  */
 async function checkOverduePayments() {
-    console.log('[Alerts Job] Checking overdue payments...');
+    logger.info('[Alerts Job] Checking overdue payments...');
     try {
         const overdue = await all(`
             SELECT i.id, i.invoice_number, i.total, i.remaining_amount, i.due_date,
@@ -115,10 +116,10 @@ async function checkOverduePayments() {
                 action_url: `/sales?invoice=${invoice.id}`,
             });
         }
-        console.log(`[Alerts Job] Found ${overdue.length} overdue payments`);
+        logger.info(`[Alerts Job] Found ${overdue.length} overdue payments`);
         return overdue.length;
     } catch (error) {
-        console.error('[Alerts Job] Overdue check error:', error.message);
+        logger.error('[Alerts Job] Overdue check error:', error.message);
         return 0;
     }
 }
@@ -127,7 +128,7 @@ async function checkOverduePayments() {
  * فحص المهام المتأخرة
  */
 async function checkOverdueTasks() {
-    console.log('[Alerts Job] Checking overdue tasks...');
+    logger.info('[Alerts Job] Checking overdue tasks...');
     try {
         const overdue = await all(`
             SELECT t.id, t.title, t.assigned_to, t.due_date, u.full_name as assignee_name
@@ -158,10 +159,10 @@ async function checkOverdueTasks() {
                 entity_id: task.id,
             });
         }
-        console.log(`[Alerts Job] Found ${overdue.length} overdue tasks`);
+        logger.info(`[Alerts Job] Found ${overdue.length} overdue tasks`);
         return overdue.length;
     } catch (error) {
-        console.error('[Alerts Job] Task check error:', error.message);
+        logger.error('[Alerts Job] Task check error:', error.message);
         return 0;
     }
 }
@@ -170,14 +171,14 @@ async function checkOverdueTasks() {
  * تشغيل كل الفحوصات
  */
 async function runAllAlerts() {
-    console.log('[Alerts Job] === Running all alert checks ===');
+    logger.info('[Alerts Job] === Running all alert checks ===');
     const results = {
         lowStock: await checkLowStock(),
         expiringWarranties: await checkExpiringWarranties(),
         overduePayments: await checkOverduePayments(),
         overdueTasks: await checkOverdueTasks(),
     };
-    console.log('[Alerts Job] === Done ===', results);
+    logger.info('[Alerts Job] === Done ===', results);
     return results;
 }
 

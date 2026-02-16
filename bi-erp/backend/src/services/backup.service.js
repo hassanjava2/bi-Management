@@ -54,7 +54,7 @@ class BackupService {
             // Cleanup old backups
             this.cleanupOldBackups();
 
-            console.log(`[Backup] Created: ${filename} (${sizeMB} MB)`);
+            logger.info(`[Backup] Created: ${filename} (${sizeMB} MB)`);
 
             return {
                 success: true,
@@ -64,7 +64,7 @@ class BackupService {
                 created_at: new Date().toISOString()
             };
         } catch (error) {
-            console.error('[Backup] Error creating backup:', error);
+            logger.error('[Backup] Error creating backup:', error);
             throw error;
         }
     }
@@ -89,14 +89,14 @@ class BackupService {
                 fs.mkdirSync(dir, { recursive: true });
             }
             fs.writeFileSync(this.mainDbPath, buffer);
-            console.log(`[Backup] Restored: ${filename} -> ${this.mainDbPath}`);
+            logger.info(`[Backup] Restored: ${filename} -> ${this.mainDbPath}`);
             return {
                 success: true,
                 message: 'تم استرجاع النسخة الاحتياطية بنجاح. يُنصح بإعادة تشغيل الخادم لتحميل البيانات الجديدة.',
                 filename
             };
         } catch (error) {
-            console.error('[Backup] Error restoring backup:', error);
+            logger.error('[Backup] Error restoring backup:', error);
             throw error;
         }
     }
@@ -122,7 +122,7 @@ class BackupService {
 
             return files;
         } catch (error) {
-            console.error('[Backup] Error listing backups:', error);
+            logger.error('[Backup] Error listing backups:', error);
             return [];
         }
     }
@@ -139,10 +139,10 @@ class BackupService {
 
         try {
             fs.unlinkSync(backupPath);
-            console.log(`[Backup] Deleted: ${filename}`);
+            logger.info(`[Backup] Deleted: ${filename}`);
             return { success: true, filename };
         } catch (error) {
-            console.error('[Backup] Error deleting backup:', error);
+            logger.error('[Backup] Error deleting backup:', error);
             throw error;
         }
     }
@@ -161,10 +161,10 @@ class BackupService {
                     this.deleteBackup(backup.filename);
                 }
                 
-                console.log(`[Backup] Cleaned up ${toDelete.length} old backups`);
+                logger.info(`[Backup] Cleaned up ${toDelete.length} old backups`);
             }
         } catch (error) {
-            console.error('[Backup] Error cleaning up backups:', error);
+            logger.error('[Backup] Error cleaning up backups:', error);
         }
     }
 
@@ -175,6 +175,7 @@ class BackupService {
         try {
             const db = getDatabase();
             const { v4: uuid } = require('uuid');
+const logger = require('../utils/logger');
             
             db.run(`
                 INSERT INTO backups (id, filename, file_path, file_size, description, created_at)
@@ -189,7 +190,7 @@ class BackupService {
             ]);
         } catch (error) {
             // Table might not exist, ignore
-            console.warn('[Backup] Could not log backup to database');
+            logger.warn('[Backup] Could not log backup to database');
         }
     }
 
@@ -213,7 +214,7 @@ class BackupService {
             setInterval(() => this.runAutoBackup(), 24 * 60 * 60 * 1000);
         }, msUntilMidnight);
 
-        console.log(`[Backup] Auto-backup scheduled for 2:00 AM daily`);
+        logger.info(`[Backup] Auto-backup scheduled for 2:00 AM daily`);
     }
 
     /**
@@ -221,10 +222,10 @@ class BackupService {
      */
     async runAutoBackup() {
         try {
-            console.log('[Backup] Running automatic backup...');
+            logger.info('[Backup] Running automatic backup...');
             await this.createBackup('Automatic daily backup');
         } catch (error) {
-            console.error('[Backup] Automatic backup failed:', error);
+            logger.error('[Backup] Automatic backup failed:', error);
         }
     }
 

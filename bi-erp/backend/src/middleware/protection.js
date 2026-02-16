@@ -257,6 +257,7 @@ function checkPermission(user, permission) {
  */
 function requestTracker(req, res, next) {
     const { v4: uuidv4 } = require('uuid');
+const logger = require('../utils/logger');
     req.requestId = uuidv4();
     req.requestStartTime = Date.now();
 
@@ -265,7 +266,7 @@ function requestTracker(req, res, next) {
         
         // تسجيل الطلبات البطيئة
         if (duration > 5000) {
-            console.warn(`Slow request: ${req.method} ${req.path} - ${duration}ms`);
+            logger.warn(`Slow request: ${req.method} ${req.path} - ${duration}ms`);
         }
     });
 

@@ -7,6 +7,7 @@ const axios = require('axios');
 const { run, get, all } = require('../config/database');
 const { generateId, now } = require('../utils/helpers');
 const notificationService = require('./notification.service');
+const logger = require('../utils/logger');
 
 // Camera AI Service URL
 const CAMERA_AI_URL = process.env.CAMERA_AI_URL || 'http://localhost:8001/api';
@@ -38,7 +39,7 @@ class CameraService {
                 detection_types: data.detection_types || ['idle', 'mess']
             });
         } catch (e) {
-            console.error('[Camera Service] Failed to register with Camera AI:', e.message);
+            logger.error('[Camera Service] Failed to register with Camera AI:', e.message);
         }
 
         return this.getCamera(id);

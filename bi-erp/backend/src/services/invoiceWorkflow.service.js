@@ -6,6 +6,7 @@
 
 const { run, get, all } = require('../config/database');
 const { generateId, now } = require('../utils/helpers');
+const logger = require('../utils/logger');
 
 // حالات القائمة المسموحة في السير
 const INVOICE_STATUS = {
@@ -45,7 +46,7 @@ async function logWorkflow(invoiceId, event, userId, role, notes = null) {
         `, [id, invoiceId, event, userId || null, role || null, notes || null, createdAt]);
         return { id, invoice_id: invoiceId, event, user_id: userId, role, notes, created_at: createdAt };
     } catch (err) {
-        console.error('[invoiceWorkflow] logWorkflow error:', err.message);
+        logger.error('[invoiceWorkflow] logWorkflow error:', err.message);
         throw err;
     }
 }

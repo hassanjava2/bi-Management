@@ -5,6 +5,7 @@
 
 const { getDatabase, get, all } = require('../config/database');
 const { getAuditService, EVENT_CATEGORIES, SEVERITY } = require('../services/audit.service');
+const logger = require('../utils/logger');
 
 /**
  * فحص صلاحية واحدة
@@ -36,7 +37,7 @@ function checkPermission(permissionCode, options = {}) {
             const permission = await get('SELECT * FROM permissions WHERE code = ?', [permissionCode]);
 
             if (!permission || !permission.id) {
-                console.warn(`[Permission] Unknown permission code: ${permissionCode}`);
+                logger.warn(`[Permission] Unknown permission code: ${permissionCode}`);
                 // السماح بالمرور إذا الصلاحية غير موجودة (للتطوير)
                 if (process.env.NODE_ENV === 'development') {
                     return next();
@@ -104,7 +105,7 @@ function checkPermission(permissionCode, options = {}) {
             });
 
         } catch (error) {
-            console.error('[Permission] Error checking permission:', error);
+            logger.error('[Permission] Error checking permission:', error);
             return res.status(500).json({
                 success: false,
                 error: 'PERMISSION_CHECK_ERROR',
@@ -245,7 +246,7 @@ async function checkUserHasPermission(userId, permissionCode) {
         `, [userId, permission.id]);
         return !!rolePerm;
     } catch (error) {
-        console.error('[Permission] Error in checkUserHasPermission:', error);
+        logger.error('[Permission] Error in checkUserHasPermission:', error);
         return false;
     }
 }
@@ -279,7 +280,7 @@ async function getUserPermissions(userId) {
 
         return Array.from(permissions);
     } catch (error) {
-        console.error('[Permission] Error getting user permissions:', error);
+        logger.error('[Permission] Error getting user permissions:', error);
         return [];
     }
 }
@@ -323,7 +324,7 @@ async function handleSensitivePermission(req, res, next, permission) {
                 }
             });
         } catch (e) {
-            console.error('[Permission] Error logging sensitive permission:', e);
+            logger.error('[Permission] Error logging sensitive permission:', e);
         }
     }
 
@@ -352,7 +353,7 @@ function logAccessDenied(req, permissionCode, reason) {
             }
         });
     } catch (e) {
-        console.error('[Permission] Error logging access denied:', e);
+        logger.error('[Permission] Error logging access denied:', e);
     }
 }
 

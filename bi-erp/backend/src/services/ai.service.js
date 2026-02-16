@@ -3,6 +3,7 @@
  */
 const { run, get, all } = require('../config/database');
 const { generateId } = require('../utils/helpers');
+const logger = require('../utils/logger');
 
 const AI_ENGINE_URL = process.env.AI_ENGINE_URL || '';
 
@@ -30,7 +31,7 @@ async function chat(userId, message, userInfo = {}, conversationId = null) {
         return { response, conversation_id: convId, suggestions, blocked: false };
       }
     } catch (e) {
-      console.warn('[AI] Engine error:', e.message);
+      logger.warn('[AI] Engine error:', e.message);
     }
   }
 

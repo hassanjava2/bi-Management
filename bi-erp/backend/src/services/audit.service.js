@@ -4,6 +4,7 @@
 
 const { v4: uuidv4 } = require('uuid');
 const { run } = require('../config/database');
+const logger = require('../utils/logger');
 
 async function log(data) {
   const {
@@ -40,7 +41,7 @@ async function log(data) {
     );
     return { success: true };
   } catch (e) {
-    console.error('[Audit]', e.message);
+    logger.error('[Audit]', e.message);
     return { success: false };
   }
 }

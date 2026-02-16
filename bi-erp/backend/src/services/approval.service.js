@@ -6,6 +6,7 @@
 const { v4: uuidv4 } = require('uuid');
 const { run, get, all } = require('../config/database');
 const { generateId, now } = require('../utils/helpers');
+const logger = require('../utils/logger');
 
 // أنواع الموافقات
 const APPROVAL_TYPES = {
@@ -87,11 +88,11 @@ async function createRequest(data) {
         };
 
         // Log notification
-        console.log(`🔔 New approval request: ${approvalType} by ${requestedBy?.name}`);
+        logger.info(`🔔 New approval request: ${approvalType} by ${requestedBy?.name}`);
 
         return approval;
     } catch (error) {
-        console.error('Error creating approval request:', error);
+        logger.error('Error creating approval request:', error);
         throw error;
     }
 }
@@ -182,7 +183,7 @@ async function approve(approvalId, decidedBy, notes = '') {
     // تنفيذ العملية
     await executeApproval(approval);
 
-    console.log(`✅ Approval granted: ${approval.approval_number} by ${decidedBy?.name}`);
+    logger.info(`✅ Approval granted: ${approval.approval_number} by ${decidedBy?.name}`);
 
     return { ...approval, status: APPROVAL_STATUS.APPROVED, decided_at: decidedAt };
 }
@@ -209,7 +210,7 @@ async function reject(approvalId, decidedBy, reason) {
         WHERE id = ?
     `, [APPROVAL_STATUS.REJECTED, decidedBy?.id, reason, decidedAt, approvalId]);
 
-    console.log(`❌ Approval rejected: ${approval.approval_number} by ${decidedBy?.name}`);
+    logger.info(`❌ Approval rejected: ${approval.approval_number} by ${decidedBy?.name}`);
 
     return { ...approval, status: APPROVAL_STATUS.REJECTED, decided_at: decidedAt };
 }
@@ -240,7 +241,7 @@ function executeApproval(approval) {
             break;
 
         default:
-            console.log(`Approval type ${approval.type} execution not implemented`);
+            logger.info(`Approval type ${approval.type} execution not implemented`);
     }
 }
 
@@ -263,7 +264,7 @@ async function executeDeletion(entityType, entityId) {
                     WHERE id = ?
                 `, [now(), entityId]);
             } catch (err) {
-                console.error('Error executing invoice deletion:', err);
+                logger.error('Error executing invoice deletion:', err);
             }
         }
         return;
@@ -286,7 +287,7 @@ async function executeDeletion(entityType, entityId) {
             WHERE id = ?
         `, [now(), entityId]);
     } catch (error) {
-        console.error('Error executing deletion:', error);
+        logger.error('Error executing deletion:', error);
     }
 }
 
@@ -309,7 +310,7 @@ async function executeInvoiceVoid(invoiceId, reason) {
                 WHERE id = ?
             `, [now(), reason || null, now(), invoiceId]);
         } catch (err) {
-            console.error('Error executing invoice void:', err);
+            logger.error('Error executing invoice void:', err);
         }
     }
 }
@@ -325,7 +326,7 @@ async function executeQuantityCorrection(entityType, entityId, newQuantity) {
                 WHERE id = ?
             `, [newQuantity, now(), entityId]);
         } catch (error) {
-            console.error('Error executing quantity correction:', error);
+            logger.error('Error executing quantity correction:', error);
         }
     }
 }
@@ -418,7 +419,7 @@ async function expireOldRequests() {
             WHERE status = ? AND expires_at < CURRENT_TIMESTAMP
         `, [APPROVAL_STATUS.EXPIRED, APPROVAL_STATUS.PENDING]);
     } catch (error) {
-        console.error('Error expiring old requests:', error);
+        logger.error('Error expiring old requests:', error);
     }
 }
 

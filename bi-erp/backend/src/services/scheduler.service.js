@@ -15,7 +15,7 @@ let intervalId = null;
  * Check for overdue tasks and send reminders
  */
 async function checkOverdueTasks() {
-    console.log('[Scheduler] Checking overdue tasks...');
+    logger.info('[Scheduler] Checking overdue tasks...');
     
     let overdueTasks;
     try {
@@ -29,11 +29,11 @@ async function checkOverdueTasks() {
             AND t.assigned_to IS NOT NULL
         `);
     } catch (e) {
-        console.log('[Scheduler] Tasks table not ready yet, skipping...');
+        logger.info('[Scheduler] Tasks table not ready yet, skipping...');
         return;
     }
 
-    console.log(`[Scheduler] Found ${overdueTasks.length} overdue tasks`);
+    logger.info(`[Scheduler] Found ${overdueTasks.length} overdue tasks`);
 
     for (const task of overdueTasks) {
         // Check if we already sent a reminder in the last 24 hours
@@ -64,7 +64,7 @@ async function checkOverdueTasks() {
                 WHERE id = ?
             `, [task.id]);
 
-            console.log(`[Scheduler] Sent reminder for task: ${task.title}`);
+            logger.info(`[Scheduler] Sent reminder for task: ${task.title}`);
         }
     }
 
@@ -75,7 +75,7 @@ async function checkOverdueTasks() {
  * Check for tasks due today and send morning reminders
  */
 async function sendDailyTaskReminders() {
-    console.log('[Scheduler] Sending daily task reminders...');
+    logger.info('[Scheduler] Sending daily task reminders...');
     
     // Get tasks due today grouped by user
     const tasksByUser = await all(`
@@ -100,7 +100,7 @@ async function sendDailyTaskReminders() {
         });
     }
 
-    console.log(`[Scheduler] Sent daily reminders to ${tasksByUser.length} users`);
+    logger.info(`[Scheduler] Sent daily reminders to ${tasksByUser.length} users`);
     return { notified: tasksByUser.length };
 }
 
@@ -108,7 +108,7 @@ async function sendDailyTaskReminders() {
  * Clean old notifications (older than 30 days)
  */
 async function cleanOldNotifications() {
-    console.log('[Scheduler] Cleaning old notifications...');
+    logger.info('[Scheduler] Cleaning old notifications...');
     
     try {
         const result = await run(`
@@ -116,10 +116,10 @@ async function cleanOldNotifications() {
             WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '30 days'
         `);
 
-        console.log(`[Scheduler] Deleted ${result?.changes || 0} old notifications`);
+        logger.info(`[Scheduler] Deleted ${result?.changes || 0} old notifications`);
         return { deleted: result?.changes || 0 };
     } catch (error) {
-        console.log('[Scheduler] Could not clean notifications:', error.message);
+        logger.info('[Scheduler] Could not clean notifications:', error.message);
         return { deleted: 0 };
     }
 }
@@ -128,7 +128,7 @@ async function cleanOldNotifications() {
  * Clean old audit logs (older than 90 days, keep critical ones)
  */
 async function cleanOldAuditLogs() {
-    console.log('[Scheduler] Cleaning old audit logs...');
+    logger.info('[Scheduler] Cleaning old audit logs...');
     
     try {
         const result = await run(`
@@ -137,10 +137,10 @@ async function cleanOldAuditLogs() {
             AND severity != 'critical'
         `);
 
-        console.log(`[Scheduler] Deleted ${result?.changes || 0} old audit logs`);
+        logger.info(`[Scheduler] Deleted ${result?.changes || 0} old audit logs`);
         return { deleted: result?.changes || 0 };
     } catch (error) {
-        console.log('[Scheduler] Could not clean audit logs:', error.message);
+        logger.info('[Scheduler] Could not clean audit logs:', error.message);
         return { deleted: 0 };
     }
 }
@@ -150,12 +150,12 @@ async function cleanOldAuditLogs() {
  */
 function startScheduler() {
     if (isRunning) {
-        console.log('[Scheduler] Already running');
+        logger.info('[Scheduler] Already running');
         return;
     }
 
     isRunning = 1;
-    console.log('[Scheduler] Starting...');
+    logger.info('[Scheduler] Starting...');
 
     // Run immediately
     runScheduledTasks();
@@ -163,7 +163,7 @@ function startScheduler() {
     // Then every hour
     intervalId = setInterval(runScheduledTasks, 60 * 60 * 1000);
 
-    console.log('[Scheduler] Started - running every hour');
+    logger.info('[Scheduler] Started - running every hour');
 }
 
 /**
@@ -175,7 +175,7 @@ function stopScheduler() {
         intervalId = null;
     }
     isRunning = 0;
-    console.log('[Scheduler] Stopped');
+    logger.info('[Scheduler] Stopped');
 }
 
 /**
@@ -204,7 +204,7 @@ async function checkPendingInvoiceReminders() {
         return { sent: due.length };
     } catch (e) {
         if (e.code !== 'SQLITE_ERROR' && !e.message.includes('no such table')) {
-            console.error('[Scheduler] Pending invoice reminders error:', e.message);
+            logger.error('[Scheduler] Pending invoice reminders error:', e.message);
         }
         return { sent: 0 };
     }
@@ -214,7 +214,7 @@ async function checkPendingInvoiceReminders() {
  * Run all scheduled tasks
  */
 async function runScheduledTasks() {
-    console.log('[Scheduler] Running scheduled tasks at', new Date().toISOString());
+    logger.info('[Scheduler] Running scheduled tasks at', new Date().toISOString());
 
     try {
         const hour = new Date().getHours();
@@ -263,18 +263,19 @@ async function runScheduledTasks() {
         if (hour === 2 && minute < 15) {
             try {
                 const { getBackupService } = require('./backup.service');
+const logger = require('../utils/logger');
                 const svc = getBackupService();
                 if (svc && typeof svc.createBackup === 'function') {
                     await svc.createBackup('Daily automatic backup');
-                    console.log('[Scheduler] Daily backup completed');
+                    logger.info('[Scheduler] Daily backup completed');
                 }
             } catch (backupErr) {
-                console.error('[Scheduler] Daily backup failed:', backupErr.message);
+                logger.error('[Scheduler] Daily backup failed:', backupErr.message);
             }
         }
 
     } catch (error) {
-        console.error('[Scheduler] Error:', error);
+        logger.error('[Scheduler] Error:', error);
     }
 }
 

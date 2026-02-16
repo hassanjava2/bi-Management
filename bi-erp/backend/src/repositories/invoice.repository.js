@@ -84,7 +84,7 @@ async function updateStatus(id, status) {
   await run('UPDATE invoices SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [status, id]);
   if (status === 'completed') {
     await syncPurchaseInvoiceToInventory(id).catch((err) => {
-      console.warn('[Invoices] Purchase inventory sync warning:', err.message);
+      logger.warn('[Invoices] Purchase inventory sync warning:', err.message);
     });
   }
   return findById(id);
@@ -103,6 +103,7 @@ async function syncPurchaseInvoiceToInventory(invoiceId) {
     [invoiceId]
   );
   const { generateId } = require('../utils/helpers');
+const logger = require('../utils/logger');
 
   for (const item of items) {
     const qty = parseInt(item.quantity, 10) || 0;

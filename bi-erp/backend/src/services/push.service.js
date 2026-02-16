@@ -11,6 +11,7 @@ const { generateId } = require('../utils/helpers');
 
 // Firebase Admin SDK (uncomment when ready)
 // const admin = require('firebase-admin');
+const logger = require('../utils/logger');
 // admin.initializeApp({
 //   credential: admin.credential.cert(serviceAccount)
 // });
@@ -59,7 +60,7 @@ async function sendPushNotification(userId, notification) {
     const devices = getUserDevices(userId);
     
     if (devices.length === 0) {
-        console.log(`[Push] No devices registered for user ${userId}`);
+        logger.info(`[Push] No devices registered for user ${userId}`);
         return { sent: 0 };
     }
 
@@ -78,12 +79,12 @@ async function sendPushNotification(userId, notification) {
         tokens
     };
 
-    console.log(`[Push] Would send to ${tokens.length} devices:`, message);
+    logger.info(`[Push] Would send to ${tokens.length} devices:`, message);
     
     // Uncomment when Firebase is configured:
     // try {
     //     const response = await admin.messaging().sendMulticast(message);
-    //     console.log(`[Push] Sent: ${response.successCount}, Failed: ${response.failureCount}`);
+    //     logger.info(`[Push] Sent: ${response.successCount}, Failed: ${response.failureCount}`);
     //     
     //     // Remove invalid tokens
     //     response.responses.forEach((resp, idx) => {
@@ -94,7 +95,7 @@ async function sendPushNotification(userId, notification) {
     //     
     //     return { sent: response.successCount, failed: response.failureCount };
     // } catch (error) {
-    //     console.error('[Push] Error:', error);
+    //     logger.error('[Push] Error:', error);
     //     return { sent: 0, error: error.message };
     // }
 

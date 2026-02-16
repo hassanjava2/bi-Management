@@ -10,6 +10,7 @@ const { getAuditService, EVENT_CATEGORIES } = require('../services/audit.service
 const { all } = require('../config/database');
 const { requirePermission } = require('../middleware/protection');
 const { auth } = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 router.use(auth);
 
@@ -49,7 +50,7 @@ router.get('/', requirePermission('approvals.read'), async (req, res) => {
             }
         } catch (dbErr) {
             // Table might not exist
-            console.warn('[Approvals] Query error:', dbErr.message);
+            logger.warn('[Approvals] Query error:', dbErr.message);
             approvals = [];
         }
 
