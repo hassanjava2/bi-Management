@@ -7,7 +7,7 @@ import {
   Receipt, RefreshCw, DollarSign, Truck, Wrench, UserCircle,
   ChevronDown, ShoppingCart, FileCheck, CreditCard, BarChart3,
   Calculator, Bot, Boxes, X, LogOut, Search, Workflow, MessageCircle, Banknote,
-  ArrowLeftRight, Tag, FileX, Landmark,
+  ArrowLeftRight, Tag, FileX, Landmark, CalendarDays, Wallet,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useQuery } from '@tanstack/react-query'
@@ -77,7 +77,10 @@ const navSections = [
     stripLabel: 'الموارد البشرية',
     items: [
       { name: 'الموظفين', href: '/employees', icon: Users, roles: ['owner', 'admin', 'hr', 'manager'] },
+      { name: 'الأقسام', href: '/departments', icon: Building2, roles: ['owner', 'admin', 'hr'] },
       { name: 'الحضور', href: '/attendance', icon: Clock, roles: ['owner', 'admin', 'hr', 'manager'] },
+      { name: 'الإجازات', href: '/leaves', icon: CalendarDays, roles: ['owner', 'admin', 'hr', 'manager'] },
+      { name: 'الرواتب', href: '/payroll', icon: Wallet, roles: ['owner', 'admin', 'hr'] },
       { name: 'المهام', href: '/tasks', icon: CheckSquare },
       { name: 'التدريب', href: '/training', icon: GraduationCap, roles: ['owner', 'admin', 'hr'] },
       { name: 'Bi Goals', href: '/goals', icon: Trophy },

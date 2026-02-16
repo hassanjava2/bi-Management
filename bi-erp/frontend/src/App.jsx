@@ -39,6 +39,9 @@ const ReturnsPage = lazy(() => import('./pages/ReturnsPage'))
 const AccountingPage = lazy(() => import('./pages/AccountingPage'))
 const SuppliersPage = lazy(() => import('./pages/SuppliersPage'))
 const CustomersPage = lazy(() => import('./pages/CustomersPage'))
+const DepartmentsPage = lazy(() => import('./pages/DepartmentsPage'))
+const LeavesPage = lazy(() => import('./pages/LeavesPage'))
+const PayrollPage = lazy(() => import('./pages/PayrollPage'))
 
 function PageFallback() {
   return (
@@ -145,6 +148,9 @@ function App() {
           <Route path="customers" element={<Suspense fallback={<PageFallback />}><CustomersPage /></Suspense>} />
 
           <Route path="employees" element={<Suspense fallback={<PageFallback />}><EmployeesPage /></Suspense>} />
+          <Route path="departments" element={<Suspense fallback={<PageFallback />}><DepartmentsPage /></Suspense>} />
+          <Route path="leaves" element={<Suspense fallback={<PageFallback />}><LeavesPage /></Suspense>} />
+          <Route path="payroll" element={<Suspense fallback={<PageFallback />}><PayrollPage /></Suspense>} />
           <Route path="tasks" element={<Suspense fallback={<PageFallback />}><TasksPage /></Suspense>} />
           <Route path="attendance" element={<Suspense fallback={<PageFallback />}><AttendancePage /></Suspense>} />
           <Route path="goals" element={<Suspense fallback={<PageFallback />}><GoalsPage /></Suspense>} />

@@ -364,4 +364,43 @@ export const settingsAPI = {
   update: (key, value) => api.put(`/settings/${key}`, { value }),
 }
 
+// HR API - الموارد البشرية
+export const hrAPI = {
+  // Stats
+  getStats: () => api.get('/hr/stats'),
+  // Departments
+  getDepartments: () => api.get('/hr/departments'),
+  getDepartment: (id) => api.get(`/hr/departments/${id}`),
+  createDepartment: (data) => api.post('/hr/departments', data),
+  updateDepartment: (id, data) => api.put(`/hr/departments/${id}`, data),
+  deleteDepartment: (id) => api.delete(`/hr/departments/${id}`),
+  // Leaves
+  getLeaves: (params) => api.get('/hr/leaves', { params }),
+  getLeaveStats: () => api.get('/hr/leaves/stats'),
+  getLeaveTypes: () => api.get('/hr/leaves/types'),
+  getLeaveBalance: (userId) => api.get(`/hr/leaves/balance/${userId}`),
+  createLeave: (data) => api.post('/hr/leaves', data),
+  approveLeave: (id) => api.post(`/hr/leaves/${id}/approve`),
+  rejectLeave: (id, reason) => api.post(`/hr/leaves/${id}/reject`, { reason }),
+  // Advances
+  getAdvances: (params) => api.get('/hr/advances', { params }),
+  createAdvance: (data) => api.post('/hr/advances', data),
+  approveAdvance: (id) => api.post(`/hr/advances/${id}/approve`),
+  rejectAdvance: (id) => api.post(`/hr/advances/${id}/reject`),
+  // Payroll
+  getPayroll: (params) => api.get('/hr/payroll', { params }),
+  getPayrollSummary: (period) => api.get(`/hr/payroll/summary/${period}`),
+  generatePayroll: (period) => api.post('/hr/payroll/generate', { period }),
+  approvePayroll: (id) => api.post(`/hr/payroll/${id}/approve`),
+  payPayroll: (id, method) => api.post(`/hr/payroll/${id}/pay`, { method }),
+  // Schedules
+  getSchedules: () => api.get('/hr/schedules'),
+  createSchedule: (data) => api.post('/hr/schedules', data),
+  updateSchedule: (id, data) => api.put(`/hr/schedules/${id}`, data),
+  deleteSchedule: (id) => api.delete(`/hr/schedules/${id}`),
+  // Employee profiles
+  getProfile: (id) => api.get(`/hr/employees/${id}/profile`),
+  updateProfile: (id, data) => api.put(`/hr/employees/${id}/hr`, data),
+}
+
 export default api

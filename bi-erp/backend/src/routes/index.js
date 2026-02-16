@@ -37,6 +37,7 @@ router.use('/permissions', require('./permissions.routes'));
 router.use('/security', require('./security.routes'));
 router.use('/bot', require('./bot.routes'));
 router.use('/ai-distribution', require('./ai-distribution.routes'));
+router.use('/hr', require('./hr.routes'));
 
 router.get('/health', async (req, res) => {
   const uptime = process.uptime();

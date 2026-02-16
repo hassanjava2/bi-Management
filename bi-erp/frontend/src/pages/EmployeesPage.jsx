@@ -435,7 +435,15 @@ function AttendanceTab({ data }) {
 
 // ═══ ADD EMPLOYEE FORM ═══
 function AddEmployeeForm({ onClose, onSuccess }) {
-  const [form, setForm] = useState({ full_name: '', email: '', password: '', phone: '', role: 'salesperson', department_name: '' })
+  const [form, setForm] = useState({
+    full_name: '', email: '', password: '', phone: '', role: 'salesperson',
+    department_id: '', salary: '', salary_currency: 'IQD', employment_type: 'full_time',
+    hire_date: new Date().toISOString().split('T')[0], national_id: '', emergency_contact: '', gender: '',
+  })
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments'],
+    queryFn: () => import('../services/api').then(m => m.hrAPI.getDepartments().then(r => r.data?.data || [])),
+  })
   const createMutation = useMutation({
     mutationFn: (data) => usersAPI.create(data),
     onSuccess: () => { onSuccess?.() },
@@ -443,11 +451,9 @@ function AddEmployeeForm({ onClose, onSuccess }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!form.full_name?.trim() || !form.email?.trim() || !form.password?.trim()) return
-    createMutation.mutate({
-      full_name: form.full_name.trim(), email: form.email.trim(), password: form.password,
-      phone: form.phone?.trim() || undefined, role: form.role || 'salesperson',
-      department_name: form.department_name?.trim() || undefined,
-    })
+    const payload = { ...form }
+    Object.keys(payload).forEach(k => { if (!payload[k]) delete payload[k] })
+    createMutation.mutate(payload)
   }
   const field = (label, key, type = 'text', required = false, minLength) => (
     <div>
@@ -457,22 +463,66 @@ function AddEmployeeForm({ onClose, onSuccess }) {
     </div>
   )
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
       {createMutation.isError && (
         <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm">
           {createMutation.error?.response?.data?.error || createMutation.error?.message || 'حدث خطأ'}
         </div>
       )}
+      <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">المعلومات الأساسية</div>
       {field('الاسم الكامل', 'full_name', 'text', true)}
       {field('البريد الإلكتروني', 'email', 'email', true)}
       {field('كلمة المرور', 'password', 'password', true, 6)}
       {field('الهاتف', 'phone', 'tel')}
-      {field('القسم', 'department_name')}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">الدور</label>
+          <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800" value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))}>
+            {ROLES.filter(r => r.value !== 'owner').map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">الجنس</label>
+          <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800" value={form.gender} onChange={(e) => setForm(f => ({ ...f, gender: e.target.value }))}>
+            <option value="">— اختر —</option>
+            <option value="male">ذكر</option>
+            <option value="female">أنثى</option>
+          </select>
+        </div>
+      </div>
+      <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mt-2">بيانات التوظيف</div>
       <div>
-        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">الدور</label>
-        <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800" value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))}>
-          {ROLES.filter(r => r.value !== 'owner').map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">القسم</label>
+        <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800" value={form.department_id} onChange={(e) => setForm(f => ({ ...f, department_id: e.target.value }))}>
+          <option value="">— اختر القسم —</option>
+          {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">نوع التوظيف</label>
+          <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800" value={form.employment_type} onChange={(e) => setForm(f => ({ ...f, employment_type: e.target.value }))}>
+            <option value="full_time">دوام كامل</option>
+            <option value="part_time">دوام جزئي</option>
+            <option value="contract">عقد</option>
+          </select>
+        </div>
+        {field('تاريخ التعيين', 'hire_date', 'date')}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {field('الراتب', 'salary', 'number')}
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">العملة</label>
+          <select className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg dark:bg-neutral-800" value={form.salary_currency} onChange={(e) => setForm(f => ({ ...f, salary_currency: e.target.value }))}>
+            <option value="IQD">IQD — دينار عراقي</option>
+            <option value="USD">USD — دولار أمريكي</option>
+          </select>
+        </div>
+      </div>
+      <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mt-2">معلومات إضافية</div>
+      <div className="grid grid-cols-2 gap-3">
+        {field('رقم الهوية', 'national_id')}
+        {field('جهة الطوارئ', 'emergency_contact')}
       </div>
       <div className="flex justify-end gap-2 pt-4 border-t">
         <Button type="button" variant="outline" onClick={onClose}>إلغاء</Button>
@@ -486,48 +536,99 @@ function AddEmployeeForm({ onClose, onSuccess }) {
 function EditEmployeeForm({ user, onClose, onSuccess, updateMutation }) {
   const [form, setForm] = useState({
     full_name: user?.full_name || '', email: user?.email || '', password: '',
-    phone: user?.phone || '', role: user?.role || 'employee', department_name: user?.department_name || '',
+    phone: user?.phone || '', role: user?.role || 'employee',
+    department_id: user?.department_id || '', salary: user?.salary || '',
+    salary_currency: user?.salary_currency || 'IQD', employment_type: user?.employment_type || 'full_time',
+    hire_date: user?.hire_date?.split('T')[0] || '', national_id: user?.national_id || '',
+    emergency_contact: user?.emergency_contact || '', gender: user?.gender || '',
+  })
+  const { data: departments = [] } = useQuery({
+    queryKey: ['departments'],
+    queryFn: () => import('../services/api').then(m => m.hrAPI.getDepartments().then(r => r.data?.data || [])),
   })
   useEffect(() => {
-    setForm({ full_name: user?.full_name || '', email: user?.email || '', password: '', phone: user?.phone || '', role: user?.role || 'employee', department_name: user?.department_name || '' })
+    setForm({
+      full_name: user?.full_name || '', email: user?.email || '', password: '',
+      phone: user?.phone || '', role: user?.role || 'employee',
+      department_id: user?.department_id || '', salary: user?.salary || '',
+      salary_currency: user?.salary_currency || 'IQD', employment_type: user?.employment_type || 'full_time',
+      hire_date: user?.hire_date?.split('T')[0] || '', national_id: user?.national_id || '',
+      emergency_contact: user?.emergency_contact || '', gender: user?.gender || '',
+    })
   }, [user])
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!user?.id || !form.full_name?.trim() || !form.email?.trim()) return
-    const data = { full_name: form.full_name.trim(), email: form.email.trim(), phone: form.phone?.trim() || undefined, role: form.role || 'employee', department_name: form.department_name?.trim() || undefined }
-    if (form.password?.trim()) data.password = form.password
+    const data = { ...form }
+    Object.keys(data).forEach(k => { if (data[k] === '' || data[k] === undefined) delete data[k] })
+    if (form.password?.trim()) data.password = form.password; else delete data.password
     updateMutation.mutate({ id: user.id, data })
   }
+  const field = (label, key, type = 'text', required = false) => (
+    <div>
+      <label className="block text-sm font-medium mb-1">{label}</label>
+      <input type={type} className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form[key]} onChange={(e) => setForm(f => ({ ...f, [key]: e.target.value }))} required={required} />
+    </div>
+  )
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
       {updateMutation.isError && (
         <div className="p-3 rounded-lg bg-error-50 text-error-700 text-sm">{updateMutation.error?.response?.data?.error || updateMutation.error?.message}</div>
       )}
-      <div>
-        <label className="block text-sm font-medium mb-1">الاسم الكامل</label>
-        <input className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.full_name} onChange={(e) => setForm(f => ({ ...f, full_name: e.target.value }))} required />
+      <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">المعلومات الأساسية</div>
+      {field('الاسم الكامل', 'full_name', 'text', true)}
+      {field('البريد الإلكتروني', 'email', 'email', true)}
+      {field('كلمة مرور جديدة (اختياري)', 'password', 'password')}
+      {field('الهاتف', 'phone', 'tel')}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium mb-1">الدور</label>
+          <select className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))}>
+            {ROLES.filter(r => r.value !== 'owner').map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">الجنس</label>
+          <select className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.gender} onChange={(e) => setForm(f => ({ ...f, gender: e.target.value }))}>
+            <option value="">— اختر —</option>
+            <option value="male">ذكر</option>
+            <option value="female">أنثى</option>
+          </select>
+        </div>
       </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">البريد الإلكتروني</label>
-        <input type="email" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} required />
-      </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">كلمة مرور جديدة (اختياري)</label>
-        <input type="password" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.password} onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))} minLength={6} />
-      </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">الهاتف</label>
-        <input type="tel" className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} />
-      </div>
+      <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mt-2">بيانات التوظيف</div>
       <div>
         <label className="block text-sm font-medium mb-1">القسم</label>
-        <input className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.department_name} onChange={(e) => setForm(f => ({ ...f, department_name: e.target.value }))} />
-      </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">الدور</label>
-        <select className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))}>
-          {ROLES.filter(r => r.value !== 'owner').map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+        <select className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.department_id} onChange={(e) => setForm(f => ({ ...f, department_id: e.target.value }))}>
+          <option value="">— اختر القسم —</option>
+          {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium mb-1">نوع التوظيف</label>
+          <select className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.employment_type} onChange={(e) => setForm(f => ({ ...f, employment_type: e.target.value }))}>
+            <option value="full_time">دوام كامل</option>
+            <option value="part_time">دوام جزئي</option>
+            <option value="contract">عقد</option>
+          </select>
+        </div>
+        {field('تاريخ التعيين', 'hire_date', 'date')}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {field('الراتب', 'salary', 'number')}
+        <div>
+          <label className="block text-sm font-medium mb-1">العملة</label>
+          <select className="w-full px-3 py-2 border rounded-lg dark:bg-neutral-800 dark:border-neutral-600" value={form.salary_currency} onChange={(e) => setForm(f => ({ ...f, salary_currency: e.target.value }))}>
+            <option value="IQD">IQD — دينار عراقي</option>
+            <option value="USD">USD — دولار أمريكي</option>
+          </select>
+        </div>
+      </div>
+      <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mt-2">معلومات إضافية</div>
+      <div className="grid grid-cols-2 gap-3">
+        {field('رقم الهوية', 'national_id')}
+        {field('جهة الطوارئ', 'emergency_contact')}
       </div>
       <div className="flex justify-end gap-2 pt-4 border-t">
         <Button type="button" variant="outline" onClick={onClose}>إلغاء</Button>

@@ -21,12 +21,18 @@ async function createUser(data, createdBy) {
     columns: [
       'id', 'username', 'email', 'password_hash', 'full_name', 'phone', 'role', 'role_id', 'is_active',
       'employee_code', 'department_id', 'position_id', 'security_level', 'hire_date', 'created_by', 'salary_encrypted',
+      'salary', 'salary_currency', 'employment_type', 'national_id', 'address',
+      'emergency_contact', 'birth_date', 'gender', 'work_schedule_id', 'notes',
     ],
     values: [
       id, username, data.email, passwordHash, data.full_name || null, data.phone || null,
       data.role || 'employee', data.role_id || null, true, employeeCode,
       data.department_id || null, data.position_id || null, data.security_level ?? 1,
       data.hire_date || null, createdBy || null, salaryEncrypted,
+      data.salary != null ? parseFloat(data.salary) : null, data.salary_currency || 'IQD',
+      data.employment_type || 'full_time', data.national_id || null, data.address || null,
+      data.emergency_contact || null, data.birth_date || null, data.gender || null,
+      data.work_schedule_id || null, data.notes || null,
     ],
   });
   return getUser(id, SECURITY_LEVELS.ADMIN);
@@ -49,15 +55,27 @@ async function getUser(userId, requesterLevel = 1) {
     role: user.role,
     security_level: user.security_level ?? 1,
     hire_date: user.hire_date,
+    employment_type: user.employment_type,
+    salary_currency: user.salary_currency,
+    national_id: user.national_id,
+    address: user.address,
+    emergency_contact: user.emergency_contact,
+    birth_date: user.birth_date,
+    gender: user.gender,
+    notes: user.notes,
+    avatar_url: user.avatar_url,
     is_active: !!user.is_active,
     last_login_at: user.last_login_at,
     created_at: user.created_at,
   };
-  if (requesterLevel >= SECURITY_LEVELS.HR_ACCOUNTANT && user.salary_encrypted) {
-    try {
-      const { decrypt } = require('../utils/encryption');
-      response.salary = decrypt(user.salary_encrypted);
-    } catch (_) {}
+  if (requesterLevel >= SECURITY_LEVELS.HR_ACCOUNTANT) {
+    response.salary = user.salary || null;
+    if (!response.salary && user.salary_encrypted) {
+      try {
+        const { decrypt } = require('../utils/encryption');
+        response.salary = decrypt(user.salary_encrypted);
+      } catch (_) { }
+    }
   }
   return response;
 }
@@ -77,6 +95,10 @@ async function getUsers(filters = {}, requesterLevel = 1) {
     role: u.role,
     security_level: u.security_level,
     hire_date: u.hire_date,
+    employment_type: u.employment_type,
+    national_id: u.national_id,
+    gender: u.gender,
+    avatar_url: u.avatar_url,
     is_active: !!u.is_active,
     last_login_at: u.last_login_at,
   }));
@@ -84,11 +106,14 @@ async function getUsers(filters = {}, requesterLevel = 1) {
 
 async function updateUser(userId, data, updatedBy) {
   const updates = {};
-  const allowed = ['full_name', 'phone', 'department_id', 'position_id', 'role', 'role_id', 'security_level', 'is_active', 'avatar_url'];
+  const allowed = ['full_name', 'phone', 'department_id', 'position_id', 'role', 'role_id', 'security_level',
+    'is_active', 'avatar_url', 'hire_date', 'employment_type', 'salary_currency', 'national_id',
+    'address', 'emergency_contact', 'birth_date', 'gender', 'work_schedule_id', 'notes'];
   for (const k of allowed) {
     if (data[k] !== undefined) updates[k] = data[k];
   }
   if (data.salary !== undefined) {
+    updates.salary = parseFloat(data.salary) || null;
     updates.salary_encrypted = encrypt(String(data.salary));
   }
   await userRepo.update(userId, updates);
