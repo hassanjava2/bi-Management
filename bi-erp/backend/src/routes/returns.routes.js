@@ -71,6 +71,55 @@ router.post('/', async (req, res) => {
   }
 });
 
+// ─── Typed Creates ───
+const returnSvc = require('../services/return.service');
+
+router.post('/purchase-return', async (req, res) => {
+  try {
+    const data = await returnSvc.createPurchaseReturn(req.body, req.user?.id);
+    res.status(201).json({ success: true, data, message: 'تم إنشاء إرجاع الشراء' });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+router.post('/sale-return', async (req, res) => {
+  try {
+    const data = await returnSvc.createSaleReturn(req.body, req.user?.id);
+    res.status(201).json({ success: true, data, message: 'تم إنشاء إرجاع البيع' });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// ─── Confirm / Cancel ───
+router.post('/:id/confirm', async (req, res) => {
+  try {
+    const result = await returnSvc.confirmReturn(req.params.id, req.user?.id);
+    if (result.error === 'NOT_FOUND') return res.status(404).json({ success: false, error: 'المرتجع غير موجود' });
+    if (result.error) return res.status(400).json({ success: false, error: result.error });
+    res.json({ success: true, data: result.data, message: 'تم تأكيد المرتجع وتحديث المخزون' });
+  } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.post('/:id/cancel', async (req, res) => {
+  try {
+    const result = await returnSvc.cancelReturn(req.params.id, req.body.reason, req.user?.id);
+    if (result.error === 'NOT_FOUND') return res.status(404).json({ success: false, error: 'المرتجع غير موجود' });
+    if (result.error) return res.status(400).json({ success: false, error: result.error });
+    res.json({ success: true, data: result.data, message: 'تم إلغاء المرتجع' });
+  } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// ─── Get invoice for return ───
+router.get('/invoice/:invoiceId', async (req, res) => {
+  try {
+    const data = await returnSvc.getInvoiceForReturn(req.params.invoiceId);
+    if (!data) return res.status(404).json({ success: false, error: 'الفاتورة غير موجودة' });
+    res.json({ success: true, data });
+  } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
 // ─── Update Return ───
 router.put('/:id', async (req, res) => {
   try {

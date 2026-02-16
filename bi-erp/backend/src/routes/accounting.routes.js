@@ -1,11 +1,12 @@
 /**
- * BI ERP — Accounting Routes (refactored)
- * Thin routing layer — logic in accounting.service.js
+ * BI ERP — Accounting Routes (Phase 3 Enhanced)
+ * Thin routing layer — logic in accounting.service.js + voucher.service.js
  */
 const express = require('express');
 const router = express.Router();
 const { auth } = require('../middleware/auth');
 const acct = require('../services/accounting.service');
+const voucher = require('../services/voucher.service');
 const logger = require('../utils/logger');
 
 router.use(auth);
@@ -16,15 +17,74 @@ router.get('/overview', async (req, res) => {
   catch (e) { logger.error('Accounting overview error', { error: e.message }); res.status(500).json({ success: false, error: 'فشل في تحميل البيانات المحاسبية' }); }
 });
 
-// ─── VOUCHERS ──────────────────────────────────
+// ═══ VOUCHERS — Full CRUD ═══════════════════════
+
+// List + search
 router.get('/vouchers', async (req, res) => {
-  try { res.json({ success: true, data: await acct.listVouchers(req.query) }); }
+  try { res.json({ success: true, data: await voucher.list(req.query) }); }
   catch (e) { res.status(500).json({ success: false, error: e.message }); }
 });
 
+// Stats
+router.get('/vouchers/stats', async (req, res) => {
+  try { res.json({ success: true, data: await voucher.getStats() }); }
+  catch (e) { res.json({ success: true, data: {} }); }
+});
+
+// Get one
+router.get('/vouchers/:id', async (req, res) => {
+  try {
+    const data = await voucher.getById(req.params.id);
+    if (!data) return res.status(404).json({ success: false, error: 'السند غير موجود' });
+    res.json({ success: true, data });
+  } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// Generic create
 router.post('/vouchers', async (req, res) => {
-  try { res.status(201).json({ success: true, data: await acct.createVoucher(req.body, req.user?.id) }); }
+  try { res.status(201).json({ success: true, data: await voucher.create(req.body, req.user?.id) }); }
   catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// Typed creates
+router.post('/vouchers/receipt', async (req, res) => {
+  try { res.status(201).json({ success: true, data: await voucher.createReceipt(req.body, req.user?.id), message: 'تم إنشاء سند القبض' }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.post('/vouchers/payment', async (req, res) => {
+  try { res.status(201).json({ success: true, data: await voucher.createPayment(req.body, req.user?.id), message: 'تم إنشاء سند الدفع' }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.post('/vouchers/expense', async (req, res) => {
+  try { res.status(201).json({ success: true, data: await voucher.createExpense(req.body, req.user?.id), message: 'تم إنشاء سند الصرف' }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.post('/vouchers/exchange', async (req, res) => {
+  try { res.status(201).json({ success: true, data: await voucher.createExchange(req.body, req.user?.id), message: 'تم صيرفة المبلغ' }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.post('/vouchers/hawala', async (req, res) => {
+  try { res.status(201).json({ success: true, data: await voucher.createHawala(req.body, req.user?.id), message: 'تم إنشاء الحوالة' }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.post('/vouchers/journal', async (req, res) => {
+  try { res.status(201).json({ success: true, data: await voucher.createJournal(req.body, req.user?.id), message: 'تم إنشاء القيد المحاسبي' }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// Cancel voucher
+router.post('/vouchers/:id/cancel', async (req, res) => {
+  try {
+    const result = await voucher.cancelVoucher(req.params.id, req.body.reason, req.user?.id);
+    if (result.error === 'NOT_FOUND') return res.status(404).json({ success: false, error: 'السند غير موجود' });
+    if (result.error === 'ALREADY_CANCELLED') return res.status(400).json({ success: false, error: 'السند ملغي بالفعل' });
+    res.json({ success: true, data: result.data, message: 'تم إلغاء السند' });
+  } catch (e) { res.status(500).json({ success: false, error: e.message }); }
 });
 
 // ─── RECEIVABLES ───────────────────────────────

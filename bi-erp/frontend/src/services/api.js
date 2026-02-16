@@ -261,7 +261,16 @@ export const accountingAPI = {
 
   // Vouchers
   getVouchers: (params) => api.get('/accounting/vouchers', { params }),
+  getVoucher: (id) => api.get(`/accounting/vouchers/${id}`),
+  getVoucherStats: () => api.get('/accounting/vouchers/stats'),
   createVoucher: (data) => api.post('/accounting/vouchers', data),
+  createReceipt: (data) => api.post('/accounting/vouchers/receipt', data),
+  createPayment: (data) => api.post('/accounting/vouchers/payment', data),
+  createExpenseVoucher: (data) => api.post('/accounting/vouchers/expense', data),
+  createExchange: (data) => api.post('/accounting/vouchers/exchange', data),
+  createHawala: (data) => api.post('/accounting/vouchers/hawala', data),
+  createJournal: (data) => api.post('/accounting/vouchers/journal', data),
+  cancelVoucher: (id, reason) => api.post(`/accounting/vouchers/${id}/cancel`, { reason }),
 
   // Receivables (ذمم العملاء)
   getReceivables: (params) => api.get('/accounting/receivables', { params }),
@@ -286,7 +295,7 @@ export const accountingAPI = {
   getDebtReport: (params) => api.get('/accounting/reports/debts', { params }),
 
   // Account Statements - كشوفات الحسابات
-  getStatement: (entityType, entityId) => api.get(`/accounting/statement/${entityType}/${entityId}`),
+  getStatement: (entityType, entityId, params) => api.get(`/accounting/statement/${entityType}/${entityId}`, { params }),
 
   // Daily Reconciliation - المطابقة اليومية
   getReconciliation: (date) => api.get(`/accounting/reconciliation`, { params: { date } }),

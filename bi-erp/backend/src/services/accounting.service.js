@@ -47,33 +47,13 @@ async function getOverview() {
 }
 
 // ─── VOUCHERS ──────────────────────────────────
-async function listVouchers({ type, search } = {}) {
-    let query = `SELECT v.*, u.full_name as created_by_name, c.name as customer_name, s.name as supplier_name
-    FROM vouchers v LEFT JOIN users u ON v.created_by=u.id LEFT JOIN customers c ON v.customer_id=c.id LEFT JOIN suppliers s ON v.supplier_id=s.id WHERE 1=1`;
-    const params = [];
-    if (type) { query += ` AND v.type=$${params.length + 1}`; params.push(type); }
-    if (search) { query += ` AND (v.voucher_number ILIKE $${params.length + 1} OR v.notes ILIKE $${params.length + 1})`; params.push(`%${search}%`); }
-    query += ' ORDER BY v.created_at DESC LIMIT 200';
-    return all(query, params);
+const voucherSvc = require('./voucher.service');
+async function listVouchers(filters = {}) {
+    return voucherSvc.list(filters);
 }
 
 async function createVoucher(data, userId) {
-    const { voucher_number, type, amount, currency, customer_id, supplier_id, notes, category } = data;
-    const id = generateId();
-    const vNum = voucher_number || `V-${Date.now().toString().slice(-8)}`;
-    await run(
-        `INSERT INTO vouchers (id,voucher_number,type,amount,currency,customer_id,supplier_id,notes,category,created_by,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,CURRENT_TIMESTAMP)`,
-        [id, vNum, type || 'receipt', parseFloat(amount) || 0, currency || 'IQD', customer_id || null, supplier_id || null, notes || null, category || null, userId]
-    );
-    if (customer_id && amount) {
-        const delta = type === 'receipt' ? -parseFloat(amount) : parseFloat(amount);
-        try { await run('UPDATE customers SET balance=COALESCE(balance,0)+$1 WHERE id=$2', [delta, customer_id]); } catch (_) { }
-    }
-    if (supplier_id && amount) {
-        const delta = type === 'payment' ? parseFloat(amount) : -parseFloat(amount);
-        try { await run('UPDATE suppliers SET balance=COALESCE(balance,0)+$1 WHERE id=$2', [delta, supplier_id]); } catch (_) { }
-    }
-    return get('SELECT * FROM vouchers WHERE id=$1', [id]);
+    return voucherSvc.create({ ...data, created_by: userId }, userId);
 }
 
 // ─── RECEIVABLES ───────────────────────────────
