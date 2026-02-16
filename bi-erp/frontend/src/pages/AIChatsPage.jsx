@@ -94,38 +94,30 @@ export default function AIChatsPage() {
         ) : list.length === 0 ? (
           <p className="text-neutral-500 text-center py-12">لا توجد محادثات مسجلة.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                  <th className="text-right py-2 px-2">الموظف</th>
-                  <th className="text-right py-2 px-2">أول رسالة</th>
-                  <th className="text-right py-2 px-2">آخر نشاط</th>
-                  <th className="text-right py-2 px-2">عدد التبادلات</th>
-                  <th className="text-right py-2 px-2">إجراء</th>
-                </tr>
-              </thead>
-              <tbody>
-                {list.map((row) => (
-                  <tr key={row.conversation_id} className="border-b border-neutral-100 dark:border-neutral-800">
-                    <td className="py-2 px-2 font-medium">{row.user_name || row.user_id}</td>
-                    <td className="py-2 px-2 text-neutral-500">{formatDate(row.first_at)}</td>
-                    <td className="py-2 px-2 text-neutral-500">{formatDate(row.last_at)}</td>
-                    <td className="py-2 px-2">{row.turns}</td>
-                    <td className="py-2 px-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => setSelectedId(row.conversation_id)}
-                      >
-                        <Eye className="w-4 h-4" />
-                        عرض
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-2">
+            {list.map((row) => (
+              <div key={row.conversation_id}
+                onClick={() => setSelectedId(row.conversation_id)}
+                className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-sm font-bold text-primary-600 flex-shrink-0">
+                    {(row.user_name || row.user_id || '?')[0]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">{row.user_name || row.user_id}</p>
+                    <p className="text-xs text-neutral-400">{formatDate(row.first_at)} → {formatDate(row.last_at)}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
+                      {row.turns} رسالة
+                    </span>
+                    <button className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500">
+                      <Eye className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </Card>
