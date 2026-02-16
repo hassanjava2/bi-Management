@@ -31,7 +31,7 @@ const userSchemas = {
     }),
 
     login: Joi.object({
-        email: Joi.string().email().required(),
+        email: Joi.string().email({ tlds: false }).required(),
         password: Joi.string().required()
     }),
 
