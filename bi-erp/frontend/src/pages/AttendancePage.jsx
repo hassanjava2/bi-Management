@@ -14,7 +14,7 @@ import CheckInOutWidget from '../components/attendance/CheckInOutWidget'
 import AttendanceCalendar from '../components/attendance/AttendanceCalendar'
 import AttendanceReport from '../components/attendance/AttendanceReport'
 import PageShell from '../components/common/PageShell'
-import DataTable from '../components/common/DataTable'
+
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
 import api from '../services/api'
@@ -284,46 +284,28 @@ function SalariesTab() {
       ) : employees.length === 0 ? (
         <div className="text-center py-8 text-neutral-400">لا توجد بيانات لهذا الشهر</div>
       ) : (
-        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-neutral-50 dark:bg-neutral-700/50">
-                <tr>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500">الموظف</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500">الدور</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500">حضور</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500">تأخر</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500">غياب</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500">إضافي (دقيقة)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
-                {employees.map((emp, i) => (
-                  <tr key={emp.id || i} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-sm font-medium text-primary-600">
-                          {(emp.full_name || '?')[0]}
-                        </div>
-                        <span className="font-medium text-sm">{emp.full_name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-500">{emp.role || '—'}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">{emp.present_days || 0}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">{emp.late_days || 0}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">{emp.absent_days || 0}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm">{emp.total_overtime_minutes || 0}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="space-y-2">
+          {employees.map((emp, i) => (
+            <div key={emp.id || i} className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-sm font-bold text-primary-600 flex-shrink-0">
+                  {(emp.full_name || '?')[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm">{emp.full_name}</p>
+                  <p className="text-xs text-neutral-400">{emp.role || '—'}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">حضور {emp.present_days || 0}</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">تأخر {emp.late_days || 0}</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">غياب {emp.absent_days || 0}</span>
+                  {(emp.total_overtime_minutes || 0) > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">إضافي {emp.total_overtime_minutes} دقيقة</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
