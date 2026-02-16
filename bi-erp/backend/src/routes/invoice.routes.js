@@ -218,4 +218,75 @@ router.post('/:id/items', controller.addItem);
 router.post('/:id/payments', controller.addPayment);
 router.put('/:id/status', controller.updateStatus);
 
+// ═══ CONSUMED INVOICES ═══════════════════════
+const consumedSvc = require('../services/consumed.service');
+
+router.post('/consumed', async (req, res) => {
+  try { res.status(201).json({ success: true, data: await consumedSvc.create(req.body, req.user?.id), message: 'تم إنشاء فاتورة المواد المستهلكة' }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.get('/consumed/list', async (req, res) => {
+  try { res.json({ success: true, data: await consumedSvc.list(req.query) }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// ═══ DAMAGED INVOICES ════════════════════════
+const damagedSvc = require('../services/damaged.service');
+
+router.post('/damaged', async (req, res) => {
+  try { res.status(201).json({ success: true, data: await damagedSvc.create(req.body, req.user?.id), message: 'تم إنشاء فاتورة المواد التالفة' }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.get('/damaged/list', async (req, res) => {
+  try { res.json({ success: true, data: await damagedSvc.list(req.query) }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// ═══ QUOTE INVOICES ═════════════════════════
+const quoteSvc = require('../services/quote.service');
+
+router.post('/quote', async (req, res) => {
+  try { res.status(201).json({ success: true, data: await quoteSvc.create(req.body, req.user?.id), message: 'تم إنشاء عرض السعر' }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.get('/quote/list', async (req, res) => {
+  try { res.json({ success: true, data: await quoteSvc.list(req.query) }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.post('/quote/:id/convert-to-sale', async (req, res) => {
+  try {
+    const result = await quoteSvc.convertToSale(req.params.id, req.user?.id);
+    if (result.error) return res.status(404).json({ success: false, error: 'عرض السعر غير موجود' });
+    res.json({ success: true, data: result.data, message: 'تم تحويل عرض السعر لفاتورة بيع' });
+  } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// ═══ PRICING ════════════════════════════════
+const pricingSvc = require('../services/pricing.service');
+
+router.get('/pricing/:productId', async (req, res) => {
+  try { res.json({ success: true, data: await pricingSvc.getProductPrices(req.params.productId) }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.post('/pricing/:productId', async (req, res) => {
+  try { res.json({ success: true, data: await pricingSvc.setPrice(req.params.productId, req.body.customer_type_id, req.body) }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.post('/pricing/:productId/bulk', async (req, res) => {
+  try { res.json({ success: true, data: await pricingSvc.bulkSetPrices(req.params.productId, req.body.prices) }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.get('/pricing/resolve/:productId/:customerId', async (req, res) => {
+  try { res.json({ success: true, data: await pricingSvc.resolveItemPrice(req.params.productId, req.params.customerId) }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
 module.exports = router;
+

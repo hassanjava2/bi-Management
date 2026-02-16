@@ -210,6 +210,19 @@ export const salesAPI = {
   createReturnInvoice: (data) => api.post('/invoices/return', data),
   createExchangeInvoice: (data) => api.post('/invoices/exchange', data),
   createInstallmentInvoice: (data) => api.post('/invoices/installment', data),
+  createConsumedInvoice: (data) => api.post('/invoices/consumed', data),
+  getConsumedInvoices: (params) => api.get('/invoices/consumed/list', { params }),
+  createDamagedInvoice: (data) => api.post('/invoices/damaged', data),
+  getDamagedInvoices: (params) => api.get('/invoices/damaged/list', { params }),
+  createQuoteInvoice: (data) => api.post('/invoices/quote', data),
+  getQuoteInvoices: (params) => api.get('/invoices/quote/list', { params }),
+  convertQuoteToSale: (id) => api.post(`/invoices/quote/${id}/convert-to-sale`),
+
+  // Pricing
+  getProductPrices: (productId) => api.get(`/invoices/pricing/${productId}`),
+  setProductPrice: (productId, data) => api.post(`/invoices/pricing/${productId}`, data),
+  bulkSetPrices: (productId, prices) => api.post(`/invoices/pricing/${productId}/bulk`, { prices }),
+  resolveItemPrice: (productId, customerId) => api.get(`/invoices/pricing/resolve/${productId}/${customerId}`),
 
   // Workflow
   auditInvoice: (id) => api.put(`/invoices/${id}/audit`),
