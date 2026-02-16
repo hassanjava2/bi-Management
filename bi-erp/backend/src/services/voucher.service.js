@@ -318,7 +318,7 @@ async function list(filters = {}) {
 
 // ─── GET BY ID ─────────────────────────
 async function getById(id) {
-    return get(`
+    const v = await get(`
     SELECT v.*, u.full_name as created_by_name,
       c.name as customer_name, c.phone as customer_phone,
       s.name as supplier_name, s.phone as supplier_phone
@@ -328,6 +328,18 @@ async function getById(id) {
     LEFT JOIN suppliers s ON v.supplier_id = s.id
     WHERE v.id = $1
   `, [id]);
+
+    if (v) {
+        v.items = await all(`
+      SELECT vi.*, c.name as customer_name, s.name as supplier_name
+      FROM voucher_items vi
+      LEFT JOIN customers c ON vi.customer_id = c.id
+      LEFT JOIN suppliers s ON vi.supplier_id = s.id
+      WHERE vi.voucher_id = $1
+      ORDER BY vi.created_at
+    `, [id]).catch(() => []);
+    }
+    return v;
 }
 
 // ─── CANCEL VOUCHER ────────────────────
@@ -349,6 +361,15 @@ async function cancelVoucher(id, reason, userId) {
     if (v.cashbox_id) {
         const delta = v.type === 'receipt' ? -amountIQD : amountIQD;
         await run('UPDATE cashboxes SET balance = COALESCE(balance, 0) + $1 WHERE id = $2', [delta, v.cashbox_id]).catch(() => { });
+    }
+
+    // Reverse multi-party items
+    if (v.is_multi_party) {
+        const items = await all('SELECT * FROM voucher_items WHERE voucher_id = $1', [id]).catch(() => []);
+        for (const item of items) {
+            if (item.customer_id) await run('UPDATE customers SET balance = COALESCE(balance, 0) + $1 WHERE id = $2', [parseFloat(item.amount), item.customer_id]).catch(() => { });
+            if (item.supplier_id) await run('UPDATE suppliers SET balance = COALESCE(balance, 0) + $1 WHERE id = $2', [parseFloat(item.amount), item.supplier_id]).catch(() => { });
+        }
     }
 
     await logAudit('voucher', id, 'cancel', { status: v.status }, { status: 'cancelled', reason }, { user: { id: userId } });
@@ -375,8 +396,119 @@ async function getStats() {
     };
 }
 
+// ─── MULTI-PARTY RECEIPT (سند قبض متعدد) ──
+async function createMultiReceipt(data, userId) {
+    const id = generateId();
+    const voucherNumber = await nextVoucherNumber('receipt');
+    const items = data.items || [];
+    const totalAmount = items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+
+    await run(`
+    INSERT INTO vouchers (
+      id, voucher_number, type, amount, currency, exchange_rate,
+      cashbox_id, payment_method, is_multi_party,
+      description, notes, created_by, created_at, updated_at
+    ) VALUES ($1, $2, 'receipt', $3, $4, $5, $6, $7, TRUE, $8, $9, $10, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `, [id, voucherNumber, totalAmount, data.currency || 'IQD', parseFloat(data.exchange_rate) || 1,
+        data.cashbox_id || null, data.payment_method || 'cash',
+        data.description || 'سند قبض متعدد', data.notes || null, userId]);
+
+    for (const item of items) {
+        const itemId = generateId();
+        const amt = parseFloat(item.amount) || 0;
+        await run(`INSERT INTO voucher_items (id, voucher_id, customer_id, amount, currency, invoice_id, notes) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+            [itemId, id, item.customer_id, amt, data.currency || 'IQD', item.invoice_id || null, item.notes || null]);
+
+        if (item.customer_id) {
+            await run('UPDATE customers SET balance = COALESCE(balance, 0) - $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [amt, item.customer_id]).catch(() => { });
+        }
+        if (item.invoice_id) {
+            await run('UPDATE invoices SET paid_amount = COALESCE(paid_amount,0) + $1, remaining_amount = total - (COALESCE(paid_amount,0) + $1), payment_status = CASE WHEN total <= (COALESCE(paid_amount,0) + $1) THEN \'paid\' ELSE \'partial\' END, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [amt, item.invoice_id]).catch(() => { });
+        }
+    }
+
+    if (data.cashbox_id) {
+        const amtIQD = data.currency === 'USD' ? totalAmount * (parseFloat(data.exchange_rate) || 1) : totalAmount;
+        await run('UPDATE cashboxes SET balance = COALESCE(balance, 0) + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [amtIQD, data.cashbox_id]).catch(() => { });
+    }
+
+    await logAudit('voucher', id, 'create', null, { type: 'multi_receipt', amount: totalAmount, items: items.length }, { user: { id: userId } });
+    return getById(id);
+}
+
+// ─── MULTI-PARTY PAYMENT (سند دفع متعدد) ──
+async function createMultiPayment(data, userId) {
+    const id = generateId();
+    const voucherNumber = await nextVoucherNumber('payment');
+    const items = data.items || [];
+    const totalAmount = items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+
+    await run(`
+    INSERT INTO vouchers (
+      id, voucher_number, type, amount, currency, exchange_rate,
+      cashbox_id, payment_method, is_multi_party,
+      description, notes, created_by, created_at, updated_at
+    ) VALUES ($1, $2, 'payment', $3, $4, $5, $6, $7, TRUE, $8, $9, $10, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `, [id, voucherNumber, totalAmount, data.currency || 'IQD', parseFloat(data.exchange_rate) || 1,
+        data.cashbox_id || null, data.payment_method || 'cash',
+        data.description || 'سند دفع متعدد', data.notes || null, userId]);
+
+    for (const item of items) {
+        const itemId = generateId();
+        const amt = parseFloat(item.amount) || 0;
+        await run(`INSERT INTO voucher_items (id, voucher_id, supplier_id, amount, currency, invoice_id, notes) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+            [itemId, id, item.supplier_id, amt, data.currency || 'IQD', item.invoice_id || null, item.notes || null]);
+
+        if (item.supplier_id) {
+            await run('UPDATE suppliers SET balance = COALESCE(balance, 0) - $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [amt, item.supplier_id]).catch(() => { });
+        }
+        if (item.invoice_id) {
+            await run('UPDATE invoices SET paid_amount = COALESCE(paid_amount,0) + $1, remaining_amount = total - (COALESCE(paid_amount,0) + $1), payment_status = CASE WHEN total <= (COALESCE(paid_amount,0) + $1) THEN \'paid\' ELSE \'partial\' END, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [amt, item.invoice_id]).catch(() => { });
+        }
+    }
+
+    if (data.cashbox_id) {
+        const amtIQD = data.currency === 'USD' ? totalAmount * (parseFloat(data.exchange_rate) || 1) : totalAmount;
+        await run('UPDATE cashboxes SET balance = COALESCE(balance, 0) - $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [amtIQD, data.cashbox_id]).catch(() => { });
+    }
+
+    await logAudit('voucher', id, 'create', null, { type: 'multi_payment', amount: totalAmount, items: items.length }, { user: { id: userId } });
+    return getById(id);
+}
+
+// ─── PROFIT DISTRIBUTION (توزيع أرباح) ──
+async function createProfitDistribution(data, userId) {
+    const id = generateId();
+    const voucherNumber = await nextVoucherNumber('journal');
+
+    await run(`
+    INSERT INTO vouchers (
+      id, voucher_number, type, amount, currency,
+      description, notes, created_by, created_at, updated_at
+    ) VALUES ($1, $2, 'profit_distribution', $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `, [id, voucherNumber, parseFloat(data.amount) || 0, data.currency || 'IQD',
+        data.description || 'توزيع أرباح', data.notes || null, userId]);
+
+    // Distribute to shareholders
+    const items = data.distributions || [];
+    for (const dist of items) {
+        const itemId = generateId();
+        await run(`INSERT INTO voucher_items (id, voucher_id, amount, currency, notes) VALUES ($1,$2,$3,$4,$5)`,
+            [itemId, id, parseFloat(dist.amount) || 0, data.currency || 'IQD', dist.shareholder_name || null]);
+
+        if (dist.share_id) {
+            await run('UPDATE shares SET total_distributed = COALESCE(total_distributed, 0) + $1, last_distribution_at = CURRENT_TIMESTAMP WHERE id = $2', [parseFloat(dist.amount) || 0, dist.share_id]).catch(() => { });
+            await run('INSERT INTO share_distributions (id, share_id, amount, period, distribution_date, notes, created_by) VALUES ($1,$2,$3,$4,CURRENT_DATE,$5,$6)',
+                [generateId(), dist.share_id, parseFloat(dist.amount) || 0, data.period || null, dist.notes || null, userId]).catch(() => { });
+        }
+    }
+
+    return getById(id);
+}
+
 module.exports = {
     create, list, getById, nextVoucherNumber, getStats,
     createReceipt, createPayment, createExpense, createExchange, createHawala, createJournal,
+    createMultiReceipt, createMultiPayment, createProfitDistribution,
     cancelVoucher,
 };

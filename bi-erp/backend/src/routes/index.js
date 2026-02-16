@@ -40,6 +40,8 @@ router.use('/ai-distribution', require('./ai-distribution.routes'));
 router.use('/hr', require('./hr.routes'));
 router.use('/', require('./currency.routes'));
 router.use('/', require('./unit.routes'));
+router.use('/cashbox', require('./cashbox.routes'));
+router.use('/alerts', require('./alerts.routes'));
 
 router.get('/health', async (req, res) => {
   const uptime = process.uptime();

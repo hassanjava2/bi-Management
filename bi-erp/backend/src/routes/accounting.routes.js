@@ -173,4 +173,21 @@ router.get('/reconciliation', async (req, res) => {
   catch (e) { res.status(500).json({ success: false, error: e.message }); }
 });
 
+// ═══ Phase 6: Multi-Party Vouchers ═══
+
+router.post('/vouchers/multi-receipt', async (req, res) => {
+  try { res.json({ success: true, data: await voucher.createMultiReceipt(req.body, req.user?.id) }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.post('/vouchers/multi-payment', async (req, res) => {
+  try { res.json({ success: true, data: await voucher.createMultiPayment(req.body, req.user?.id) }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+router.post('/vouchers/profit-distribution', async (req, res) => {
+  try { res.json({ success: true, data: await voucher.createProfitDistribution(req.body, req.user?.id) }); }
+  catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
 module.exports = router;
