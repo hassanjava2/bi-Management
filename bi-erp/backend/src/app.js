@@ -8,8 +8,9 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
-const morgan = require('morgan');
 const http = require('http');
+const logger = require('./utils/logger');
+const { requestLogger } = require('./middleware/requestLogger');
 
 const { initDatabase } = require('./config/database');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
@@ -26,7 +27,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('dev'));
+  app.use(requestLogger);
 }
 
 // Rate limiting
@@ -34,7 +35,7 @@ try {
   const { generalLimiter } = require('./middleware/rateLimit');
   app.use('/api', generalLimiter);
 } catch (e) {
-  console.warn('[!] Rate limiter not loaded:', e.message);
+  logger.warn('Rate limiter not loaded', { error: e.message });
 }
 
 // Request timeout (30 seconds — prevents hung requests)
@@ -62,51 +63,61 @@ const PORT = process.env.PORT || 3000;
 
 async function start() {
   await initDatabase();
+  logger.info('Database initialized');
 
   // Initialize Socket.io
   try {
     const { initSocket } = require('./socket');
     initSocket(server);
+    logger.info('Socket.io initialized');
   } catch (e) {
-    console.warn('[!] Socket.io not loaded:', e.message);
+    logger.warn('Socket.io not loaded', { error: e.message });
   }
 
   // Start scheduler
   try {
     const { startScheduler } = require('./services/scheduler.service');
     startScheduler();
+    logger.info('Scheduler started');
   } catch (e) {
-    console.warn('[!] Scheduler not loaded:', e.message);
+    logger.warn('Scheduler not loaded', { error: e.message });
   }
 
   // Start AI Distribution
   try {
     const aiDistribution = require('./services/ai-distribution/index');
     aiDistribution.start();
-    console.log('[+] AI Task Distribution started');
+    logger.info('AI Task Distribution started');
   } catch (e) {
-    console.warn('[!] AI Distribution not loaded:', e.message);
+    logger.warn('AI Distribution not loaded', { error: e.message });
   }
 
   server.listen(PORT, () => {
-    console.log('='.repeat(50));
-    console.log('[+] BI ERP API v1.0');
-    console.log(`[+] Server running on port ${PORT}`);
-    console.log(`[+] Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log('='.repeat(50));
-    console.log(`[*] API: http://localhost:${PORT}${API_PREFIX}`);
-    console.log(`[*] Health: http://localhost:${PORT}${API_PREFIX}/health`);
-    console.log('='.repeat(50));
+    logger.info(`BI ERP API v1.0 running on port ${PORT}`, {
+      port: PORT,
+      env: process.env.NODE_ENV || 'development',
+      api: `http://localhost:${PORT}${API_PREFIX}`,
+      health: `http://localhost:${PORT}${API_PREFIX}/health`,
+    });
   });
 }
 
 process.on('SIGTERM', () => {
-  console.log('[!] SIGTERM received. Shutting down...');
+  logger.warn('SIGTERM received — shutting down');
   server.close(() => process.exit(0));
 });
 
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled Promise Rejection', { reason: reason?.message || reason });
+});
+
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught Exception', { error: err.message, stack: err.stack });
+  process.exit(1);
+});
+
 start().catch((err) => {
-  console.error(err);
+  logger.error('Failed to start server', { error: err.message, stack: err.stack });
   process.exit(1);
 });
 

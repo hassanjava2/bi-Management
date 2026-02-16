@@ -38,8 +38,32 @@ router.use('/security', require('./security.routes'));
 router.use('/bot', require('./bot.routes'));
 router.use('/ai-distribution', require('./ai-distribution.routes'));
 
-router.get('/health', (req, res) => {
-  res.json({ success: true, message: 'BI ERP API', timestamp: new Date().toISOString() });
+router.get('/health', async (req, res) => {
+  const uptime = process.uptime();
+  const mem = process.memoryUsage();
+  let dbStatus = 'disconnected';
+  try {
+    const { getDatabase } = require('../config/database');
+    const pool = getDatabase();
+    await pool.query('SELECT 1');
+    dbStatus = 'connected';
+  } catch (_) { /* skip */ }
+
+  res.json({
+    success: true,
+    service: 'BI ERP API',
+    version: '1.0.0',
+    status: dbStatus === 'connected' ? 'healthy' : 'degraded',
+    timestamp: new Date().toISOString(),
+    uptime: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m ${Math.floor(uptime % 60)}s`,
+    database: dbStatus,
+    memory: {
+      rss: `${Math.round(mem.rss / 1024 / 1024)} MB`,
+      heapUsed: `${Math.round(mem.heapUsed / 1024 / 1024)} MB`,
+      heapTotal: `${Math.round(mem.heapTotal / 1024 / 1024)} MB`,
+    },
+    node: process.version,
+  });
 });
 
 module.exports = router;

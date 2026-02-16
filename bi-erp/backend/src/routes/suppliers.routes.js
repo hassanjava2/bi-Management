@@ -6,6 +6,8 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/supplier.controller');
 const { auth } = require('../middleware/auth');
+const { validate } = require('../middleware/validate');
+const { supplierSchemas } = require('../utils/validators');
 const { get, all } = require('../config/database');
 
 router.use(auth);
@@ -17,10 +19,10 @@ router.get('/', controller.list);
 router.get('/:id', controller.getOne);
 
 // Create
-router.post('/', controller.create);
+router.post('/', validate(supplierSchemas.create), controller.create);
 
 // Update
-router.put('/:id', controller.update);
+router.put('/:id', validate(supplierSchemas.update), controller.update);
 
 // Delete
 router.delete('/:id', controller.remove);

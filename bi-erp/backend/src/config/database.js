@@ -1,4 +1,5 @@
 const { AsyncLocalStorage } = require('async_hooks');
+const logger = require('../utils/logger');
 
 let pgPool = null;
 const pgClientStorage = new AsyncLocalStorage();
@@ -18,10 +19,10 @@ async function initDatabase() {
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
   });
-  pgPool.on('error', function (err) { console.error('[PG] Pool error:', err.message); });
+  pgPool.on('error', function (err) { logger.error('PG Pool error', { error: err.message }); });
   const client = await pgPool.connect();
   client.release();
-  console.log('[+] Database: PostgreSQL connected');
+  logger.info('Database: PostgreSQL connected');
   return pgPool;
 }
 

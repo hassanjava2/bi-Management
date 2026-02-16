@@ -6,6 +6,8 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/customer.controller');
 const { auth } = require('../middleware/auth');
+const { validate } = require('../middleware/validate');
+const { customerSchemas } = require('../utils/validators');
 const { get, all, run } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 
@@ -21,10 +23,10 @@ router.get('/', controller.list);
 router.get('/:id', controller.getOne);
 
 // Create
-router.post('/', controller.create);
+router.post('/', validate(customerSchemas.create), controller.create);
 
 // Update
-router.put('/:id', controller.update);
+router.put('/:id', validate(customerSchemas.update), controller.update);
 
 // Delete
 router.delete('/:id', controller.remove);

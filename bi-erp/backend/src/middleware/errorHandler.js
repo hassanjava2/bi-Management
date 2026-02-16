@@ -2,6 +2,7 @@
  * BI Management - Error Handler Middleware
  * معالجة الأخطاء
  */
+const logger = require('../utils/logger');
 
 /**
  * 404 Not Found handler
@@ -19,12 +20,12 @@ function notFound(req, res, next) {
  */
 function errorHandler(err, req, res, next) {
     const timestamp = new Date().toISOString();
-    console.error(`[${timestamp}] Error on ${req.method} ${req.path}:`, err.message);
-
-    // Log error details in development
-    if (process.env.NODE_ENV === 'development') {
-        console.error('Stack:', err.stack);
-    }
+    logger.error(`${req.method} ${req.path}: ${err.message}`, {
+        method: req.method,
+        path: req.path,
+        statusCode: err.statusCode || err.status || 500,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    });
 
     // Determine status code
     let statusCode = err.statusCode || err.status || 500;
