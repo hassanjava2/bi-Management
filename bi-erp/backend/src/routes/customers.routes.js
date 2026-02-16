@@ -113,4 +113,37 @@ router.post('/:id/adjust-balance', async (req, res) => {
     }
 });
 
+// ═══ Phase 7: Advanced Customer Features ═══
+
+const customerService = require('../services/customer.service');
+
+// Duplicate check
+router.post('/check-duplicate', async (req, res) => {
+    try {
+        const dup = await customerService.checkDuplicate(req.body.name, req.body.phone);
+        res.json({ success: true, exists: !!dup, data: dup });
+    } catch (e) { res.json({ success: true, exists: false }); }
+});
+
+// Quick create (from invoice)
+router.post('/quick', async (req, res) => {
+    try { res.json({ success: true, data: await customerService.quickCreate({ ...req.body, created_by: req.user?.id }) }); }
+    catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// Account statement (كشف حساب)
+router.get('/:id/statement', async (req, res) => {
+    try {
+        const data = await customerService.getStatement(req.params.id, req.query);
+        if (!data) return res.status(404).json({ success: false, error: 'الزبون غير موجود' });
+        res.json({ success: true, data });
+    } catch (e) { res.status(500).json({ success: false, error: e.message }); }
+});
+
+// Multi-currency balances
+router.get('/:id/balances', async (req, res) => {
+    try { res.json({ success: true, data: await customerService.getBalances(req.params.id) }); }
+    catch (e) { res.json({ success: true, data: [] }); }
+});
+
 module.exports = router;

@@ -42,6 +42,8 @@ router.use('/', require('./currency.routes'));
 router.use('/', require('./unit.routes'));
 router.use('/cashbox', require('./cashbox.routes'));
 router.use('/alerts', require('./alerts.routes'));
+router.use('/analytics', require('./analytics.routes'));
+router.use('/print', require('./print.routes'));
 
 router.get('/health', async (req, res) => {
   const uptime = process.uptime();
