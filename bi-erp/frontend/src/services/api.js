@@ -211,6 +211,18 @@ export const salesAPI = {
   createExchangeInvoice: (data) => api.post('/invoices/exchange', data),
   createInstallmentInvoice: (data) => api.post('/invoices/installment', data),
 
+  // Workflow
+  auditInvoice: (id) => api.put(`/invoices/${id}/audit`),
+  confirmInvoice: (id) => api.post(`/invoices/${id}/confirm`),
+
+  // Expenses
+  getExpenses: (id) => api.get(`/invoices/${id}/expenses`),
+  addExpense: (id, data) => api.post(`/invoices/${id}/expenses`, data),
+  deleteExpense: (expenseId) => api.delete(`/invoices/expenses/${expenseId}`),
+
+  // History
+  getInvoiceHistory: (id) => api.get(`/invoices/${id}/history`),
+
   // Stats
   getStats: () => api.get('/sales/stats'),
   getDailyReport: (date) => api.get('/sales/daily-report', { params: { date } }),
@@ -403,4 +415,50 @@ export const hrAPI = {
   updateProfile: (id, data) => api.put(`/hr/employees/${id}/hr`, data),
 }
 
+// Currency API
+export const currencyAPI = {
+  list: () => api.get('/currencies'),
+  create: (data) => api.post('/currencies', data),
+  update: (id, data) => api.put(`/currencies/${id}`, data),
+  setDefault: (id) => api.put(`/currencies/${id}/default`),
+  delete: (id) => api.delete(`/currencies/${id}`),
+  // Exchange rates
+  getExchangeRates: (params) => api.get('/exchange-rates', { params }),
+  setExchangeRate: (data) => api.post('/exchange-rates', data),
+  convert: (amount, from, to) => api.get('/exchange-rates/convert', { params: { amount, from, to } }),
+}
+
+// Unit API
+export const unitAPI = {
+  list: () => api.get('/units'),
+  create: (data) => api.post('/units', data),
+  update: (id, data) => api.put(`/units/${id}`, data),
+  delete: (id) => api.delete(`/units/${id}`),
+  // Product units
+  getProductUnits: (productId) => api.get(`/products/${productId}/units`),
+  setProductUnit: (productId, data) => api.post(`/products/${productId}/units`, data),
+  removeProductUnit: (productId, unitId) => api.delete(`/products/${productId}/units/${unitId}`),
+}
+
+// Customer Type API
+export const customerTypeAPI = {
+  list: () => api.get('/customer-types'),
+  create: (data) => api.post('/customer-types', data),
+  update: (id, data) => api.put(`/customer-types/${id}`, data),
+}
+
+// Product Prices API
+export const productPriceAPI = {
+  getPrices: (productId) => api.get(`/products/${productId}/prices`),
+  setPrice: (productId, data) => api.post(`/products/${productId}/prices`, data),
+  getPriceForType: (productId, typeId, currency) => api.get(`/products/${productId}/price-for-type/${typeId}`, { params: { currency } }),
+}
+
+// Audit Log API
+export const auditAPI = {
+  getRecent: (params) => api.get('/audit-log', { params }),
+  getHistory: (entityType, entityId) => api.get(`/audit-log/${entityType}/${entityId}`),
+}
+
 export default api
+

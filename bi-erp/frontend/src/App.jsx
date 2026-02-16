@@ -42,6 +42,7 @@ const CustomersPage = lazy(() => import('./pages/CustomersPage'))
 const DepartmentsPage = lazy(() => import('./pages/DepartmentsPage'))
 const LeavesPage = lazy(() => import('./pages/LeavesPage'))
 const PayrollPage = lazy(() => import('./pages/PayrollPage'))
+const CurrencySettingsPage = lazy(() => import('./pages/CurrencySettingsPage'))
 
 function PageFallback() {
   return (
@@ -159,6 +160,7 @@ function App() {
           <Route path="permissions" element={<Suspense fallback={<PageFallback />}><PermissionsPage /></Suspense>} />
           <Route path="audit" element={<Suspense fallback={<PageFallback />}><AuditPage /></Suspense>} />
           <Route path="settings" element={<Suspense fallback={<PageFallback />}><SettingsPage /></Suspense>} />
+          <Route path="currency-settings" element={<Suspense fallback={<PageFallback />}><CurrencySettingsPage /></Suspense>} />
           <Route path="notifications" element={<Suspense fallback={<PageFallback />}><NotificationsPage /></Suspense>} />
           <Route path="bot" element={<Suspense fallback={<PageFallback />}><BotDashboard /></Suspense>} />
           <Route path="ai-distribution" element={<Suspense fallback={<PageFallback />}><AIDistributionPage /></Suspense>} />

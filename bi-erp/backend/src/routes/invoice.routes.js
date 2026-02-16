@@ -1,5 +1,5 @@
 /**
- * BI Management - Invoice Routes
+ * BI Management - Invoice Routes (Phase 2 Enhanced)
  * الفواتير — thin controller
  */
 const express = require('express');
@@ -31,8 +31,16 @@ router.get('/waiting', async (req, res) => {
   }
 });
 
-// ═══ List ═══
-router.get('/', controller.list);
+// ═══ List (enhanced with filters) ═══
+router.get('/', async (req, res) => {
+  try {
+    const data = await invoiceService.list(req.query);
+    res.json({ success: true, data });
+  } catch (e) {
+    logger.error('[Invoice.list]', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
 
 // ═══ Print ═══
 router.get('/:id/print', async (req, res) => {
@@ -45,34 +53,126 @@ router.get('/:id/print', async (req, res) => {
   }
 });
 
-// ═══ Get One ═══
-router.get('/:id', controller.getOne);
-
-// ═══ Create (generic) ═══
-router.post('/', controller.create);
-
-// ═══ Typed Creates ═══
-const typedCreate = (invoiceType) => async (req, res) => {
+// ═══ History (audit log) ═══
+router.get('/:id/history', async (req, res) => {
   try {
-    const created = await invoiceService.create({ ...req.body, type: invoiceType, created_by: req.user?.id });
-    res.status(201).json({ success: true, data: created });
+    const data = await invoiceService.getInvoiceHistory(req.params.id);
+    res.json({ success: true, data });
   } catch (e) {
-    logger.error(`[Invoice.create ${invoiceType}] Error:`, e.message);
     res.status(500).json({ success: false, error: e.message });
   }
-};
-router.post('/sale', typedCreate('sale'));
-router.post('/purchase', typedCreate('purchase'));
-router.post('/return', typedCreate('return'));
-router.post('/exchange', typedCreate('exchange'));
-router.post('/installment', typedCreate('installment'));
+});
+
+// ═══ Expenses ═══
+router.get('/:id/expenses', async (req, res) => {
+  try {
+    const data = await invoiceService.getExpenses(req.params.id);
+    res.json({ success: true, data });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+router.post('/:id/expenses', async (req, res) => {
+  try {
+    const data = await invoiceService.addExpense(req.params.id, req.body);
+    res.json({ success: true, data });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+router.delete('/expenses/:expenseId', async (req, res) => {
+  try {
+    const result = await invoiceService.deleteExpense(req.params.expenseId);
+    if (result.error) return res.status(404).json({ success: false, error: result.error });
+    res.json({ success: true, data: result });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// ═══ Get One ═══
+router.get('/:id', async (req, res) => {
+  try {
+    const data = await invoiceService.getById(req.params.id);
+    if (!data) return res.status(404).json({ success: false, error: 'الفاتورة غير موجودة' });
+    res.json({ success: true, data });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// ═══ Create (generic) ═══
+router.post('/', async (req, res) => {
+  try {
+    const data = await invoiceService.create({ ...req.body, created_by: req.user?.id });
+    res.status(201).json({ success: true, data });
+  } catch (e) {
+    logger.error('[Invoice.create]', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// ═══ Typed Creates ═══
+router.post('/purchase', async (req, res) => {
+  try {
+    const data = await invoiceService.createPurchaseInvoice(req.body, req.user?.id);
+    res.status(201).json({ success: true, data, message: 'تم إنشاء فاتورة الشراء' });
+  } catch (e) {
+    logger.error('[Invoice.purchase]', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+router.post('/sale', async (req, res) => {
+  try {
+    const data = await invoiceService.createSaleInvoice(req.body, req.user?.id);
+    res.status(201).json({ success: true, data, message: 'تم إنشاء فاتورة البيع' });
+  } catch (e) {
+    logger.error('[Invoice.sale]', e.message);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
 
 // ═══ Update ═══
 router.put('/:id', async (req, res) => {
   try {
-    const data = await invoiceService.updateInvoice(req.params.id, req.body);
+    const data = await invoiceService.updateInvoice(req.params.id, req.body, req.user?.id);
     if (!data) return res.status(400).json({ success: false, error: 'لا توجد تحديثات' });
     res.json({ success: true, data });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// ═══ Audit (تدقيق) ═══
+router.put('/:id/audit', async (req, res) => {
+  try {
+    const result = await invoiceService.auditInvoice(req.params.id, req.user?.id);
+    if (result.error) return res.status(404).json({ success: false, error: result.error });
+    res.json({ success: true, data: result.data, message: 'تم التدقيق' });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// ═══ Prepare (تجهيز) ═══
+router.post('/:id/prepare', async (req, res) => {
+  try {
+    const data = await invoiceService.prepareInvoice(req.params.id, req.user?.id);
+    res.json({ success: true, data, message: 'تم بدء التحضير' });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// ═══ Confirm (تأكيد) ═══
+router.post('/:id/confirm', async (req, res) => {
+  try {
+    const result = await invoiceService.confirmInvoice(req.params.id, req.user?.id);
+    if (result.error) return res.status(404).json({ success: false, error: result.error });
+    res.json({ success: true, data: result.data, message: 'تم تأكيد الفاتورة' });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
@@ -102,17 +202,7 @@ router.post('/:id/transition', async (req, res) => {
   }
 });
 
-// ═══ Prepare ═══
-router.post('/:id/prepare', async (req, res) => {
-  try {
-    const data = await invoiceService.prepareInvoice(req.params.id, req.user?.id);
-    res.json({ success: true, data, message: 'تم بدء التحضير' });
-  } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
-  }
-});
-
-// ═══ Convert to Active ═══
+// ═══ Convert to Active (backward compat) ═══
 router.post('/:id/convert-to-active', async (req, res) => {
   try {
     const result = await invoiceService.convertToActive(req.params.id, req.user?.id);

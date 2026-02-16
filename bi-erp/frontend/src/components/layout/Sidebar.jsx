@@ -99,6 +99,7 @@ const navSections = [
       { name: 'الصلاحيات', href: '/permissions', icon: Shield },
       { name: 'سجل العمليات', href: '/audit', icon: Activity },
       { name: 'الإعدادات', href: '/settings', icon: Settings },
+      { name: 'العملات والوحدات', href: '/currency-settings', icon: CreditCard },
       { name: 'البوت الذكي', href: '/bot', icon: Bot },
       { name: 'التوزيع الذكي', href: '/ai-distribution', icon: Workflow },
       { name: 'دردشات الموظفين مع الذكاء', href: '/ai-chats', icon: MessageCircle, roles: ['owner', 'admin', 'manager'] },
