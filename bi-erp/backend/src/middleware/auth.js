@@ -3,6 +3,7 @@
  */
 
 const { verifyToken } = require('../utils/jwt');
+const logger = require('../utils/logger');
 
 function auth(req, res, next) {
   try {
@@ -32,7 +33,7 @@ function auth(req, res, next) {
     };
     next();
   } catch (e) {
-    console.error('Auth middleware error:', e);
+    logger.error('Auth middleware error:', e);
     return res.status(500).json({
       success: false,
       error: 'AUTH_ERROR',

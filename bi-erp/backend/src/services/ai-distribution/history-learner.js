@@ -5,6 +5,7 @@
 
 const { all, get, run } = require('../../config/database');
 const { SKILL_KEYS } = require('./task-generator');
+const logger = require('../../utils/logger');
 
 const TASK_KIND_TO_SKILL = {
     inspection: 'inspection',
@@ -118,7 +119,7 @@ async function recordCompletion(userId, taskKind, options = {}) {
             [current, userId]
         );
     } catch (e) {
-        console.error('[HistoryLearner] recordCompletion error:', e.message);
+        logger.error('[HistoryLearner] recordCompletion error:', e.message);
     }
 }
 
@@ -141,7 +142,7 @@ async function ensureTable() {
             )
         `);
     } catch (e) {
-        console.error('[HistoryLearner] ensureTable:', e.message);
+        logger.error('[HistoryLearner] ensureTable:', e.message);
     }
 }
 

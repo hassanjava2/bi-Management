@@ -8,6 +8,7 @@ const controller = require('../controllers/invoice.controller');
 const { auth } = require('../middleware/auth');
 const { get, all, run } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
+const logger = require('../utils/logger');
 
 router.use(auth);
 
@@ -115,7 +116,7 @@ const typedCreate = (invoiceType) => async (req, res) => {
     });
     res.status(201).json({ success: true, data: created });
   } catch (e) {
-    console.error(`[Invoice.create ${invoiceType}] Error:`, e.message);
+    logger.error(`[Invoice.create ${invoiceType}] Error:`, e.message);
     res.status(500).json({ success: false, error: e.message });
   }
 };

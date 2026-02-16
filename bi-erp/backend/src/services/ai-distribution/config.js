@@ -4,6 +4,7 @@
  */
 
 const { get, run } = require('../../config/database');
+const logger = require('../../utils/logger');
 
 const DEFAULT_CONFIG = {
     weights: {
@@ -28,7 +29,7 @@ async function getConfig() {
             return cached;
         }
     } catch (e) {
-        console.warn('[AI Distribution Config] getConfig:', e.message);
+        logger.warn('[AI Distribution Config] getConfig:', e.message);
     }
     cached = { ...DEFAULT_CONFIG };
     return cached;

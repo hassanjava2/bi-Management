@@ -5,6 +5,7 @@
 
 const { run, get, all } = require('../config/database');
 const { generateId, now } = require('../utils/helpers');
+const logger = require('../utils/logger');
 
 /**
  * Middleware للتحقق من صلاحية الوصول للبيانات الحساسة
@@ -118,7 +119,7 @@ async function logAccessDenied(userId, path, requiredLevel, actualLevel) {
             null // IP يضاف لاحقاً
         ]);
     } catch (e) {
-        console.error('[Security] Log access denied error:', e.message);
+        logger.error('[Security] Log access denied error:', e.message);
     }
 }
 
@@ -162,7 +163,7 @@ async function checkSuspiciousActivity(userId) {
             await alertSecurityTeam(userId, 'SUSPICIOUS_ACCESS_ATTEMPTS', result.count);
         }
     } catch (e) {
-        console.error('[Security] Check suspicious activity error:', e.message);
+        logger.error('[Security] Check suspicious activity error:', e.message);
     }
 }
 
@@ -200,9 +201,9 @@ async function alertSecurityTeam(userId, alertType, details) {
             });
         }
 
-        console.log(`[SECURITY ALERT] ${alertType} for user ${userId}`);
+        logger.info(`[SECURITY ALERT] ${alertType} for user ${userId}`);
     } catch (e) {
-        console.error('[Security] Alert error:', e.message);
+        logger.error('[Security] Alert error:', e.message);
     }
 }
 

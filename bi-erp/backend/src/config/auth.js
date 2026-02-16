@@ -2,9 +2,11 @@
  * BI ERP - Auth configuration
  */
 
+const logger = require('../utils/logger');
+
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
-    console.error('CRITICAL: JWT_SECRET is required in production');
+    logger.error('CRITICAL: JWT_SECRET is required in production');
     process.exit(1);
 }
 const FALLBACK_SECRET = 'dev-only-secret-' + Date.now();

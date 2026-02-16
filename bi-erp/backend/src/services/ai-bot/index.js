@@ -20,6 +20,7 @@ const FeatureTester = require('./feature-tester');
 const RealisticWorker = require('./realistic-worker');
 const { run, get, all } = require('../../config/database');
 const { generateId, now } = require('../../utils/helpers');
+const logger = require('../../utils/logger');
 
 class IntelligentBot extends EventEmitter {
     constructor(options = {}) {
@@ -344,13 +345,13 @@ class IntelligentBot extends EventEmitter {
         
         switch (level) {
             case 'error':
-                console.error(`${prefix} ${message}`);
+                logger.error(`${prefix} ${message}`);
                 break;
             case 'warn':
-                console.warn(`${prefix} ${message}`);
+                logger.warn(`${prefix} ${message}`);
                 break;
             default:
-                console.log(`${prefix} ${message}`);
+                logger.info(`${prefix} ${message}`);
         }
     }
     
@@ -407,7 +408,7 @@ class IntelligentBot extends EventEmitter {
                 )
             `);
         } catch (error) {
-            console.error('Error creating bot tables:', error.message);
+            logger.error('Error creating bot tables:', error.message);
         }
     }
     

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { auth } = require('../middleware/auth');
 const { get, all } = require('../config/database');
+const logger = require('../utils/logger');
 
 router.use(auth);
 
@@ -120,7 +121,7 @@ router.get('/executive-dashboard', async (req, res) => {
       },
     });
   } catch (e) {
-    console.error('[Reports] Executive error:', e.message);
+    logger.error('[Reports] Executive error:', e.message);
     res.status(500).json({ success: false, error: e.message });
   }
 });

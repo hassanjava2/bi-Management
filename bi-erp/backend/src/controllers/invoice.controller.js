@@ -1,4 +1,5 @@
 const invoiceService = require('../services/invoice.service');
+const logger = require('../utils/logger');
 
 async function list(req, res) {
   try {
@@ -15,7 +16,7 @@ async function list(req, res) {
     });
     res.json({ success: true, data });
   } catch (e) {
-    console.error('[Invoice.list] Error:', e.message);
+    logger.error('[Invoice.list] Error:', e.message);
     res.status(500).json({ success: false, error: e.message });
   }
 }
@@ -26,7 +27,7 @@ async function getOne(req, res) {
     if (!invoice) return res.status(404).json({ success: false, error: 'NOT_FOUND' });
     res.json({ success: true, data: invoice });
   } catch (e) {
-    console.error('[Invoice.getOne] Error:', e.message);
+    logger.error('[Invoice.getOne] Error:', e.message);
     res.status(500).json({ success: false, error: e.message });
   }
 }
@@ -36,7 +37,7 @@ async function create(req, res) {
     const created = await invoiceService.create({ ...req.body, created_by: req.user?.id });
     res.status(201).json({ success: true, data: created });
   } catch (e) {
-    console.error('[Invoice.create] Error:', e.message);
+    logger.error('[Invoice.create] Error:', e.message);
     res.status(500).json({ success: false, error: e.message });
   }
 }
@@ -46,7 +47,7 @@ async function addItem(req, res) {
     const result = await invoiceService.addItem(req.params.id, req.body);
     res.status(201).json({ success: true, data: result });
   } catch (e) {
-    console.error('[Invoice.addItem] Error:', e.message);
+    logger.error('[Invoice.addItem] Error:', e.message);
     res.status(500).json({ success: false, error: e.message });
   }
 }
@@ -58,7 +59,7 @@ async function addPayment(req, res) {
     const result = await invoiceService.addPayment(req.params.id, amount, payment_method, notes, req.user?.id);
     res.status(201).json({ success: true, data: result });
   } catch (e) {
-    console.error('[Invoice.addPayment] Error:', e.message);
+    logger.error('[Invoice.addPayment] Error:', e.message);
     res.status(500).json({ success: false, error: e.message });
   }
 }
@@ -70,7 +71,7 @@ async function updateStatus(req, res) {
     const updated = await invoiceService.updateStatus(req.params.id, status);
     res.json({ success: true, data: updated });
   } catch (e) {
-    console.error('[Invoice.updateStatus] Error:', e.message);
+    logger.error('[Invoice.updateStatus] Error:', e.message);
     res.status(500).json({ success: false, error: e.message });
   }
 }

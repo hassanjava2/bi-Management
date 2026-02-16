@@ -7,7 +7,7 @@ function requestTimeout(timeoutMs = 30000) {
     return (req, res, next) => {
         const timer = setTimeout(() => {
             if (!res.headersSent) {
-                console.error(`[TIMEOUT] ${req.method} ${req.path} exceeded ${timeoutMs}ms`);
+                logger.error(`[TIMEOUT] ${req.method} ${req.path} exceeded ${timeoutMs}ms`);
                 res.status(504).json({
                     success: false,
                     error: 'REQUEST_TIMEOUT',

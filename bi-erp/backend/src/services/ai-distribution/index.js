@@ -13,6 +13,7 @@ const historyLearner = require('./history-learner');
 const distConfig = require('./config');
 const taskService = require('../task.service');
 const notificationService = require('../notification.service');
+const logger = require('../../utils/logger');
 
 async function getManagerUserId() {
     const u = await get(`SELECT id FROM users WHERE (role = 'admin' OR role = 'owner') AND is_active = 1 LIMIT 1`);
@@ -46,7 +47,7 @@ async function ensureTables() {
             )
         `);
     } catch (e) {
-        console.error('[AI Distribution] ensureTables:', e.message);
+        logger.error('[AI Distribution] ensureTables:', e.message);
     }
 }
 
@@ -57,7 +58,7 @@ async function seedEmployeeSkills() {
             historyLearner.ensureEmployeeSkills(u.id);
         }
     } catch (e) {
-        console.warn('[AI Distribution] seedEmployeeSkills:', e.message);
+        logger.warn('[AI Distribution] seedEmployeeSkills:', e.message);
     }
 }
 
@@ -68,7 +69,7 @@ async function logAssignment(taskId, assignedTo, method) {
             [generateId(), taskId, assignedTo, method || 'auto']
         );
     } catch (e) {
-        console.warn('[AI Distribution] logAssignment:', e.message);
+        logger.warn('[AI Distribution] logAssignment:', e.message);
     }
 }
 
@@ -114,7 +115,7 @@ async function processGeneratedTask(taskDef, managerUserId = null) {
     const selection = assignmentEngine.selectAssignee(taskDef);
 
     if (!selection) {
-        console.warn('[AI Distribution] No eligible assignee for task', taskDef.taskKind);
+        logger.warn('[AI Distribution] No eligible assignee for task', taskDef.taskKind);
         return { created: false, reason: 'no_assignee' };
     }
 
@@ -275,7 +276,7 @@ function reassignTasksFromUser(fromUserId) {
             });
             reassigned.push({ taskId: taskRow.id, newUserId: best.userId, title: task.title });
         } catch (e) {
-            console.error('[AI Distribution] Reassign task error:', e.message);
+            logger.error('[AI Distribution] Reassign task error:', e.message);
         }
     }
 
@@ -357,7 +358,7 @@ async function start() {
         try {
             await processEvent(event);
         } catch (e) {
-            console.error('[AI Distribution] processEvent error:', e.message);
+            logger.error('[AI Distribution] processEvent error:', e.message);
         }
     });
 }

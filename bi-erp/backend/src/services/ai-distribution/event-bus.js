@@ -3,6 +3,8 @@
  * Event Bus - ناقل الأحداث: يلتقط كل حدث بالنظام ويحوّله لمهمة محتملة
  */
 
+const logger = require('../../utils/logger');
+
 const EVENT_TYPES = Object.freeze({
     PURCHASE_CONFIRMED: 'purchase_confirmed',
     INSPECTION_COMPLETE: 'inspection_complete',
@@ -51,7 +53,7 @@ function emit(eventType, payload = {}) {
     for (const handler of globalListeners) {
         setImmediate(() => {
             Promise.resolve(handler(fullPayload)).catch((err) => {
-                console.error('[EventBus] Global handler error:', err.message);
+                logger.error('[EventBus] Global handler error:', err.message);
             });
         });
     }
@@ -60,7 +62,7 @@ function emit(eventType, payload = {}) {
     for (const handler of handlers) {
         setImmediate(() => {
             Promise.resolve(handler(fullPayload)).catch((err) => {
-                console.error('[EventBus] Handler error for', eventType, err.message);
+                logger.error('[EventBus] Handler error for', eventType, err.message);
             });
         });
     }
@@ -76,9 +78,9 @@ async function emitSync(eventType, payload = {}) {
         timestamp: new Date().toISOString(),
     };
 
-    await Promise.all(globalListeners.map((h) => h(fullPayload).catch((e) => { console.error('[EventBus]', e.message); })));
+    await Promise.all(globalListeners.map((h) => h(fullPayload).catch((e) => { logger.error('[EventBus]', e.message); })));
     const handlers = listeners.get(eventType) || [];
-    await Promise.all(handlers.map((h) => h(fullPayload).catch((e) => { console.error('[EventBus]', e.message); })));
+    await Promise.all(handlers.map((h) => h(fullPayload).catch((e) => { logger.error('[EventBus]', e.message); })));
 }
 
 module.exports = {
