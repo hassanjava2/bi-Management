@@ -117,4 +117,113 @@ router.get('/export/:type', async (req, res) => {
   }
 });
 
+// ═══ Phase 5: Advanced Inventory Reports ═══
+
+router.get('/adv/top-selling', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.topSelling(req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/top-purchased', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.topPurchased(req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/stagnant', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.stagnant(req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/near-expiry', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.nearExpiry(req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/below-min', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.belowMin() }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/negative-stock', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.negativeStock() }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/frozen', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.frozen() }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/damaged-products', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.damagedProducts(req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/consumed-products', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.consumedProducts(req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/profit-ranking', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.profitRanking(req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/product-movement/:productId', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.productMovement(req.params.productId, req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/inventory-summary', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.inventorySummary() }); }
+  catch (e) { res.json({ success: true, data: {} }); }
+});
+
+// ═══ Phase 5: Advanced Financial Reports ═══
+
+router.get('/adv/sales-detail', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.salesReportAdvanced(req.query) }); }
+  catch (e) { res.json({ success: true, data: { rows: [], totals: {}, count: 0 } }); }
+});
+
+router.get('/adv/purchases-detail', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.purchasesReportAdvanced(req.query) }); }
+  catch (e) { res.json({ success: true, data: { rows: [], totals: {}, count: 0 } }); }
+});
+
+router.get('/adv/profit-by-period', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.profitByPeriod(req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/overdue', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.overdueInvoices(req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/top-customers', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.topCustomersAdvanced(req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/salesperson', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.salespersonReport(req.query) }); }
+  catch (e) { res.json({ success: true, data: [] }); }
+});
+
+router.get('/adv/vouchers', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.voucherReport(req.query) }); }
+  catch (e) { res.json({ success: true, data: { rows: [], totals: {}, count: 0 } }); }
+});
+
+router.get('/adv/expenses', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.expenseReport(req.query) }); }
+  catch (e) { res.json({ success: true, data: { rows: [], total: 0, count: 0 } }); }
+});
+
+router.get('/adv/financial-summary', async (req, res) => {
+  try { res.json({ success: true, data: await reportsService.financialSummary() }); }
+  catch (e) { res.json({ success: true, data: {} }); }
+});
+
 module.exports = router;
